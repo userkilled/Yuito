@@ -2,7 +2,6 @@ package com.keylesspalace.tusky
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.annotation.StringRes
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
@@ -10,6 +9,7 @@ import android.text.style.URLSpan
 import android.text.util.Linkify
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.annotation.StringRes
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.util.CustomURLSpan
 import kotlinx.android.synthetic.main.activity_about.*
@@ -33,6 +33,7 @@ class AboutActivity : BottomSheetActivity(), Injectable {
 
         aboutLicenseInfoTextView.setClickableTextWithoutUnderlines(R.string.about_tusky_license)
         aboutWebsiteInfoTextView.setClickableTextWithoutUnderlines(R.string.about_project_site)
+        aboutYuitoTextView.setClickableTextWithoutUnderlines(R.string.about_yuito)
         aboutBugsFeaturesInfoTextView.setClickableTextWithoutUnderlines(R.string.about_bug_feature_request_site)
 
         tuskyProfileButton.setOnClickListener {

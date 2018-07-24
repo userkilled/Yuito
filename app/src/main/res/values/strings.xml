@@ -280,6 +280,10 @@
            to show we do not mean the software is gratis. Source: https://www.gnu.org/philosophy/free-sw.html
          * the url can be changed to link to the localized version of the license.
     -->
+    <string name="about_yuito">
+        Yuito is fork of Tusky.\n
+        https://github.com/tuskyapp/Tusky
+    </string>
     <string name="about_project_site">
         Project website:\n
         https://tusky.app
