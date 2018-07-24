@@ -150,6 +150,7 @@
     <string name="visibility_public">公開：公開タイムラインに投稿する</string>
     <string name="visibility_unlisted">未収載：公開タイムラインには表示しない</string>
     <string name="visibility_private">フォロワー限定：フォロワーだけに公開</string>
+    <string name="visibility_unleakable">限定公開　: フォローしたユーザーに公開</string>
     <string name="visibility_direct">ダイレクト：返信先のユーザーだけに公開</string>
     <string name="pref_title_edit_notification_settings">通知を設定</string>
     <string name="pref_title_notifications_enabled">プッシュ通知</string>

@@ -63,6 +63,25 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.Px;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.view.inputmethod.InputConnectionCompat;
+import androidx.core.view.inputmethod.InputContentInfoCompat;
+import androidx.lifecycle.Lifecycle;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.TransitionManager;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.snackbar.Snackbar;
@@ -113,6 +132,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -122,25 +142,6 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.Px;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.core.view.inputmethod.InputConnectionCompat;
-import androidx.core.view.inputmethod.InputContentInfoCompat;
-import androidx.lifecycle.Lifecycle;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.TransitionManager;
 
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.Single;
@@ -198,6 +199,8 @@ public final class ComposeActivity
     static final int MAXIMUM_URL_LENGTH = 23;
     // https://github.com/tootsuite/mastodon/blob/1656663/app/models/media_attachment.rb#L94
     private static final int MEDIA_DESCRIPTION_CHARACTER_LIMIT = 420;
+
+    private static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app"};
 
     @Inject
     public MastodonApi mastodonApi;
@@ -354,6 +357,9 @@ public final class ComposeActivity
         }
 
         composeOptionsView = findViewById(R.id.composeOptionsBottomSheet);
+        if (Arrays.asList(CAN_USE_UNLEAKABLE).contains(activeAccount.getDomain())) {
+            composeOptionsView.allowUnleakable(true);
+        }
         composeOptionsView.setListener(this);
 
         composeOptionsBehavior = BottomSheetBehavior.from(composeOptionsView);
@@ -840,6 +846,13 @@ public final class ComposeActivity
                 Drawable envelope = AppCompatResources.getDrawable(this, R.drawable.ic_email_24dp);
                 if (envelope != null) {
                     visibilityButton.setImageDrawable(envelope);
+                }
+                break;
+            }
+            case UNLEAKABLE: {
+                Drawable dontLook = AppCompatResources.getDrawable(this, R.drawable.ic_unleakable_24dp);
+                if (dontLook != null) {
+                    visibilityButton.setImageDrawable(dontLook);
                 }
                 break;
             }

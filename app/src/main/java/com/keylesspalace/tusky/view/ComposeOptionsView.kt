@@ -17,6 +17,7 @@ package com.keylesspalace.tusky.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.widget.LinearLayout
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Status
@@ -33,6 +34,7 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
         publicRadioButton.setButtonDrawable(R.drawable.ic_public_24dp)
         unlistedRadioButton.setButtonDrawable(R.drawable.ic_lock_open_24dp)
         privateRadioButton.setButtonDrawable(R.drawable.ic_lock_outline_24dp)
+        unleakableRadioButton.setButtonDrawable(R.drawable.ic_unleakable_24dp)
         directRadioButton.setButtonDrawable(R.drawable.ic_email_24dp)
 
         visibilityRadioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -43,12 +45,21 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
                     Status.Visibility.UNLISTED
                 R.id.privateRadioButton ->
                     Status.Visibility.PRIVATE
+                R.id.unleakableRadioButton ->
+                    Status.Visibility.UNLEAKABLE
                 R.id.directRadioButton ->
                     Status.Visibility.DIRECT
                 else ->
                     Status.Visibility.PUBLIC
             }
             listener?.onVisibilityChanged(visibility)
+        }
+    }
+
+    fun allowUnleakable(allowed: Boolean = true) {
+        unleakableRadioButton.visibility = when (allowed) {
+            true -> View.VISIBLE
+            else -> View.GONE
         }
     }
 
@@ -60,6 +71,8 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
                 R.id.unlistedRadioButton
             Status.Visibility.PRIVATE ->
                 R.id.privateRadioButton
+            Status.Visibility.UNLEAKABLE ->
+                R.id.unleakableRadioButton
             Status.Visibility.DIRECT ->
                 R.id.directRadioButton
             else ->
