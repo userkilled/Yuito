@@ -16,26 +16,38 @@
 package com.keylesspalace.tusky;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.MenuItem;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Lifecycle;
 
+import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.fragment.TimelineFragment;
+
+import net.accelf.yuito.QuickTootHelper;
 
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasAndroidInjector;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+
+import static com.uber.autodispose.AutoDispose.autoDisposable;
+import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
 public class FavouritesActivity extends BottomSheetActivity implements HasAndroidInjector {
 
     @Inject
     public DispatchingAndroidInjector<Object> dispatchingAndroidInjector;
+    @Inject
+    public EventHub eventHub;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,6 +67,15 @@ public class FavouritesActivity extends BottomSheetActivity implements HasAndroi
         Fragment fragment = TimelineFragment.newInstance(TimelineFragment.Kind.FAVOURITES);
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.commit();
+
+        ConstraintLayout quickTootContainer = findViewById(R.id.quick_toot_container);
+        QuickTootHelper quickTootHelper = new QuickTootHelper(quickTootContainer,
+                PreferenceManager.getDefaultSharedPreferences(this), accountManager, eventHub);
+
+        eventHub.getEvents()
+                .observeOn(AndroidSchedulers.mainThread())
+                .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                .subscribe(quickTootHelper::handleEvent);
     }
 
     @Override

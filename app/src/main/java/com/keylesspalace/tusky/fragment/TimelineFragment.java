@@ -38,6 +38,7 @@ import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.MuteEvent;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
+import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
@@ -565,7 +566,23 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onReply(int position) {
-        super.reply(statuses.get(position).asRight());
+        switch (kind) {
+            case HOME:
+            case PUBLIC_LOCAL:
+            case PUBLIC_FEDERATED:
+            case TAG:
+            case FAVOURITES:
+            case LIST: {
+                eventHub.dispatch(new QuickReplyEvent(statuses.get(position).asRight().getActionableStatus()));
+                break;
+            }
+            case USER:
+            case USER_PINNED:
+            case USER_WITH_REPLIES: {
+                super.reply(statuses.get(position).asRight());
+                break;
+            }
+        }
     }
 
     @Override

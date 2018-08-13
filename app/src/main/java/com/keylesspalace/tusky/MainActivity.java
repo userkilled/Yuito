@@ -15,26 +15,11 @@
 
 package com.keylesspalace.tusky;
 
-import androidx.lifecycle.Lifecycle;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-
-import com.bumptech.glide.Glide;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
-
-import androidx.emoji.text.EmojiCompat;
-import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AlertDialog;
-
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -42,6 +27,18 @@ import android.view.KeyEvent;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.emoji.text.EmojiCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.viewpager.widget.ViewPager;
+
+import com.bumptech.glide.Glide;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.appstore.CacheUpdater;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.MainTabsChangedEvent;
@@ -71,6 +68,8 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
+
+import net.accelf.yuito.QuickTootHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,10 +184,12 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.pager);
 
-        composeButton.setOnClickListener(v -> {
-            Intent composeIntent = new Intent(getApplicationContext(), ComposeActivity.class);
-            startActivity(composeIntent);
-        });
+        ConstraintLayout quickTootContainer = findViewById(R.id.quick_toot_container);
+        QuickTootHelper quickTootHelper = new QuickTootHelper(quickTootContainer,
+                PreferenceManager.getDefaultSharedPreferences(this), accountManager, eventHub);
+
+        composeButton.setOnClickListener(v -> quickTootHelper.composeButton());
+        tabLayout.requestFocus();
 
         setupDrawer();
 
@@ -250,6 +251,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
                     if (event instanceof MainTabsChangedEvent) {
                         setupTabs(false);
                     }
+                    quickTootHelper.handleEvent(event);
                 });
 
         // Flush old media that was cached for sharing

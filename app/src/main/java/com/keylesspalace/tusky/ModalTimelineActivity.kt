@@ -3,13 +3,21 @@ package com.keylesspalace.tusky
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.MenuItem
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.Lifecycle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.fragment.TimelineFragment
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
+import com.uber.autodispose.AutoDispose.autoDisposable
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.toolbar_basic.*
+import net.accelf.yuito.QuickTootHelper
 import javax.inject.Inject
 
 class ModalTimelineActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInjector {
@@ -31,6 +39,8 @@ class ModalTimelineActivity : BottomSheetActivity(), ActionButtonActivity, HasAn
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+    @Inject
+    lateinit var eventHub: EventHub
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +62,15 @@ class ModalTimelineActivity : BottomSheetActivity(), ActionButtonActivity, HasAn
                     .replace(R.id.contentFrame, TimelineFragment.newInstance(kind, argument))
                     .commit()
         }
+
+        val quickTootContainer = findViewById<ConstraintLayout>(R.id.quick_toot_container)
+        val quickTootHelper = QuickTootHelper(quickTootContainer,
+                PreferenceManager.getDefaultSharedPreferences(this), accountManager, eventHub)
+
+        eventHub.events
+                .observeOn(AndroidSchedulers.mainThread())
+                .`as`(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                .subscribe(quickTootHelper::handleEvent)
     }
 
     override fun getActionButton(): FloatingActionButton? = null

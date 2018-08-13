@@ -197,12 +197,13 @@ public final class ComposeActivity
     private static final String MEDIA_ATTACHMENTS_EXTRA = "media_attachments";
     private static final String SENSITIVE_EXTRA = "sensitive";
     private static final String POLL_EXTRA = "poll";
+    private static final String TOOT_RIGHT_NOW = "toot_right_now";
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
     // https://github.com/tootsuite/mastodon/blob/1656663/app/models/media_attachment.rb#L94
     private static final int MEDIA_DESCRIPTION_CHARACTER_LIMIT = 420;
 
-    private static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app"};
+    public static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app"};
     private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
 
     @Inject
@@ -259,6 +260,7 @@ public final class ComposeActivity
     private Integer maxPollOptionLength = null;
     private @Px
     int thumbnailViewSize;
+    private boolean tootRightNow = false;
 
     private SaveTootHelper saveTootHelper;
     private Gson gson = new Gson();
@@ -552,6 +554,8 @@ public final class ComposeActivity
             if(mediaAttachments != null && mediaAttachments.size() > 0) {
                 enablePollButton(false);
             }
+
+            tootRightNow = intent.getBooleanExtra(TOOT_RIGHT_NOW, false);
         }
 
         // After the starting state is finalised, the interface can be set to reflect this state.
@@ -594,7 +598,7 @@ public final class ComposeActivity
                 builder.append(name);
                 builder.append(' ');
             }
-            startingText = builder.toString();
+            startingText = builder.toString() + textEditor.getText();
             textEditor.setText(startingText);
             textEditor.setSelection(textEditor.length());
         }
@@ -731,6 +735,10 @@ public final class ComposeActivity
         }
 
         textEditor.requestFocus();
+
+        if (tootRightNow && calculateTextLength() > 0) {
+            onSendClicked();
+        }
     }
 
     private void replaceTextAtCaret(CharSequence text) {
@@ -2119,6 +2127,8 @@ public final class ComposeActivity
         private Boolean sensitive;
         @Nullable
         private NewPoll poll;
+        @Nullable
+        private Boolean tootRightNow;
 
         public IntentBuilder savedTootUid(int uid) {
             this.savedTootUid = uid;
@@ -2200,6 +2210,11 @@ public final class ComposeActivity
             return this;
         }
 
+        public IntentBuilder tootRightNow(boolean tootRightNow) {
+            this.tootRightNow = tootRightNow;
+            return this;
+        }
+
         public Intent build(Context context) {
             Intent intent = new Intent(context, ComposeActivity.class);
 
@@ -2251,6 +2266,9 @@ public final class ComposeActivity
             }
             if (poll != null) {
                 intent.putExtra(POLL_EXTRA, poll);
+            }
+            if (tootRightNow != null) {
+                intent.putExtra(TOOT_RIGHT_NOW, tootRightNow);
             }
             return intent;
         }

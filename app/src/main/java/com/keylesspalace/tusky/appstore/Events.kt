@@ -17,3 +17,4 @@ data class PreferenceChangedEvent(val preferenceKey: String) : Dispatchable
 data class MainTabsChangedEvent(val newTabs: List<TabData>) : Dispatchable
 data class PollVoteEvent(val statusId: String, val poll: Poll) : Dispatchable
 data class DomainMuteEvent(val instance: String): Dispatchable
+data class QuickReplyEvent(val status: Status) : Dispatchable
