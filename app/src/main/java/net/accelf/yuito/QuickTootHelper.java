@@ -3,6 +3,8 @@ package net.accelf.yuito;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -19,15 +21,20 @@ import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.entity.Status;
+import com.keylesspalace.tusky.util.ThemeUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static com.keylesspalace.tusky.ComposeActivity.PREF_DEFAULT_TAG;
+import static com.keylesspalace.tusky.ComposeActivity.PREF_USE_DEFAULT_TAG;
+
 public class QuickTootHelper {
 
     private Context context;
     private TextView quickReplyInfo;
+    private TextView defaultTagInfo;
     private ImageView visibilityButton;
     private EditText tootEditText;
 
@@ -40,14 +47,16 @@ public class QuickTootHelper {
 
     private static final String PREF_CURRENT_VISIBILITY = "current_visibility";
 
-    public QuickTootHelper(ConstraintLayout root, SharedPreferences defPrefs, AccountManager accountManager, EventHub eventHub) {
+    public QuickTootHelper(ConstraintLayout root, AccountManager accountManager, EventHub eventHub) {
         context = root.getContext();
         quickReplyInfo = root.findViewById(R.id.quick_reply_info);
+        defaultTagInfo = root.findViewById(R.id.default_tag_info);
         visibilityButton = root.findViewById(R.id.visibility_button);
         tootEditText = root.findViewById(R.id.toot_edit_text);
         Button quickTootButton = root.findViewById(R.id.toot_button);
 
-        this.defPrefs = defPrefs;
+        context = root.getContext();
+        this.defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         AccountEntity account = accountManager.getActiveAccount();
         if (account != null) {
             domain = account.getDomain();
@@ -57,6 +66,7 @@ public class QuickTootHelper {
         this.eventHub = eventHub;
 
         updateVisibilityButton();
+        updateDefaultTagInfo();
         visibilityButton.setOnClickListener(v -> setNextVisibility());
         quickTootButton.setOnClickListener(v -> quickToot());
     }
@@ -74,8 +84,16 @@ public class QuickTootHelper {
         if (event instanceof QuickReplyEvent) {
             reply(((QuickReplyEvent) event).getStatus());
         } else if (event instanceof PreferenceChangedEvent) {
-            if (PREF_CURRENT_VISIBILITY.equals(((PreferenceChangedEvent) event).getPreferenceKey())) {
-                updateVisibilityButton();
+            switch (((PreferenceChangedEvent) event).getPreferenceKey()) {
+                case PREF_CURRENT_VISIBILITY: {
+                    updateVisibilityButton();
+                    break;
+                }
+                case PREF_DEFAULT_TAG:
+                case PREF_USE_DEFAULT_TAG: {
+                    updateDefaultTagInfo();
+                    break;
+                }
             }
         }
     }
@@ -136,6 +154,22 @@ public class QuickTootHelper {
             quickReplyInfo.setText(String.format("Reply to : %s", inReplyTo.getAccount().getUsername()));
         } else {
             quickReplyInfo.setText("");
+        }
+    }
+
+    private void updateDefaultTagInfo() {
+        boolean useDefaultTag = defPrefs.getBoolean(PREF_USE_DEFAULT_TAG, false);
+        String defaultText = defPrefs.getString(PREF_DEFAULT_TAG, "");
+        if (useDefaultTag) {
+            defaultTagInfo.setText(String.format("%s : %s", context.getString(R.string.hint_default_text), defaultText));
+            if (ThemeUtils.THEME_DAY.equals(defPrefs.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT))) {
+                defaultTagInfo.setTextColor(Color.RED);
+            } else {
+                defaultTagInfo.setTextColor(Color.YELLOW);
+            }
+        } else {
+            defaultTagInfo.setText(String.format("%s inactive", context.getString(R.string.hint_default_text)));
+            defaultTagInfo.setTextColor(Color.GRAY);
         }
     }
 

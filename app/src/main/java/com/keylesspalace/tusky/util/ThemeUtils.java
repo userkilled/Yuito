@@ -19,6 +19,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.provider.Settings;
+import android.util.TypedValue;
+
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
@@ -26,8 +29,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
-import android.provider.Settings;
-import android.util.TypedValue;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -45,7 +46,7 @@ public class ThemeUtils {
     public static final String APP_THEME_DEFAULT = ThemeUtils.THEME_NIGHT;
 
     private static final String THEME_NIGHT = "night";
-    private static final String THEME_DAY = "day";
+    public static final String THEME_DAY = "day";
     private static final String THEME_BLACK = "black";
     private static final String THEME_AUTO = "auto";
     public static final String THEME_SYSTEM = "auto_system";

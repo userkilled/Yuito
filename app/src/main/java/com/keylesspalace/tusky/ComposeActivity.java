@@ -55,6 +55,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -90,6 +91,8 @@ import com.google.gson.reflect.TypeToken;
 import com.keylesspalace.tusky.adapter.ComposeAutoCompleteAdapter;
 import com.keylesspalace.tusky.adapter.EmojiAdapter;
 import com.keylesspalace.tusky.adapter.OnEmojiSelectedListener;
+import com.keylesspalace.tusky.appstore.EventHub;
+import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AppDatabase;
 import com.keylesspalace.tusky.db.InstanceEntity;
@@ -206,10 +209,15 @@ public final class ComposeActivity
     public static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app"};
     private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
 
+    public static final String PREF_DEFAULT_TAG = "default_tag";
+    public static final String PREF_USE_DEFAULT_TAG = "use_default_tag";
+
     @Inject
     public MastodonApi mastodonApi;
     @Inject
     public AppDatabase database;
+    @Inject
+    public EventHub eventHub;
 
     private TextView replyTextView;
     private TextView replyContentTextView;
@@ -217,6 +225,8 @@ public final class ComposeActivity
     private LinearLayout mediaPreviewBar;
     private View contentWarningBar;
     private EditText contentWarningEditor;
+    private CheckBox useDefaultTag;
+    private EditText defaultTagEditText;
     private TextView charactersLeft;
     private TootButton tootButton;
     private ImageButton pickButton;
@@ -265,10 +275,12 @@ public final class ComposeActivity
     private SaveTootHelper saveTootHelper;
     private Gson gson = new Gson();
 
+    private SharedPreferences preferences;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT);
         if (theme.equals("black")) {
             setTheme(R.style.TuskyDialogActivityBlackTheme);
@@ -282,6 +294,8 @@ public final class ComposeActivity
         mediaPreviewBar = findViewById(R.id.compose_media_preview_bar);
         contentWarningBar = findViewById(R.id.composeContentWarningBar);
         contentWarningEditor = findViewById(R.id.composeContentWarningField);
+        useDefaultTag = findViewById(R.id.checkbox_use_default_text);
+        defaultTagEditText = findViewById(R.id.edittext_default_text);
         charactersLeft = findViewById(R.id.composeCharactersLeftView);
         tootButton = findViewById(R.id.composeTootButton);
         pickButton = findViewById(R.id.composeAddMediaButton);
@@ -380,6 +394,10 @@ public final class ComposeActivity
         emojiView.setLayoutManager(new GridLayoutManager(this, 3, GridLayoutManager.HORIZONTAL, false));
 
         enableButton(emojiButton, false, false);
+
+        restoreDefaultTagStatus();
+        useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> saveDefaultTagStatus());
+        defaultTagEditText.setOnFocusChangeListener((view, b) -> saveDefaultTagStatus());
 
         // Setup the interface buttons.
         tootButton.setOnClickListener(v -> onSendClicked());
@@ -923,6 +941,20 @@ public final class ComposeActivity
 
     }
 
+    private void restoreDefaultTagStatus() {
+        useDefaultTag.setChecked(preferences.getBoolean(PREF_USE_DEFAULT_TAG, false));
+        defaultTagEditText.setText(preferences.getString(PREF_DEFAULT_TAG, ""));
+    }
+
+    private void saveDefaultTagStatus() {
+        preferences.edit()
+                .putString(PREF_DEFAULT_TAG, defaultTagEditText.getText().toString())
+                .putBoolean(PREF_USE_DEFAULT_TAG, useDefaultTag.isChecked())
+                .apply();
+        eventHub.dispatch(new PreferenceChangedEvent(PREF_DEFAULT_TAG));
+        eventHub.dispatch(new PreferenceChangedEvent(PREF_USE_DEFAULT_TAG));
+    }
+
     private void openPickDialog() {
         if (addMediaBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN || addMediaBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
             addMediaBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -1193,7 +1225,9 @@ public final class ComposeActivity
 
     private void onReadySuccess(Status.Visibility visibility, boolean sensitive) {
         /* Validate the status meets the character limit. */
-        String contentText = textEditor.getText().toString();
+        saveDefaultTagStatus();
+        String contentText = useDefaultTag.isChecked() ?
+                (textEditor.getText().toString() + " " + defaultTagEditText.getText().toString()) : textEditor.getText().toString();
         String spoilerText = "";
         if (statusHideText) {
             spoilerText = contentWarningEditor.getText().toString();
@@ -1783,6 +1817,7 @@ public final class ComposeActivity
 
     @Override
     public void onBackPressed() {
+        saveDefaultTagStatus();
         // Acting like a teen: deliberately ignoring parent.
         if (composeOptionsBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||
                 addMediaBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||

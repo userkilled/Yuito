@@ -159,6 +159,7 @@
     <string name="hint_note">Bio</string>
     <string name="hint_search">Search…</string>
     <string name="hint_toot_area">Quick Toot Area</string>
+    <string name="hint_default_text">Default Hashtag</string>
 
     <string name="search_no_results">No results</string>
 

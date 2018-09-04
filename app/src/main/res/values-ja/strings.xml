@@ -128,6 +128,7 @@
     <string name="hint_display_name">表示名</string>
     <string name="hint_note">プロフィール</string>
     <string name="hint_search">ユーザーを検索…</string>
+    <string name="hint_default_text">実況モード</string>
     <string name="search_no_results">見つかりませんでした</string>
     <string name="label_quick_reply">返信…</string>
     <string name="label_avatar">アイコン</string>

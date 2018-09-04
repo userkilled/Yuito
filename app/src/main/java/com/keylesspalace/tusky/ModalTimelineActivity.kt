@@ -3,7 +3,6 @@ package com.keylesspalace.tusky
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.MenuItem
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
@@ -64,8 +63,7 @@ class ModalTimelineActivity : BottomSheetActivity(), ActionButtonActivity, HasAn
         }
 
         val quickTootContainer = findViewById<ConstraintLayout>(R.id.quick_toot_container)
-        val quickTootHelper = QuickTootHelper(quickTootContainer,
-                PreferenceManager.getDefaultSharedPreferences(this), accountManager, eventHub)
+        val quickTootHelper = QuickTootHelper(quickTootContainer, accountManager, eventHub)
 
         eventHub.events
                 .observeOn(AndroidSchedulers.mainThread())

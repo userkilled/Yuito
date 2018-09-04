@@ -53,7 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/compose_activity_scrollview_height"
         android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginBottom="52dp">
+        android:layout_marginBottom="116dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -169,6 +169,34 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingBottom="52dp" >
+
+        <CheckBox
+            android:id="@+id/checkbox_use_default_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <EditText
+            android:id="@+id/edittext_default_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_default_text"
+            android:inputType="text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/checkbox_use_default_text"
+            tools:ignore="Autofill" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/addMediaBottomSheet"

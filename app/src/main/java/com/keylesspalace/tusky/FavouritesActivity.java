@@ -16,7 +16,6 @@
 package com.keylesspalace.tusky;
 
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.MenuItem;
 
 import androidx.annotation.Nullable;
@@ -69,8 +68,7 @@ public class FavouritesActivity extends BottomSheetActivity implements HasAndroi
         fragmentTransaction.commit();
 
         ConstraintLayout quickTootContainer = findViewById(R.id.quick_toot_container);
-        QuickTootHelper quickTootHelper = new QuickTootHelper(quickTootContainer,
-                PreferenceManager.getDefaultSharedPreferences(this), accountManager, eventHub);
+        QuickTootHelper quickTootHelper = new QuickTootHelper(quickTootContainer, accountManager, eventHub);
 
         eventHub.getEvents()
                 .observeOn(AndroidSchedulers.mainThread())
