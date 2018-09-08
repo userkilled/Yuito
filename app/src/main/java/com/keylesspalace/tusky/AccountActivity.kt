@@ -686,8 +686,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         startActivityWithSlideInAnimation(intent)
     }
 
-    override fun onViewUrl(url: String) {
-        viewUrl(url)
+    override fun onViewUrl(url: String, text: String) {
+        viewUrl(url, text)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

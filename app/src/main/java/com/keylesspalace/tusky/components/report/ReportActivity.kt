@@ -98,7 +98,7 @@ class ReportActivity : BottomSheetActivity(), HasAndroidInjector {
         viewModel.checkUrl.observe(this, Observer {
             if (!it.isNullOrBlank()) {
                 viewModel.urlChecked()
-                viewUrl(it)
+                viewUrl(it, it)
             }
         })
     }

@@ -204,7 +204,7 @@ class ReportStatusesFragment : Fragment(), Injectable, AdapterHandler {
 
     override fun onViewTag(tag: String) = startActivity(ViewTagActivity.getIntent(requireContext(), tag))
 
-    override fun onViewUrl(url: String?) = viewModel.checkClickedUrl(url)
+    override fun onViewUrl(url: String?, text: String?) = viewModel.checkClickedUrl(url)
 
     companion object {
         fun newInstance() = ReportStatusesFragment()

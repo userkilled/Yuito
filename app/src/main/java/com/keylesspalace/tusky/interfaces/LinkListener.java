@@ -18,5 +18,5 @@ package com.keylesspalace.tusky.interfaces;
 public interface LinkListener {
     void onViewTag(String tag);
     void onViewAccount(String id);
-    void onViewUrl(String url);
+    void onViewUrl(String url, String text);
 }

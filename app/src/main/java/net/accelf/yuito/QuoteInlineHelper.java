@@ -99,9 +99,9 @@ public class QuoteInlineHelper {
         quoteAvatar.setOnClickListener(view -> listener.onViewAccount(accountId));
         quoteDisplayName.setOnClickListener(view -> listener.onViewAccount(accountId));
         quoteUsername.setOnClickListener(view -> listener.onViewAccount(accountId));
-        quoteContent.setOnClickListener(view -> listener.onViewUrl(statusUrl));
-        quoteMedia.setOnClickListener(view -> listener.onViewUrl(statusUrl));
-        quoteContainer.setOnClickListener(view -> listener.onViewUrl(statusUrl));
+        quoteContent.setOnClickListener(view -> listener.onViewUrl(statusUrl, statusUrl));
+        quoteMedia.setOnClickListener(view -> listener.onViewUrl(statusUrl, statusUrl));
+        quoteContainer.setOnClickListener(view -> listener.onViewUrl(statusUrl, statusUrl));
     }
 
     public void setupQuoteContainer() {

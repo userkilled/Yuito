@@ -44,6 +44,8 @@ abstract class BottomSheetActivity : BaseActivity() {
     @Inject
     lateinit var mastodonApi: MastodonApi
 
+    private val forceBrowser = arrayOf("リモートで結果を表示")
+
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
@@ -62,7 +64,12 @@ abstract class BottomSheetActivity : BaseActivity() {
 
     }
 
-    open fun viewUrl(url: String) {
+    open fun viewUrl(url: String, text: String) {
+        if (forceBrowser.contains(text)) {
+            openLink(url)
+            return
+        }
+
         if (!looksLikeMastodonUrl(url)) {
             openLink(url)
             return
@@ -174,6 +181,7 @@ abstract class BottomSheetActivity : BaseActivity() {
 // https://pleroma.foo.bar/notice/43456787654678
 // https://pleroma.foo.bar/objects/d4643c42-3ae0-4b73-b8b0-c725f5819207
 // https://mastodon.foo.bar/users/User/statuses/000000000000000000
+// https://new.misskey.foo.bar/notes/012789abyz
 fun looksLikeMastodonUrl(urlString: String): Boolean {
     val uri: URI
     try {
@@ -194,5 +202,7 @@ fun looksLikeMastodonUrl(urlString: String): Boolean {
             path.matches("^/@[^/]+/\\d+$".toRegex()) ||
             path.matches("^/notice/\\d+$".toRegex()) ||
             path.matches("^/objects/[-a-f0-9]+$".toRegex()) ||
-            path.matches("^/users/[^/]+/statuses/[0-9]+$".toRegex())
+            path.matches("^/users/[^/]+/statuses/[0-9]+$".toRegex()) ||
+            path.matches("^/notes/[a-z0-9]+$".toRegex())
+
 }

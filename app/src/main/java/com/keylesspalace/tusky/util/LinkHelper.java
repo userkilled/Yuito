@@ -112,7 +112,7 @@ public class LinkHelper {
                 customSpan = new CustomURLSpan(span.getURL()) {
                     @Override
                     public void onClick(View widget) {
-                        listener.onViewUrl(getURL());
+                        listener.onViewUrl(getURL(), text.toString());
                     }
                 };
             }

@@ -124,8 +124,8 @@ abstract class SearchFragment<T> : Fragment(),
 
     override fun onViewTag(tag: String) = startActivity(ViewTagActivity.getIntent(requireContext(), tag))
 
-    override fun onViewUrl(url: String) {
-        bottomSheetActivity?.viewUrl(url)
+    override fun onViewUrl(url: String, text: String) {
+        bottomSheetActivity?.viewUrl(url, text)
     }
 
     protected val bottomSheetActivity = (activity as? BottomSheetActivity)
