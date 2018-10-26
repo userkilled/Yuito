@@ -298,6 +298,50 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
+    private void setStatusVisibility(Status.Visibility visibility) {
+        int visibilityIcon;
+        switch (visibility) {
+            case PUBLIC:
+                visibilityIcon = R.drawable.ic_public_24dp;
+                break;
+            case UNLISTED:
+                visibilityIcon = R.drawable.ic_lock_open_24dp;
+                break;
+            case PRIVATE:
+                visibilityIcon = R.drawable.ic_lock_outline_24dp;
+                break;
+            case UNLEAKABLE:
+                visibilityIcon = R.drawable.ic_unleakable_24dp;
+                break;
+            case DIRECT:
+                visibilityIcon = R.drawable.ic_email_24dp;
+                break;
+            default:
+                return;
+        }
+
+        final Drawable visibilityDrawable = this.timestampInfo.getContext()
+                .getDrawable(visibilityIcon);
+        if (visibilityDrawable == null) {
+            return;
+        }
+
+        final int size = (int) this.timestampInfo.getTextSize();
+        visibilityDrawable.setBounds(
+                0,
+                0,
+                size,
+                size
+        );
+        visibilityDrawable.setTint(this.timestampInfo.getCurrentTextColor());
+        this.timestampInfo.setCompoundDrawables(
+                visibilityDrawable,
+                null,
+                null,
+                null
+        );
+    }
+
     protected void setIsReply(boolean isReply) {
         if (isReply) {
             replyButton.setImageResource(R.drawable.ic_reply_all_24dp);
@@ -653,6 +697,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setDisplayName(status.getUserFullName(), status.getAccountEmojis());
             setUsername(status.getNickname());
             setCreatedAt(status.getCreatedAt());
+            setStatusVisibility(status.getVisibility());
             setIsReply(status.getInReplyToId() != null);
             setAvatar(status.getAvatar(), status.getRebloggedAvatar(), status.isBot(), showBotOverlay, animateAvatar);
             setReblogged(status.isReblogged());

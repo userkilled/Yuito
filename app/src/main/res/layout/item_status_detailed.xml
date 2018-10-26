@@ -443,8 +443,8 @@
         android:importantForAccessibility="no"
         android:textColor="?android:textColorTertiary"
         android:textSize="?attr/status_text_medium"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:drawablePadding="4dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/status_poll_description"
         tools:text="21 Dec 2018 18:45" />
 
