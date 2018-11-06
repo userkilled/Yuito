@@ -30,6 +30,8 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -326,6 +328,25 @@ public final class ComposeActivity
         // setup the account image
         final AccountEntity activeAccount = accountManager.getActiveAccount();
 
+        boolean loadInstanceData = true;
+
+        if (preferences.getBoolean("limitedBandwidthActive", false)) {
+            loadInstanceData = false;
+            if (preferences.getBoolean("limitedBandwidthOnlyMobileNetwork", true)) {
+                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+                NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+                if (info != null && info.getType() == ConnectivityManager.TYPE_WIFI) {
+                    loadInstanceData = true;
+                }
+            }
+        }
+
+        /* If the composer is started up as a reply to another post, override the "starting" state
+         * based on what the intent from the reply request passes. */
+        Intent intent = getIntent();
+
+        loadInstanceData = ( loadInstanceData && !intent.getBooleanExtra(TOOT_RIGHT_NOW, false) );
+
         if (activeAccount != null) {
             ImageView composeAvatar = findViewById(R.id.composeAvatar);
 
@@ -348,31 +369,35 @@ public final class ComposeActivity
                     getString(R.string.compose_active_account_description,
                             activeAccount.getFullName()));
 
-            mastodonApi.getInstance()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
-                    .subscribe(this::onFetchInstanceSuccess, this::onFetchInstanceFailure);
+            if (loadInstanceData) {
+                mastodonApi.getInstance()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                        .subscribe(this::onFetchInstanceSuccess, this::onFetchInstanceFailure);
 
-            mastodonApi.getCustomEmojis().enqueue(new Callback<List<Emoji>>() {
-                @Override
-                public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
-                    List<Emoji> emojiList = response.body();
-                    if (emojiList == null) {
-                        emojiList = Collections.emptyList();
+                mastodonApi.getCustomEmojis().enqueue(new Callback<List<Emoji>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
+                        List<Emoji> emojiList = response.body();
+                        if (emojiList == null) {
+                            emojiList = Collections.emptyList();
+                        }
+                        Collections.sort(emojiList, (a, b) ->
+                                a.getShortcode().toLowerCase(Locale.ROOT).compareTo(
+                                        b.getShortcode().toLowerCase(Locale.ROOT)));
+                        setEmojiList(emojiList);
+                        cacheInstanceMetadata(activeAccount);
                     }
-                    Collections.sort(emojiList, (a, b) ->
-                            a.getShortcode().toLowerCase(Locale.ROOT).compareTo(
-                                    b.getShortcode().toLowerCase(Locale.ROOT)));
-                    setEmojiList(emojiList);
-                    cacheInstanceMetadata(activeAccount);
-                }
 
-                @Override
-                public void onFailure(@NonNull Call<List<Emoji>> call, @NonNull Throwable t) {
-                    Log.w(TAG, "error loading custom emojis", t);
-                    loadCachedInstanceMetadata(activeAccount);
-                }
-            });
+                    @Override
+                    public void onFailure(@NonNull Call<List<Emoji>> call, @NonNull Throwable t) {
+                        Log.w(TAG, "error loading custom emojis", t);
+                        loadCachedInstanceMetadata(activeAccount);
+                    }
+                });
+            } else {
+                loadCachedInstanceMetadata(activeAccount);
+            }
         } else {
             // do not do anything when not logged in, activity will be finished in super.onCreate() anyway
             return;
@@ -393,7 +418,7 @@ public final class ComposeActivity
 
         emojiView.setLayoutManager(new GridLayoutManager(this, 3, GridLayoutManager.HORIZONTAL, false));
 
-        enableButton(emojiButton, false, false);
+        enableButton(emojiButton, !loadInstanceData, !loadInstanceData);
 
         restoreDefaultTagStatus();
         useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> saveDefaultTagStatus());
@@ -457,10 +482,6 @@ public final class ComposeActivity
             startingHideText = false;
             photoUploadUri = null;
         }
-
-        /* If the composer is started up as a reply to another post, override the "starting" state
-         * based on what the intent from the reply request passes. */
-        Intent intent = getIntent();
 
         String[] mentionedUsernames = null;
         ArrayList<String> loadedDraftMediaUris = null;

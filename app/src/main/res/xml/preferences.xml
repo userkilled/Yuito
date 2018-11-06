@@ -68,6 +68,21 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_title_limited_bandwidth_settings">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="limitedBandwidthActive"
+            android:title="@string/pref_title_limited_bandwidth_active"
+            android:disableDependentsState="false" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="limitedBandwidthOnlyMobileNetwork"
+            android:title="@string/pref_title_limited_bandwidth_mobile"
+            android:dependency="limitedBandwidthActive" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/pref_title_browser_settings">
 
         <SwitchPreferenceCompat
