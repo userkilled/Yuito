@@ -126,6 +126,7 @@
     <string name="action_open_reblogged_by">Show boosts</string>
     <string name="action_open_faved_by">Show favorites</string>
     <string name="action_quote">Quote</string>
+    <string name="action_authorize">Authorize Now!</string>
 
     <string name="title_hashtags_dialog">Hashtags</string>
     <string name="title_mentions_dialog">Mentions</string>
@@ -160,6 +161,7 @@
     <string name="hint_search">Search…</string>
     <string name="hint_toot_area">Quick Toot Area</string>
     <string name="hint_default_text">Default Hashtag</string>
+    <string name="hint_access_token">Access Token</string>
 
     <string name="search_no_results">No results</string>
 
@@ -404,6 +406,7 @@
     <string name="license_apache_2">Licensed under the Apache License (copy below)</string>
     <string name="license_cc_by_4">CC-BY 4.0</string>
     <string name="license_cc_by_sa_4">CC-BY-SA 4.0</string>
+    <string name="license_mit">Licensed under the MIT License (copy below)</string>
 
     <string name="profile_metadata_label">Profile metadata</string>
     <string name="profile_metadata_add">add data</string>

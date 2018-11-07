@@ -14,6 +14,7 @@ import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.util.CustomURLSpan
 import kotlinx.android.synthetic.main.activity_about.*
 import kotlinx.android.synthetic.main.toolbar_basic.*
+import net.accelf.yuito.AccessTokenLoginActivity
 
 class AboutActivity : BottomSheetActivity(), Injectable {
 
@@ -28,6 +29,10 @@ class AboutActivity : BottomSheetActivity(), Injectable {
         }
 
         setTitle(R.string.about_title_activity)
+
+        easterView.setOnEasterEggExecuteListener {
+            onEasterEggExecute()
+        }
 
         versionTextView.text = getString(R.string.about_tusky_version, BuildConfig.VERSION_NAME)
 
@@ -44,6 +49,10 @@ class AboutActivity : BottomSheetActivity(), Injectable {
             startActivityWithSlideInAnimation(Intent(this, LicenseActivity::class.java))
         }
 
+    }
+
+    private fun onEasterEggExecute() {
+        startActivityWithSlideInAnimation(Intent(this, AccessTokenLoginActivity::class.java))
     }
 
     private fun onAccountButtonClick() {

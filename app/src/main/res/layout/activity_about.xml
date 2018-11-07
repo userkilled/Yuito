@@ -41,6 +41,11 @@
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
+                <net.accelf.easter.AccelForceEasterView
+                    android:id="@+id/easterView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp" />
+
                 <TextView
                     android:id="@+id/aboutLicenseInfoTextView"
                     android:layout_width="match_parent"

@@ -45,6 +45,7 @@ class LicenseActivity : BaseActivity() {
         setTitle(R.string.title_licenses)
 
         loadFileIntoTextView(R.raw.apache, licenseApacheTextView)
+        loadFileIntoTextView(R.raw.mit, licenseMitTextView)
 
     }
 

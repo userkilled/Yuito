@@ -21,6 +21,7 @@ import com.keylesspalace.tusky.components.report.ReportActivity
 import com.keylesspalace.tusky.components.search.SearchActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import net.accelf.yuito.AccessTokenLoginActivity
 
 /**
  * Created by charlag on 3/24/18.
@@ -97,4 +98,7 @@ abstract class ActivitiesModule {
 
     @ContributesAndroidInjector(modules = [FragmentBuildersModule::class])
     abstract fun contributesInstanceListActivity(): InstanceListActivity
+
+    @ContributesAndroidInjector
+    abstract fun contributesAccessTokenLoginActivity(): AccessTokenLoginActivity
 }

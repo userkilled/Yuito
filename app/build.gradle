@@ -96,6 +96,12 @@ project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 ext.daggerVersion = '2.24'
 ext.retrofitVersion = '2.6.0'
 
+repositories {
+    maven {
+        url 'https://maven.accelf.net/'
+    }
+}
+
 // if libraries are changed here, they should also be changed in LicenseActivity
 dependencies {
     implementation('com.mikepenz:materialdrawer:6.1.2@aar') {
@@ -165,4 +171,6 @@ dependencies {
 
     //Add some useful extensions
     implementation 'androidx.core:core-ktx:1.2.0-alpha01'
+
+    implementation 'net.accelf:easter:1.0.1'
 }
