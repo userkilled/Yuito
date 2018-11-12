@@ -215,6 +215,7 @@
     <string name="pref_title_limited_bandwidth_settings">Limited Bandwidth Mode</string>
     <string name="pref_title_limited_bandwidth_active">Use Limited Bandwidth Mode</string>
     <string name="pref_title_limited_bandwidth_mobile">Active during using mobile network.</string>
+    <string name="pref_title_limited_bandwidth_timeline">Reduce timeline auto reload after toot</string>
 
     <string name="app_them_dark">Dark</string>
     <string name="app_theme_light">Light</string>

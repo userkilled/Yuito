@@ -15,9 +15,12 @@
 
 package com.keylesspalace.tusky.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -105,6 +108,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static android.content.Context.CONNECTIVITY_SERVICE;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
@@ -170,6 +174,10 @@ public class TimelineFragment extends SFragment implements
     private boolean alwaysOpenSpoiler;
     private boolean initialUpdateFailed = false;
 
+    private SharedPreferences preferences;
+    private boolean reduceTimelineRoading;
+    private boolean checkMobileNetwork;
+
     private PairedList<Either<Placeholder, Status>, StatusViewData> statuses =
             new PairedList<>(new Function<Either<Placeholder, Status>, StatusViewData>() {
                 @Override
@@ -223,6 +231,7 @@ public class TimelineFragment extends SFragment implements
 
         isSwipeToRefreshEnabled = arguments.getBoolean(ARG_ENABLE_SWIPE_TO_REFRESH, true);
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
     }
 
     @Override
@@ -359,6 +368,8 @@ public class TimelineFragment extends SFragment implements
         filter = preferences.getBoolean("tabFilterHomeBoosts", true);
         filterRemoveReblogs = kind == Kind.HOME && !filter;
         reloadFilters(false);
+
+        updateLimitedBandwidthStatus();
     }
 
     private static boolean filterContextMatchesKind(Kind kind, List<String> filterContext) {
@@ -859,7 +870,18 @@ public class TimelineFragment extends SFragment implements
                 alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
                 break;
             }
+            case "limitedBandwidthActive":
+            case "limitedBandwidthOnlyMobileNetwork":
+            case "limitedBandwidthTimelineRoading": {
+                updateLimitedBandwidthStatus();
+                break;
+            }
         }
+    }
+
+    private void updateLimitedBandwidthStatus() {
+        reduceTimelineRoading = preferences.getBoolean("limitedBandwidthActive", false) && preferences.getBoolean("limitedBandwidthTimelineRoading", true);
+        checkMobileNetwork = preferences.getBoolean("limitedBandwidthOnlyMobileNetwork", true);
     }
 
     @Override
@@ -1301,7 +1323,24 @@ public class TimelineFragment extends SFragment implements
             case LIST:
                 return;
         }
-        onRefresh();
+
+        boolean reloadTimeline = true;
+
+        if (reduceTimelineRoading) {
+            reloadTimeline = false;
+            Activity activity = getActivity();
+            if (checkMobileNetwork && activity != null) {
+                ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(CONNECTIVITY_SERVICE);
+                NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+                if (info != null && info.getType() == ConnectivityManager.TYPE_WIFI) {
+                    reloadTimeline = true;
+                }
+            }
+        }
+
+        if (reloadTimeline) {
+            onRefresh();
+        }
     }
 
     private List<Either<Placeholder, Status>> liftStatusList(List<Status> list) {
@@ -1400,7 +1439,6 @@ public class TimelineFragment extends SFragment implements
      * Auto dispose observable on pause
      */
     private void startUpdateTimestamp() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         if (!useAbsoluteTime) {
             Observable.interval(1, TimeUnit.MINUTES)

@@ -81,6 +81,12 @@
             android:key="limitedBandwidthOnlyMobileNetwork"
             android:title="@string/pref_title_limited_bandwidth_mobile"
             android:dependency="limitedBandwidthActive" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="limitedBandwidthTimelineRoading"
+            android:title="@string/pref_title_limited_bandwidth_timeline"
+            android:dependency="limitedBandwidthActive" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_title_browser_settings">
