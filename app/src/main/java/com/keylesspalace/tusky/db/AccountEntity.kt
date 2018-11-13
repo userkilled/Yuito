@@ -60,7 +60,7 @@ data class AccountEntity(@field:PrimaryKey(autoGenerate = true) var id: Long,
         get() = "$domain:$accountId"
 
     val fullName: String
-        get() = "@$username@$domain"
+        get() = "@$username" + if (domain == "n-sr.org")  "@itabashi.0j0.jp" else  "@$domain"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
