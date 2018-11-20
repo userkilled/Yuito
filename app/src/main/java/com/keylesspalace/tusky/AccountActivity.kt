@@ -554,7 +554,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun updateButtons() {
         invalidateOptionsMenu()
 
-        if (loadedAccount?.moved == null) {
+        //if (loadedAccount?.moved == null) {
 
             accountFollowButton.show()
             updateFollowButton()
@@ -571,11 +571,11 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 updateMuteButton()
             }
 
-        } else {
-            accountFloatingActionButton.hide()
-            accountFollowButton.hide()
-            accountMuteButton.hide()
-        }
+        //} else {
+            //accountFloatingActionButton.hide()
+            //accountFollowButton.hide()
+            //accountMuteButton.hide()
+        //}
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
