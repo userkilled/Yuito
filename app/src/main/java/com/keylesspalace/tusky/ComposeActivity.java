@@ -208,7 +208,7 @@ public final class ComposeActivity
     // https://github.com/tootsuite/mastodon/blob/1656663/app/models/media_attachment.rb#L94
     private static final int MEDIA_DESCRIPTION_CHARACTER_LIMIT = 420;
 
-    public static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app"};
+    public static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "n-sr.org", "odakyu.app"};
     private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
 
     public static final String PREF_DEFAULT_TAG = "default_tag";
