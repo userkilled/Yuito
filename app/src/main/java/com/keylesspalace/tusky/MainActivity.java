@@ -207,6 +207,9 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         Drawable pageMarginDrawable = ThemeUtils.getDrawable(this, R.attr.tab_page_margin_drawable,
                 R.drawable.tab_page_margin_dark);
         viewPager.setPageMarginDrawable(pageMarginDrawable);
+        if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
+            viewPager.setOffscreenPageLimit(9);
+        }
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override

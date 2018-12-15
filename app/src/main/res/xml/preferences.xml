@@ -112,4 +112,12 @@
             android:summary="%s"
             android:title="@string/pref_title_http_proxy_settings" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_title_experimental">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="viewPagerOffScreenLimit"
+            android:title="@string/pref_title_experimental_viewpager_offscreen" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

@@ -20,20 +20,19 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
 import android.util.Log
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.Fragment
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.fragment.preference.*
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.getNonNullString
 import dagger.android.DispatchingAndroidInjector
-import kotlinx.android.synthetic.main.toolbar_basic.*
-import java.lang.IllegalArgumentException
-import javax.inject.Inject
-import androidx.appcompat.app.AppCompatDelegate
 import dagger.android.HasAndroidInjector
+import kotlinx.android.synthetic.main.toolbar_basic.*
+import javax.inject.Inject
 
 class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreferenceChangeListener,
         HasAndroidInjector {
@@ -137,7 +136,7 @@ class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreference
                 }
                 //workaround end
             }
-            "statusTextSize", "absoluteTimeView", "showBotOverlay", "animateGifAvatars" -> {
+            "statusTextSize", "absoluteTimeView", "showBotOverlay", "animateGifAvatars", "viewPagerOffScreenLimit" -> {
                 restartActivitiesOnExit = true
             }
             "language" -> {
