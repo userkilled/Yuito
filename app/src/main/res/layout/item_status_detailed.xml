@@ -440,7 +440,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:drawablePadding="4dp"
         android:importantForAccessibility="no"
         android:textColor="?android:textColorTertiary"
         android:textSize="?attr/status_text_medium"
