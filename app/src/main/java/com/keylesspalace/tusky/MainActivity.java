@@ -24,8 +24,10 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -445,7 +447,10 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
                     return false;
                 })
+                .withStickyFooter(R.layout.drawer_footer)
                 .build();
+
+        setupDrawerFooter(drawer.getStickyFooter());
 
         if (BuildConfig.DEBUG) {
             IDrawerItem debugItem = new SecondaryDrawerItem()
@@ -466,6 +471,21 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         drawer.addItem(exTextItem);
 
         EmojiCompat.get().registerInitCallback(emojiInitCallback);
+    }
+
+    private void setupDrawerFooter(View view) {
+        TextView instanceData = view.findViewById(R.id.instance_data);
+        instanceData.setTextColor(instanceData.getHintTextColors());
+
+        mastodonApi.getInstance()
+                .observeOn(AndroidSchedulers.mainThread())
+                .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                .subscribe(
+                        instance -> instanceData.setText(String.format("%s\n%s\n%s", instance.getTitle(), instance.getUri(), instance.getVersion())),
+                        throwable -> instanceData.setText(getString(R.string.instance_data_failed))
+                );
+
+        view.setPadding(0, 0, 0, 0);
     }
 
     private void setupTabs(boolean selectNotificationTab) {

@@ -20,6 +20,9 @@
     <string name="error_media_upload_sending">The upload failed.</string>
     <string name="error_sender_account_gone">Error sending toot.</string>
 
+    <string name="instance_data_loading">Collecting data…</string>
+    <string name="instance_data_failed">Failed.</string>
+
     <string name="title_home">Home</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_public_local">Local</string>
