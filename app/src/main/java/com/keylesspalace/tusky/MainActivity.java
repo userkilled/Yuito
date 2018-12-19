@@ -16,6 +16,7 @@
 package com.keylesspalace.tusky;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -118,6 +120,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     private Drawer drawer;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private SharedPreferences defPrefs;
 
     private int notificationTabPosition;
     private MainPagerAdapter adapter;
@@ -204,12 +207,14 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
         setupTabs(showNotificationTab);
 
+        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         int pageMargin = getResources().getDimensionPixelSize(R.dimen.tab_page_margin);
         viewPager.setPageMargin(pageMargin);
         Drawable pageMarginDrawable = ThemeUtils.getDrawable(this, R.attr.tab_page_margin_drawable,
                 R.drawable.tab_page_margin_dark);
         viewPager.setPageMarginDrawable(pageMarginDrawable);
-        if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
+        if (defPrefs.getBoolean("viewPagerOffScreenLimit", false)) {
             viewPager.setOffscreenPageLimit(9);
         }
 
@@ -268,6 +273,28 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
         NotificationHelper.clearNotificationsForActiveAccount(this, accountManager);
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startStreaming();
+    }
+
+    private void startStreaming() {
+        if (defPrefs.getBoolean("useHTLStream", false)) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopStreaming();
+    }
+
+    private void stopStreaming() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -537,6 +564,8 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         cacheUpdater.stop();
         SFragment.flushFilters();
         accountManager.setActiveAccount(newSelectedId);
+
+        stopStreaming();
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

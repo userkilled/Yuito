@@ -45,7 +45,9 @@ import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
+import com.keylesspalace.tusky.appstore.StreamUpdateEvent;
 import com.keylesspalace.tusky.appstore.UnfollowEvent;
+import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Filter;
@@ -71,8 +73,11 @@ import com.keylesspalace.tusky.view.BackgroundMessageView;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
+import net.accelf.yuito.TimelineStreamingListener;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -104,6 +109,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import kotlin.Unit;
 import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.WebSocket;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -177,6 +185,8 @@ public class TimelineFragment extends SFragment implements
     private SharedPreferences preferences;
     private boolean reduceTimelineRoading;
     private boolean checkMobileNetwork;
+
+    private WebSocket webSocket;
 
     private PairedList<Either<Placeholder, Status>, StatusViewData> statuses =
             new PairedList<>(new Function<Either<Placeholder, Status>, StatusViewData>() {
@@ -261,6 +271,56 @@ public class TimelineFragment extends SFragment implements
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        startStreaming();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopStreaming();
+    }
+
+    private void startStreaming() {
+        if (preferences.getBoolean("useHTLStream", false) && kind == Kind.HOME) {
+            connectWebsocket(buildStreamingUrl());
+        }
+    }
+
+    private String buildStreamingUrl() {
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if (activeAccount != null) {
+            return "wss://" + activeAccount.getDomain() + "/api/v1/streaming/?" + "stream=user" + "&" + "access_token" + "=" + activeAccount.getAccessToken();
+        } else {
+            return null;
+        }
+    }
+
+    private void connectWebsocket(String endpoint) {
+        if (webSocket != null) {
+            stopStreaming();
+        }
+
+        Request request = new Request.Builder()
+                .url(endpoint)
+                .build();
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .build();
+
+        webSocket = client.newWebSocket(request, new TimelineStreamingListener(eventHub));
+    }
+
+    private void stopStreaming() {
+        if (webSocket == null) {
+            return;
+        }
+        webSocket.close(1000, null);
+        webSocket = null;
     }
 
     private void sendInitialRequest() {
@@ -535,6 +595,10 @@ public class TimelineFragment extends SFragment implements
                             handleStatusComposeEvent(status);
                         } else if (event instanceof PreferenceChangedEvent) {
                             onPreferenceChanged(((PreferenceChangedEvent) event).getPreferenceKey());
+                        } else if (event instanceof StreamUpdateEvent) {
+                            if (kind == Kind.HOME) {
+                                handleStreamUpdateEvent((StreamUpdateEvent) event);
+                            }
                         }
                     });
             eventRegistered = true;
@@ -1222,6 +1286,24 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
+    private void addStatus(Either<Placeholder, Status> item) {
+        if (item.isRight()) {
+            Status status = item.asRight();
+            if (!((status.getInReplyToId() != null && filterRemoveReplies)
+                    || (status.getReblog() != null && filterRemoveReblogs)
+                    || shouldFilterStatus(status))) {
+                if (findStatusOrReblogPositionById(status.getId()) < 0) {
+                    statuses.add(0, item);
+                    updateAdapter();
+                    timelineRepo.addSingleStatusToDb(status);
+                }
+            }
+        } else {
+            statuses.add(0, item);
+            updateAdapter();
+        }
+    }
+
     /**
      * For certain requests we don't want to see placeholders, they will be removed some other way
      */
@@ -1308,6 +1390,9 @@ public class TimelineFragment extends SFragment implements
     private void handleStatusComposeEvent(@NonNull Status status) {
         switch (kind) {
             case HOME:
+                if (preferences.getBoolean("useHTLStream", false)){
+                    return;
+                }
             case PUBLIC_FEDERATED:
             case PUBLIC_LOCAL:
                 break;
@@ -1343,6 +1428,16 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
+    private void handleStreamUpdateEvent(StreamUpdateEvent event) {
+        Status status = event.getStatus();
+        if (event.getFirst() && statuses.get(0).isRight()) {
+            Placeholder placeholder = new Placeholder(statuses.get(0).asRight().getId() + 1);
+            updateStatuses(Arrays.asList(new Either.Right<>(status), new Either.Left<>(placeholder)), false);
+        } else {
+            addStatus(new Either.Right<>(status));
+        }
+    }
+
     private List<Either<Placeholder, Status>> liftStatusList(List<Status> list) {
         return CollectionsKt.map(list, statusLifter);
     }
@@ -1357,11 +1452,14 @@ public class TimelineFragment extends SFragment implements
             if (isAdded()) {
                 adapter.notifyItemRangeInserted(position, count);
                 Context context = getContext();
-                if (position == 0 && context != null) {
-                    if (isSwipeToRefreshEnabled)
+                if (position == 0 && context != null && layoutManager.findFirstVisibleItemPosition() == 0) {
+                    if (count == 1) {
+                        jumpToTop();
+                    } else if (isSwipeToRefreshEnabled) {
                         recyclerView.scrollBy(0, Utils.dpToPx(context, -30));
-                    else
+                    } else {
                         recyclerView.scrollToPosition(0);
+                    }
                 }
             }
         }

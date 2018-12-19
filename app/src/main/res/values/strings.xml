@@ -223,6 +223,7 @@
     <string name="pref_title_limited_bandwidth_timeline">Reduce timeline auto reload after toot</string>
     <string name="pref_title_experimental">Experimental Settings</string>
     <string name="pref_title_experimental_viewpager_offscreen">Increase offscreenPageLimit of ViewPager</string>
+    <string name="pref_title_experimental_htl_streaming">Use home timeline streaming</string>
 
     <string name="app_them_dark">Dark</string>
     <string name="app_theme_light">Light</string>

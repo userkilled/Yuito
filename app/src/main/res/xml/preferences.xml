@@ -119,5 +119,10 @@
             android:defaultValue="false"
             android:key="viewPagerOffScreenLimit"
             android:title="@string/pref_title_experimental_viewpager_offscreen" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="useHTLStream"
+            android:title="@string/pref_title_experimental_htl_streaming" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>
