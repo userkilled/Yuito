@@ -14,6 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.keylesspalace.tusky.ComposeActivity;
 import com.keylesspalace.tusky.R;
+import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.Event;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
@@ -95,6 +96,8 @@ public class QuickTootHelper {
                     break;
                 }
             }
+        } else if (event instanceof DrawerFooterClickedEvent) {
+            tootEditText.setText("にゃーん");
         }
     }
 

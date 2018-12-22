@@ -19,3 +19,4 @@ data class PollVoteEvent(val statusId: String, val poll: Poll) : Dispatchable
 data class DomainMuteEvent(val instance: String): Dispatchable
 data class QuickReplyEvent(val status: Status) : Dispatchable
 data class StreamUpdateEvent(val status: Status, val first: Boolean) : Dispatchable
+data class DrawerFooterClickedEvent(val placeholder: Boolean) : Dispatchable

@@ -44,6 +44,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.appstore.CacheUpdater;
+import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.MainTabsChangedEvent;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
@@ -511,6 +512,17 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
                         instance -> instanceData.setText(String.format("%s\n%s\n%s", instance.getTitle(), instance.getUri(), instance.getVersion())),
                         throwable -> instanceData.setText(getString(R.string.instance_data_failed))
                 );
+
+        instanceData.setOnClickListener(v -> {
+            String infoText = ((TextView) v).getText().toString();
+            infoText += "?";
+            if (infoText.endsWith("???????")) {
+                infoText = infoText.substring(0, infoText.length() - 7);
+                eventHub.dispatch(new DrawerFooterClickedEvent(true));
+                drawer.closeDrawer();
+            }
+            ((TextView) v).setText(infoText);
+        });
 
         view.setPadding(0, 0, 0, 0);
     }
