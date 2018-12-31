@@ -29,13 +29,20 @@ android {
             }
         }
     }
+    signingConfigs {
+        debug {
+            storeFile file('../debug.keystore')
+        }
+    }
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles 'proguard-rules.pro'
         }
-        debug {}
+        debug {
+            signingConfig signingConfigs.debug
+        }
     }
 
     flavorDimensions "color"
