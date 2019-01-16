@@ -18,6 +18,7 @@ package com.keylesspalace.tusky.fragment.preference
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import com.keylesspalace.tusky.ComposeActivity
 import com.keylesspalace.tusky.PreferencesActivity
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.util.ThemeUtils
@@ -73,6 +74,8 @@ class PreferencesFragment : PreferenceFragmentCompat() {
         val botDrawable = botIndicatorPreference.context.getDrawable(R.drawable.ic_bot_24dp)
         ThemeUtils.setDrawableTint(context, botDrawable, R.attr.toolbar_icon_tint)
         botIndicatorPreference.icon = botDrawable
+
+        updateStackTracePreference()
     }
 
     override fun onResume() {
@@ -102,6 +105,36 @@ class PreferencesFragment : PreferenceFragmentCompat() {
         }
 
         httpProxyPref.summary = ""
+
+    }
+
+    private fun updateStackTracePreference() {
+
+        val stackTraceCategory = requirePreference("stackTraceCategory")
+
+        val sharedPreferences = preferenceManager.sharedPreferences
+        val stackTrace = sharedPreferences.getString("stack_trace", null)
+        if (stackTrace.isNullOrEmpty()) {
+            preferenceScreen.removePreference(stackTraceCategory)
+        } else {
+            val sendCrashReportPreference = requirePreference("sendCrashReport")
+            sendCrashReportPreference.setOnPreferenceClickListener {
+                activity?.let { activity ->
+                    val intent = ComposeActivity.IntentBuilder()
+                            .tootText("@ars42525@odakyu.app $stackTrace".substring(0, 400))
+                            .contentWarning("Yuito StackTrace")
+                            .build(activity)
+                    activity.startActivity(intent)
+                    sharedPreferences.edit()
+                            .remove("stack_trace")
+                            .apply()
+                }
+                true
+            }
+
+            val stackTracePreference = requirePreference("stackTrace")
+            stackTracePreference.summary = stackTrace
+        }
 
     }
 

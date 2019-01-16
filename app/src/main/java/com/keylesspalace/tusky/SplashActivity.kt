@@ -20,8 +20,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.di.Injectable
-
 import com.keylesspalace.tusky.util.NotificationHelper
+import net.accelf.yuito.CustomUncaughtExceptionHandler
 import javax.inject.Inject
 
 class SplashActivity : AppCompatActivity(), Injectable {
@@ -31,6 +31,9 @@ class SplashActivity : AppCompatActivity(), Injectable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val customUncaughtExceptionHandler = CustomUncaughtExceptionHandler(applicationContext)
+        Thread.setDefaultUncaughtExceptionHandler(customUncaughtExceptionHandler)
 
         /** delete old notification channels */
         NotificationHelper.deleteLegacyNotificationChannels(this, accountManager)

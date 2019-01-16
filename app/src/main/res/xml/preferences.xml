@@ -125,4 +125,17 @@
             android:key="useHTLStream"
             android:title="@string/pref_title_experimental_htl_streaming" />
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="stackTraceCategory"
+        android:title="@string/pref_title_stacktrace">
+
+        <Preference
+            android:key="sendCrashReport"
+            android:title="@string/pref_title_stacktrace_send" />
+
+        <Preference
+            android:key="stackTrace"
+            android:selectable="false" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

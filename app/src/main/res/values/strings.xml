@@ -224,6 +224,8 @@
     <string name="pref_title_experimental">Experimental Settings</string>
     <string name="pref_title_experimental_viewpager_offscreen">Increase offscreenPageLimit of ViewPager</string>
     <string name="pref_title_experimental_htl_streaming">Use home timeline streaming</string>
+    <string name="pref_title_stacktrace">Stacktrace</string>
+    <string name="pref_title_stacktrace_send">Send crash report to developer</string>
 
     <string name="app_them_dark">Dark</string>
     <string name="app_theme_light">Light</string>
