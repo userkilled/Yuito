@@ -55,7 +55,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_search.*
 import java.util.*
 
-class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
+open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
 
     override val networkStateRefresh: LiveData<NetworkState>
         get() = viewModel.networkStateStatusRefresh
@@ -166,7 +166,7 @@ class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concre
         }
     }
 
-    private fun removeItem(position: Int) {
+    open fun removeItem(position: Int) {
         (adapter as? SearchStatusesAdapter)?.getItem(position)?.let {
             viewModel.removeItem(it)
         }

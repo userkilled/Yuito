@@ -6,11 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
+import com.keylesspalace.tusky.components.search.adapter.SearchNotestockRepository
 import com.keylesspalace.tusky.components.search.adapter.SearchRepository
 import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.*
 import com.keylesspalace.tusky.network.MastodonApi
+import com.keylesspalace.tusky.network.NotestockApi
 import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.util.Listing
 import com.keylesspalace.tusky.util.NetworkState
@@ -23,6 +25,7 @@ import javax.inject.Inject
 
 class SearchViewModel @Inject constructor(
         mastodonApi: MastodonApi,
+        notestockApi: NotestockApi,
         private val timelineCases: TimelineCases,
         private val accountManager: AccountManager) : ViewModel() {
 
@@ -41,6 +44,7 @@ class SearchViewModel @Inject constructor(
     private val statusesRepository = SearchRepository<Pair<Status, StatusViewData.Concrete>>(mastodonApi)
     private val accountsRepository = SearchRepository<Account>(mastodonApi)
     private val hashtagsRepository = SearchRepository<HashTag>(mastodonApi)
+    private val notestockRepository = SearchNotestockRepository(notestockApi)
     val alwaysShowSensitiveMedia: Boolean = activeAccount?.alwaysShowSensitiveMedia
             ?: false
     val alwaysOpenSpoiler: Boolean = activeAccount?.alwaysOpenSpoiler
@@ -61,7 +65,13 @@ class SearchViewModel @Inject constructor(
     val networkStateHashTag: LiveData<NetworkState> = Transformations.switchMap(repoResultHashTag) { it.networkState }
     val networkStateHashTagRefresh: LiveData<NetworkState> = Transformations.switchMap(repoResultHashTag) { it.refreshState }
 
+    private val repoResultNotestock = MutableLiveData<Listing<Pair<Status, StatusViewData.Concrete>>>()
+    val notestockStatuses: LiveData<PagedList<Pair<Status, StatusViewData.Concrete>>> = Transformations.switchMap(repoResultNotestock) { it.pagedList }
+    val networkStateNotestock: LiveData<NetworkState> = Transformations.switchMap(repoResultNotestock) { it.networkState }
+    val networkStateNotestockRefresh: LiveData<NetworkState> = Transformations.switchMap(repoResultNotestock) { it.networkState }
+
     private val loadedStatuses = ArrayList<Pair<Status, StatusViewData.Concrete>>()
+    private val loadedNotestockStatuses = ArrayList<Pair<Status, StatusViewData.Concrete>>()
     fun search(query: String?) {
         loadedStatuses.clear()
         repoResultStatus.value = statusesRepository.getSearchData(SearchType.Status, query, disposables, initialItems = loadedStatuses) {
@@ -79,6 +89,14 @@ class SearchViewModel @Inject constructor(
                 hashtagsRepository.getSearchData(SearchType.Hashtag, hashtagQuery, disposables) {
                     it?.hashtags ?: emptyList()
                 }
+        loadedNotestockStatuses.clear()
+        repoResultNotestock.value = notestockRepository.getSearchData(query, disposables) {
+            (it?.statuses?.map { status ->  Pair(status, ViewDataUtils.statusToViewData(status, alwaysShowSensitiveMedia, alwaysOpenSpoiler)!!) }
+                    ?: emptyList())
+                    .apply {
+                        loadedNotestockStatuses.addAll(this)
+                    }
+        }
 
     }
 
@@ -94,12 +112,26 @@ class SearchViewModel @Inject constructor(
             repoResultStatus.value?.refresh?.invoke()
     }
 
+    fun removeNotestockItem(status: Pair<Status, StatusViewData.Concrete>) {
+        if (loadedNotestockStatuses.remove(status))
+            repoResultNotestock.value?.refresh?.invoke()
+    }
+
     fun expandedChange(status: Pair<Status, StatusViewData.Concrete>, expanded: Boolean) {
         val idx = loadedStatuses.indexOf(status)
         if (idx >= 0) {
             val newPair = Pair(status.first, StatusViewData.Builder(status.second).setIsExpanded(expanded).createStatusViewData())
             loadedStatuses[idx] = newPair
             repoResultStatus.value?.refresh?.invoke()
+        }
+    }
+
+    fun expandedNotestockChange(status: Pair<Status, StatusViewData.Concrete>, expanded: Boolean) {
+        val idx = loadedNotestockStatuses.indexOf(status)
+        if (idx >= 0) {
+            val newPair = Pair(status.first, StatusViewData.Builder(status.second).setIsExpanded(expanded).createStatusViewData())
+            loadedNotestockStatuses[idx] = newPair
+            repoResultNotestock.value?.refresh?.invoke()
         }
     }
 
@@ -134,12 +166,30 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun contentHiddenNotestockChange(status: Pair<Status, StatusViewData.Concrete>, isShowing: Boolean) {
+        val idx = loadedNotestockStatuses.indexOf(status)
+        if (idx >= 0) {
+            val newPair = Pair(status.first, StatusViewData.Builder(status.second).setIsShowingSensitiveContent(isShowing).createStatusViewData())
+            loadedNotestockStatuses[idx] = newPair
+            repoResultNotestock.value?.refresh?.invoke()
+        }
+    }
+
     fun collapsedChange(status: Pair<Status, StatusViewData.Concrete>, collapsed: Boolean) {
         val idx = loadedStatuses.indexOf(status)
         if (idx >= 0) {
             val newPair = Pair(status.first, StatusViewData.Builder(status.second).setCollapsed(collapsed).createStatusViewData())
             loadedStatuses[idx] = newPair
             repoResultStatus.value?.refresh?.invoke()
+        }
+    }
+
+    fun collapsedNotestockChange(status: Pair<Status, StatusViewData.Concrete>, collapsed: Boolean) {
+        val idx = loadedNotestockStatuses.indexOf(status)
+        if (idx >= 0) {
+            val newPair = Pair(status.first, StatusViewData.Builder(status.second).setCollapsed(collapsed).createStatusViewData())
+            loadedNotestockStatuses[idx] = newPair
+            repoResultNotestock.value?.refresh?.invoke()
         }
     }
 

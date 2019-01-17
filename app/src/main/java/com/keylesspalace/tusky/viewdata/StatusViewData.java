@@ -94,6 +94,7 @@ public abstract class StatusViewData {
         private final boolean isBot;
 
         private final Status quote;
+        private final boolean isNotestock;
 
         public Concrete(String id, Spanned content, boolean reblogged, boolean favourited,
                         @Nullable String spoilerText, Status.Visibility visibility, List<Attachment> attachments,
@@ -102,7 +103,7 @@ public abstract class StatusViewData {
                         Date createdAt, int reblogsCount, int favouritesCount, @Nullable String inReplyToId,
                         @Nullable Status.Mention[] mentions, String senderId, boolean rebloggingEnabled,
                         Status.Application application, List<Emoji> statusEmojis, List<Emoji> accountEmojis, @Nullable Card card,
-                        boolean isCollapsible, boolean isCollapsed, @Nullable PollViewData poll, boolean isBot, Status quote) {
+                        boolean isCollapsible, boolean isCollapsed, @Nullable PollViewData poll, boolean isBot, Status quote, boolean isNotestock) {
 
             this.id = id;
             if (Build.VERSION.SDK_INT == 23) {
@@ -142,6 +143,7 @@ public abstract class StatusViewData {
             this.poll = poll;
             this.isBot = isBot;
             this.quote = quote;
+            this.isNotestock = isNotestock;
         }
 
         public String getId() {
@@ -166,6 +168,9 @@ public abstract class StatusViewData {
         }
 
         public Status.Visibility getVisibility() {
+            if (visibility == null) {
+                return Status.Visibility.UNKNOWN;
+            }
             return visibility;
         }
 
@@ -283,6 +288,10 @@ public abstract class StatusViewData {
 
         public Status getQuote() {
             return quote;
+        }
+
+        public boolean isNotestock() {
+            return isNotestock;
         }
 
         @Override public long getViewDataId() {
@@ -430,6 +439,7 @@ public abstract class StatusViewData {
         private PollViewData poll;
         private boolean isBot;
         private Status quote;
+        private boolean isNotestock;
 
         public Builder() {
         }
@@ -466,6 +476,7 @@ public abstract class StatusViewData {
             poll = viewData.poll;
             isBot = viewData.isBot();
             quote = viewData.getQuote();
+            isNotestock = viewData.isNotestock;
         }
 
         public Builder setId(String id) {
@@ -499,6 +510,10 @@ public abstract class StatusViewData {
         }
 
         public Builder setAttachments(List<Attachment> attachments) {
+            if (attachments == null) {
+                this.attachments = new ArrayList<>();
+                return this;
+            }
             this.attachments = attachments;
             return this;
         }
@@ -637,6 +652,11 @@ public abstract class StatusViewData {
             return this;
         }
 
+        public Builder setIsNotestock(boolean isNotestock){
+            this.isNotestock = isNotestock;
+            return this;
+        }
+
         public StatusViewData.Concrete createStatusViewData() {
             if (this.statusEmojis == null) statusEmojis = Collections.emptyList();
             if (this.accountEmojis == null) accountEmojis = Collections.emptyList();
@@ -646,7 +666,7 @@ public abstract class StatusViewData {
                     attachments, rebloggedByUsername, rebloggedAvatar, isSensitive, isExpanded,
                     isShowingContent, userFullName, nickname, avatar, createdAt, reblogsCount,
                     favouritesCount, inReplyToId, mentions, senderId, rebloggingEnabled, application,
-                    statusEmojis, accountEmojis, card, isCollapsible, isCollapsed, poll, isBot, quote);
+                    statusEmojis, accountEmojis, card, isCollapsible, isCollapsed, poll, isBot, quote, isNotestock);
         }
     }
 }

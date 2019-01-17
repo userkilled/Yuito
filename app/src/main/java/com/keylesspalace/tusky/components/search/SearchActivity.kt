@@ -59,6 +59,7 @@ class SearchActivity : BottomSheetActivity(), SearchView.OnQueryTextListener, Ha
     private fun setupPages() {
         pages.adapter = SearchPagerAdapter(this, supportFragmentManager)
         tabs.setupWithViewPager(pages)
+        pages.offscreenPageLimit = 4
     }
 
     override fun onNewIntent(intent: Intent) {

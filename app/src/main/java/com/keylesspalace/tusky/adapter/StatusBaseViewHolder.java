@@ -606,15 +606,24 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         sensitiveMediaShow.setVisibility(View.GONE);
     }
 
-    protected void setupButtons(final StatusActionListener listener, final String accountId) {
+    protected void setupButtons(final StatusActionListener listener, final String accountId,
+                                final boolean isNotestock, final String acct) {
 
-        avatar.setOnClickListener(v -> listener.onViewAccount(accountId));
+        avatar.setOnClickListener(v -> {
+            if (isNotestock) {
+                listener.onViewUrl(acct, acct);
+            } else {
+                listener.onViewAccount(accountId);
+            }
+        });
         replyButton.setOnClickListener(v -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 listener.onReply(position);
             }
         });
+        replyButton.setEnabled(!isNotestock);
+        replyButton.setClickable(!isNotestock);
         if (reblogButton != null) {
             reblogButton.setEventListener(new SparkEventListener() {
                 @Override
@@ -653,6 +662,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             }
         });
 
+        favouriteButton.setEnabled(!isNotestock);
+        favouriteButton.setClickable(!isNotestock);
+
         if (quoteButton != null) {
             quoteButton.setOnClickListener(view -> {
                 int position = getAdapterPosition();
@@ -668,6 +680,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 listener.onMore(v, position);
             }
         });
+        moreButton.setEnabled(!isNotestock);
+        moreButton.setClickable(!isNotestock);
         /* Even though the content TextView is a child of the container, it won't respond to clicks
          * if it contains URLSpans without also setting its listener. The surrounding spans will
          * just eat the clicks instead of deferring to the parent listener, but WILL respond to a
@@ -725,9 +739,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 hideSensitiveMediaWarning();
             }
 
-            setupButtons(listener, status.getSenderId());
-            setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
-            setQuoteEnabled(status.getRebloggingEnabled(), status.getVisibility());
+            setupButtons(listener, status.getSenderId(), status.isNotestock(), status.getNickname());
+            setRebloggingEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
+            setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
 
             setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), listener,
                     status.getQuote() != null);
@@ -818,6 +832,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private static CharSequence getVisibilityDescription(Context context, Status.Visibility visibility) {
 
         int resource;
+        if (visibility == null) {
+            return "";
+        }
         switch (visibility) {
             case PUBLIC:
                 resource = R.string.description_visiblity_public;

@@ -26,6 +26,7 @@ import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.json.SpannedTypeAdapter
 import com.keylesspalace.tusky.network.InstanceSwitchAuthInterceptor
 import com.keylesspalace.tusky.network.MastodonApi
+import com.keylesspalace.tusky.network.NotestockApi
 import com.keylesspalace.tusky.util.OkHttpUtils
 import dagger.Module
 import dagger.Provides
@@ -104,4 +105,27 @@ class NetworkModule {
     @Provides
     @Singleton
     fun providesApi(retrofit: Retrofit): MastodonApi = retrofit.create(MastodonApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providesNotestockApi(context: Context,
+                             converters: @JvmSuppressWildcards Set<Converter.Factory>): NotestockApi {
+        val httpClient = OkHttpUtils.getCompatibleClientBuilder(context)
+                .apply {
+                    if (BuildConfig.DEBUG) {
+                        addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+                    }
+                }
+                .build()
+        val retrofit = Retrofit.Builder().baseUrl("https://notestock.osa-p.net")
+                .client(httpClient)
+                .let { builder ->
+                    converters.fold(builder) { b, c ->
+                        b.addConverterFactory(c)
+                    }
+                    builder.addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
+                }
+                .build()
+        return retrofit.create(NotestockApi::class.java)
+    }
 }

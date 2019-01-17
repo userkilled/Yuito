@@ -105,7 +105,7 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
             hideSensitiveMediaWarning();
         }
 
-        setupButtons(listener, account.getId());
+        setupButtons(listener, account.getId(), false, account.getUsername());
 
         setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getEmojis(), listener, false);
 

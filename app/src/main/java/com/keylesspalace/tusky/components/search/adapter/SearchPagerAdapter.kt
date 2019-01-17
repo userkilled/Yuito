@@ -20,9 +20,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import com.keylesspalace.tusky.R
-import com.keylesspalace.tusky.components.search.SearchType
 import com.keylesspalace.tusky.components.search.fragments.SearchAccountsFragment
 import com.keylesspalace.tusky.components.search.fragments.SearchHashtagsFragment
+import com.keylesspalace.tusky.components.search.fragments.SearchNotestockFragment
 import com.keylesspalace.tusky.components.search.fragments.SearchStatusesFragment
 
 class SearchPagerAdapter(private val context: Context, manager: FragmentManager) : FragmentPagerAdapter(manager) {
@@ -31,6 +31,7 @@ class SearchPagerAdapter(private val context: Context, manager: FragmentManager)
             0 -> SearchStatusesFragment.newInstance()
             1 -> SearchAccountsFragment.newInstance()
             2 -> SearchHashtagsFragment.newInstance()
+            3 -> SearchNotestockFragment.newInstance()
             else -> throw IllegalArgumentException("Unknown page index: $position")
         }
     }
@@ -40,9 +41,10 @@ class SearchPagerAdapter(private val context: Context, manager: FragmentManager)
             0 -> context.getString(R.string.title_statuses)
             1 -> context.getString(R.string.title_accounts)
             2 -> context.getString(R.string.title_hashtags_dialog)
+            3 -> context.getString(R.string.title_notestock)
             else -> throw IllegalArgumentException("Unknown page index: $position")
         }
     }
 
-    override fun getCount(): Int = 3
+    override fun getCount(): Int = 4
 }

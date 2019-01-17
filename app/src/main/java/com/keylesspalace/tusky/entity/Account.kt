@@ -30,7 +30,7 @@ import java.util.*
 data class Account(
         val id: String,
         @SerializedName("username") val localUsername: String,
-        @SerializedName("acct") val username: String,
+        @SerializedName("acct", alternate = ["subject"]) val username: String,
         @SerializedName("display_name") val displayName: String,
         val note: @WriteWith<SpannedParceler>() Spanned,
         val url: String,
@@ -44,12 +44,13 @@ data class Account(
         val bot: Boolean = false,
         val emojis: List<Emoji>? = emptyList(),  // nullable for backward compatibility
         val fields: List<Field>? = emptyList(),  //nullable for backward compatibility
-        val moved: Account? = null
+        val moved: Account? = null,
+        @SerializedName("name") val notestockUsername: String? = null
 
 ) : Parcelable {
 
     val name: String
-        get() = if (displayName.isEmpty()) {
+        get() = notestockUsername ?: if (displayName.isEmpty()) {
             localUsername
         } else displayName
 

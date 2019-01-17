@@ -65,6 +65,7 @@ public final class ViewDataUtils {
                 .setCard(visibleStatus.getCard())
                 .setIsBot(visibleStatus.getAccount().getBot())
                 .setQuote(visibleStatus.getQuote())
+                .setIsNotestock(visibleStatus.isNotestock())
                 .createStatusViewData();
     }
 
