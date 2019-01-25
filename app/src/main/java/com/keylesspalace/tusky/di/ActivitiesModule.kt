@@ -100,5 +100,8 @@ abstract class ActivitiesModule {
     abstract fun contributesInstanceListActivity(): InstanceListActivity
 
     @ContributesAndroidInjector
+    abstract fun contributesScheduledTootActivity(): ScheduledTootActivity
+
+    @ContributesAndroidInjector
     abstract fun contributesAccessTokenLoginActivity(): AccessTokenLoginActivity
 }
