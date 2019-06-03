@@ -616,6 +616,15 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 listener.onViewAccount(accountId);
             }
         });
+        View.OnClickListener viewAccountListener = v -> {
+            if (isNotestock) {
+                listener.onViewUrl(acct, acct);
+            } else {
+                listener.onViewAccount(accountId);
+            }
+        };
+        displayName.setOnClickListener(viewAccountListener);
+        username.setOnClickListener(viewAccountListener);
         replyButton.setOnClickListener(v -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
