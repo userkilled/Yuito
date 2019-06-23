@@ -33,6 +33,7 @@ import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
+import net.accelf.yuito.HttpToastInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
@@ -79,6 +80,7 @@ class NetworkModule {
                     addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
                     if (BuildConfig.DEBUG) {
                         addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+                        addInterceptor(HttpToastInterceptor(context))
                     }
                 }
                 .build()
@@ -114,6 +116,7 @@ class NetworkModule {
                 .apply {
                     if (BuildConfig.DEBUG) {
                         addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+                        addInterceptor(HttpToastInterceptor(context))
                     }
                 }
                 .build()
