@@ -224,8 +224,8 @@
     <string name="notification_title_summary">%d nouvelles interactions</string>
     <string name="description_account_locked">Compte verrouillé</string>
     <string name="about_title_activity">À propos</string>
-    <string name="about_tusky_version">Tusky %s</string>
-    <string name="about_tusky_license">Tusky est une application libre et open source.
+    <string name="about_tusky_version">Yuito %s</string>
+    <string name="about_tusky_license">Yuito est une application libre et open source.
         Elle est publiée sous licence publique générale GNU version 3.
         Vous pouvez consulter la licence ici : https://www.gnu.org/licenses/gpl-3.0.fr.html</string>
     <!-- note to translators:
@@ -235,12 +235,12 @@
          * the url can be changed to link to the localized version of the license.
     -->
     <string name="about_project_site">      Site du projet :\n
-      https://tusky.app
+      https://accelf.net/yuito
     </string>
     <string name="about_bug_feature_request_site">      Rapports d’anomalies &amp; demandes de fonctionnalités :\n
-      https://github.com/tuskyapp/Tusky/issues
+      https://github.com/accelforce/Yuito/issues
     </string>
-    <string name="about_tusky_account">Profil de Tusky</string>
+    <string name="about_tusky_account">Profil de Yuito</string>
     <string name="status_share_content">Partager le contenu du pouet</string>
     <string name="status_share_link">Partager le lien du pouet</string>
     <string name="status_media_images">Images</string>
@@ -309,7 +309,7 @@
     <string name="expand_collapse_all_statuses">Déplier/replier tout les statuts</string>
     <string name="action_open_toot">Ouvrir le pouet</string>
     <string name="restart_required">Un redémarrage de l’application est nécessaire</string>
-    <string name="restart_emoji">Vous devrez redémarrer Tusky pour appliquer ces modifications</string>
+    <string name="restart_emoji">Vous devrez redémarrer Yuito pour appliquer ces modifications</string>
     <string name="later">Plus tard</string>
     <string name="restart">Redémarrer</string>
     <string name="caption_systememoji">Votre jeu d’émojis par défaut</string>
@@ -320,7 +320,7 @@
     <string name="account_moved_description">%1$s a déménagé vers :</string>
     <string name="reblog_private">Booster vers l’audience originale</string>
     <string name="unreblog_private">Ne plus booster</string>
-    <string name="license_description">Tusky contient du code et des ressources issus des projets open source suivants :</string>
+    <string name="license_description">Yuito contient du code et des ressources issus des projets open source suivants :</string>
     <string name="license_apache_2">Sous licence Apache (copie ci-dessous)</string>
     <string name="license_cc_by_4">CC-BY 4.0</string>
     <string name="license_cc_by_sa_4">CC-BY-SA 4.0</string>
