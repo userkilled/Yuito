@@ -453,6 +453,14 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
             drawer.addItem(debugItem);
         }
 
+        IDrawerItem exTextItem = new SecondaryDrawerItem()
+                .withIdentifier(219)
+                .withName("Yuito (by kyori19)")
+                .withDisabledTextColor(Color.YELLOW)
+                .withSelectable(false)
+                .withEnabled(false);
+        drawer.addItem(exTextItem);
+
         EmojiCompat.get().registerInitCallback(emojiInitCallback);
     }
 
