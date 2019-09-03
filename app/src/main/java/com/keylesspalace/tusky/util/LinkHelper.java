@@ -20,10 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsIntent;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -33,11 +29,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.LinkListener;
 
-import java.lang.CharSequence;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -69,7 +68,8 @@ public class LinkHelper {
      * @param listener to notify about particular spans that are clicked
      */
     public static void setClickableText(TextView view, Spanned content,
-            @Nullable Status.Mention[] mentions, final LinkListener listener) {
+            @Nullable Status.Mention[] mentions, final LinkListener listener,
+            boolean removeQuote) {
         SpannableStringBuilder builder = new SpannableStringBuilder(content);
         URLSpan[] urlSpans = content.getSpans(0, content.length(), URLSpan.class);
         for (URLSpan span : urlSpans) {
@@ -125,6 +125,13 @@ public class LinkHelper {
             if (end >= builder.length() ||
                     builder.subSequence(end, end + 1).toString().equals("\n")){
                 builder.insert(end, "\u200B");
+            }
+
+            if (start >= 13 && end < builder.length() && removeQuote) {
+                if (builder.subSequence(start - 13, start).toString().equals("\n~~~~~~~~~~\n[")
+                        && builder.subSequence(end, end + 1).toString().equals("]")) {
+                    builder.delete(start - 13, end + 1);
+                }
             }
         }
 

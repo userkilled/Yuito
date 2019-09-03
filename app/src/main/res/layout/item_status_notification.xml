@@ -137,6 +137,15 @@
             android:textSize="?attr/status_text_medium"
             android:visibility="gone"  />
 
+    <include
+        android:id="@+id/status_quote_inline_container"
+        layout="@layout/view_quote_inline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_toggle_notification_content"
+        android:layout_toEndOf="@id/notification_status_avatar"
+        android:layout_marginBottom="8dp" />
+
     <ImageView
         android:id="@+id/notification_status_avatar"
         android:layout_width="48dp"

@@ -43,7 +43,8 @@ data class Status(
         val application: Application?,
         var pinned: Boolean?,
         val poll: Poll?,
-        val card: Card?
+        val card: Card?,
+        val quote: Status?
 ) {
 
     val actionableId: String

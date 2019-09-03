@@ -129,6 +129,18 @@
         app:layout_constraintTop_toBottomOf="@+id/status_content_warning_button"
         tools:text="Status content. Can be pretty long. " />
 
+    <include
+        android:id="@+id/status_quote_inline_container"
+        layout="@layout/view_quote_inline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/status_content" />
+
     <LinearLayout
         android:id="@+id/card_view"
         android:layout_width="match_parent"
@@ -139,7 +151,7 @@
         android:foreground="?attr/selectableItemBackground"
         android:minHeight="80dp"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@+id/status_content"
+        app:layout_constraintTop_toBottomOf="@+id/status_quote_inline_container"
         tools:visibility="gone">
 
         <ImageView
@@ -539,7 +551,7 @@
         android:contentDescription="@string/action_favourite"
         android:importantForAccessibility="no"
         android:padding="4dp"
-        app:layout_constraintEnd_toStartOf="@id/status_more"
+        app:layout_constraintEnd_toStartOf="@id/status_quote"
         app:layout_constraintStart_toEndOf="@id/status_inset"
         app:layout_constraintTop_toTopOf="@id/status_inset"
         sparkbutton:activeImage="?attr/status_favourite_active_drawable"
@@ -547,6 +559,20 @@
         sparkbutton:inactiveImage="?attr/status_favourite_inactive_drawable"
         sparkbutton:primaryColor="@color/tusky_orange"
         sparkbutton:secondaryColor="@color/tusky_orange_light" />
+
+    <ImageButton
+        android:id="@+id/status_quote"
+        style="?attr/image_button_style"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="@string/action_quote"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/status_reply"
+        app:layout_constraintEnd_toStartOf="@id/status_more"
+        app:layout_constraintStart_toEndOf="@id/status_favourite"
+        app:layout_constraintTop_toTopOf="@id/status_reply"
+        app:srcCompat="@drawable/ic_quote_disabled_24dp" />
 
     <ImageButton
         android:id="@+id/status_more"
@@ -558,7 +584,7 @@
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="@id/status_reply"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/status_favourite"
+        app:layout_constraintStart_toEndOf="@id/status_quote"
         app:layout_constraintTop_toTopOf="@id/status_reply"
         app:srcCompat="@drawable/ic_more_horiz_24dp" />
 

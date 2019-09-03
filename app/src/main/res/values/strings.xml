@@ -51,6 +51,7 @@
     <string name="status_content_warning_show_less">Show Less</string>
     <string name="status_content_show_more">Expand</string>
     <string name="status_content_show_less">Collapse</string>
+    <string name="status_quote_media">This toot has %d media(s).</string>
 
     <string name="message_empty">Nothing here.</string>
     <string name="footer_empty">Nothing here. Pull down to refresh!</string>
@@ -124,6 +125,7 @@
     <string name="action_open_reblogger">Open boost author</string>
     <string name="action_open_reblogged_by">Show boosts</string>
     <string name="action_open_faved_by">Show favorites</string>
+    <string name="action_quote">Quote</string>
 
     <string name="title_hashtags_dialog">Hashtags</string>
     <string name="title_mentions_dialog">Mentions</string>
@@ -321,6 +323,7 @@
     <string name="pref_title_alway_open_spoiler">Always expand toots marked with content warnings</string>
     <string name="title_media">Media</string>
     <string name="replying_to">Replying to @%s</string>
+    <string name="quote_to">Quote : %s</string>
     <string name="load_more_placeholder_text">load more</string>
 
     <string name="pref_title_public_filter_keywords">Public timelines</string>

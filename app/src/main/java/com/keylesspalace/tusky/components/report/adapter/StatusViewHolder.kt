@@ -83,7 +83,8 @@ class StatusViewHolder(itemView: View,
                     viewState.isContentShow(status.id, status.sensitive), status.spoilerText)
 
             if (status.spoilerText.isBlank()) {
-                setTextVisible(true, status.content, status.mentions, status.emojis, adapterHandler)
+                setTextVisible(true, status.content, status.mentions, status.emojis, adapterHandler,
+                        status.quote != null)
                 itemView.statusContentWarningButton.hide()
                 itemView.statusContentWarningDescription.hide()
             } else {
@@ -96,10 +97,12 @@ class StatusViewHolder(itemView: View,
                     status()?.let { status ->
                         itemView.statusContentWarningDescription.invalidate()
                         viewState.setContentShow(status.id, isViewChecked)
-                        setTextVisible(isViewChecked, status.content, status.mentions, status.emojis, adapterHandler)
+                        setTextVisible(isViewChecked, status.content, status.mentions, status.emojis, adapterHandler,
+                                status.quote != null)
                     }
                 }
-                setTextVisible(viewState.isContentShow(status.id, true), status.content, status.mentions, status.emojis, adapterHandler)
+                setTextVisible(viewState.isContentShow(status.id, true), status.content, status.mentions, status.emojis, adapterHandler,
+                        status.quote != null)
             }
         }
     }
@@ -109,10 +112,11 @@ class StatusViewHolder(itemView: View,
                                content: Spanned,
                                mentions: Array<Status.Mention>?,
                                emojis: List<Emoji>,
-                               listener: LinkListener) {
+                               listener: LinkListener,
+                               removeQuote: Boolean) {
         if (expanded) {
             val emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, itemView.statusContent)
-            LinkHelper.setClickableText(itemView.statusContent, emojifiedText, mentions, listener)
+            LinkHelper.setClickableText(itemView.statusContent, emojifiedText, mentions, listener, removeQuote)
         } else {
             LinkHelper.setClickableMentions(itemView.statusContent, mentions, listener)
         }

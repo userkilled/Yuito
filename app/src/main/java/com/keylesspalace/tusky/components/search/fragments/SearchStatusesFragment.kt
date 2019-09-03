@@ -94,6 +94,12 @@ class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concre
         }
     }
 
+    override fun onQuote(position: Int) {
+        (adapter as? SearchStatusesAdapter)?.getItem(position)?.first?.let { status ->
+            quote(status)
+        }
+    }
+
     override fun onMore(view: View, position: Int) {
         (adapter as? SearchStatusesAdapter)?.getItem(position)?.first?.let {
             more(it, view, position)
@@ -198,6 +204,28 @@ class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concre
                 .replyingStatusContent(actionableStatus.content.toString())
                 .build(context)
         requireActivity().startActivity(intent)
+    }
+
+    private fun quote(status: Status) {
+        val id = status.actionableId
+        val actionableStatus = status.actionableStatus
+        val visibility = actionableStatus.visibility
+        val url = actionableStatus.url
+        val mentions = actionableStatus.mentions
+        val mentionedUsernames = LinkedHashSet<String>()
+        mentionedUsernames.add(actionableStatus.account.username)
+        val loggedInUsername = viewModel.activeAccount?.username
+        for ((_, _, username) in mentions) {
+            mentionedUsernames.add(username)
+        }
+        mentionedUsernames.remove(loggedInUsername)
+        val intent = ComposeActivity.IntentBuilder()
+                .quoteId(id)
+                .quoteUrl(url)
+                .replyVisibility(visibility)
+                .mentionedUsernames(mentionedUsernames)
+                .build(context)
+        startActivity(intent)
     }
 
     private fun more(status: Status, view: View, position: Int) {

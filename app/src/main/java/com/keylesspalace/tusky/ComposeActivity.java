@@ -187,6 +187,8 @@ public final class ComposeActivity
     private static final String SAVED_JSON_DESCRIPTIONS_EXTRA = "saved_json_descriptions";
     private static final String TOOT_VISIBILITY_EXTRA = "toot_visibility";
     private static final String IN_REPLY_TO_ID_EXTRA = "in_reply_to_id";
+    private static final String QUOTE_ID_EXTRA = "quote_id";
+    private static final String QUOTE_URL_EXTRA = "quote_url";
     private static final String REPLY_VISIBILITY_EXTRA = "reply_visibility";
     private static final String CONTENT_WARNING_EXTRA = "content_warning";
     private static final String MENTIONED_USERNAMES_EXTRA = "mentioned_usernames";
@@ -201,6 +203,7 @@ public final class ComposeActivity
     private static final int MEDIA_DESCRIPTION_CHARACTER_LIMIT = 420;
 
     private static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app"};
+    private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
 
     @Inject
     public MastodonApi mastodonApi;
@@ -235,6 +238,8 @@ public final class ComposeActivity
     // this only exists when a status is trying to be sent, but uploads are still occurring
     private ProgressDialog finishingUploadDialog;
     private String inReplyToId;
+    private String quoteId;
+    private String quoteUrl;
     private List<QueuedMedia> mediaQueued = new ArrayList<>();
     private CountUpDownLatch waitForMediaLatch;
     private NewPoll poll;
@@ -270,6 +275,7 @@ public final class ComposeActivity
 
         replyTextView = findViewById(R.id.composeReplyView);
         replyContentTextView = findViewById(R.id.composeReplyContentView);
+        TextView quoteTextView = findViewById(R.id.composeQuoteView);
         textEditor = findViewById(R.id.composeEditField);
         mediaPreviewBar = findViewById(R.id.compose_media_preview_bar);
         contentWarningBar = findViewById(R.id.composeContentWarningBar);
@@ -441,6 +447,8 @@ public final class ComposeActivity
         ArrayList<String> loadedDraftMediaDescriptions = null;
         ArrayList<Attachment> mediaAttachments = null;
         inReplyToId = null;
+        quoteId = null;
+        quoteUrl = null;
         if (intent != null) {
 
             if (startingVisibility == Status.Visibility.UNKNOWN) {
@@ -452,6 +460,14 @@ public final class ComposeActivity
             }
 
             inReplyToId = intent.getStringExtra(IN_REPLY_TO_ID_EXTRA);
+
+            quoteId = intent.getStringExtra(QUOTE_ID_EXTRA);
+
+            if (intent.hasExtra(QUOTE_URL_EXTRA)) {
+                quoteTextView.setVisibility(View.VISIBLE);
+                quoteUrl = intent.getStringExtra(QUOTE_URL_EXTRA);
+                quoteTextView.setText(String.format(getString(R.string.quote_to), quoteUrl));
+            }
 
             mentionedUsernames = intent.getStringArrayExtra(MENTIONED_USERNAMES_EXTRA);
 
@@ -1086,7 +1102,7 @@ public final class ComposeActivity
     }
 
     private void sendStatus(String content, Status.Visibility visibility, boolean sensitive,
-                            String spoilerText) {
+                            String spoilerText, @Nullable String quoteId, @Nullable String quoteUrl) {
         ArrayList<String> mediaIds = new ArrayList<>();
         ArrayList<Uri> mediaUris = new ArrayList<>();
         ArrayList<String> mediaDescriptions = new ArrayList<>();
@@ -1096,12 +1112,22 @@ public final class ComposeActivity
             mediaDescriptions.add(item.description);
         }
 
-        Intent sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
+        Intent sendIntent;
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+
+        if (activeAccount != null
+                && !Arrays.asList(CAN_USE_QUOTE_ID).contains(activeAccount.getDomain())
+                && quoteUrl != null) {
+            content += "\n~~~~~~~~~~\n[" + quoteUrl + "]";
+            quoteId = null;
+        }
+
+        sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
                 visibility, !mediaUris.isEmpty() && sensitive, mediaIds, mediaUris, mediaDescriptions, inReplyToId, poll,
                 getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
                 getIntent().getStringExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA),
                 getIntent().getStringExtra(SAVED_JSON_URLS_EXTRA),
-                accountManager.getActiveAccount(), savedTootUid);
+                quoteId, accountManager.getActiveAccount(), savedTootUid);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(sendIntent);
@@ -1169,7 +1195,7 @@ public final class ComposeActivity
             textEditor.setError(getString(R.string.error_empty));
             enableButtons();
         } else if (characterCount <= maximumTootCharacters) {
-            sendStatus(contentText, visibility, sensitive, spoilerText);
+            sendStatus(contentText, visibility, sensitive, spoilerText, quoteId, quoteUrl);
 
         } else {
             textEditor.setError(getString(R.string.error_compose_character_limit));
@@ -2074,6 +2100,10 @@ public final class ComposeActivity
         @Nullable
         private String inReplyToId;
         @Nullable
+        private String quoteId;
+        @Nullable
+        private String quoteUrl;
+        @Nullable
         private Status.Visibility replyVisibility;
         @Nullable
         private Status.Visibility visibility;
@@ -2122,6 +2152,16 @@ public final class ComposeActivity
 
         public IntentBuilder inReplyToId(String inReplyToId) {
             this.inReplyToId = inReplyToId;
+            return this;
+        }
+
+        public IntentBuilder quoteId(String quoteId) {
+            this.quoteId = quoteId;
+            return this;
+        }
+
+        public IntentBuilder quoteUrl(String quoteUrl) {
+            this.quoteUrl = quoteUrl;
             return this;
         }
 
@@ -2181,6 +2221,12 @@ public final class ComposeActivity
             }
             if (inReplyToId != null) {
                 intent.putExtra(IN_REPLY_TO_ID_EXTRA, inReplyToId);
+            }
+            if (quoteId != null) {
+                intent.putExtra(QUOTE_ID_EXTRA, quoteId);
+            }
+            if (quoteUrl != null) {
+                intent.putExtra(QUOTE_URL_EXTRA, quoteUrl);
             }
             if (replyVisibility != null) {
                 intent.putExtra(REPLY_VISIBILITY_EXTRA, replyVisibility.getNum());

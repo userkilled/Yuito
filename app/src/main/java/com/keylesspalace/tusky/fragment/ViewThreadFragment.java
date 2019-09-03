@@ -257,6 +257,11 @@ public final class ViewThreadFragment extends SFragment implements
                 );
     }
 
+    @Override
+    public void onQuote(int position) {
+        super.quote(statuses.get(position));
+    }
+
     private void updateStatus(int position, Status status) {
         if (position >= 0 && position < statuses.size()) {
 

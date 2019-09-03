@@ -156,7 +156,8 @@ data class ConversationStatusEntity(
                 application = null,
                 pinned = false,
                 poll = poll,
-                card = null)
+                card = null,
+                quote = null)
     }
 }
 

@@ -1,6 +1,8 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -16,6 +18,7 @@ import android.widget.ToggleButton;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,6 +44,8 @@ import com.keylesspalace.tusky.viewdata.PollViewDataKt;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 import com.mikepenz.iconics.utils.Utils;
 
+import net.accelf.yuito.QuoteInlineHelper;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,6 +67,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private ImageButton replyButton;
     private SparkButton reblogButton;
     private SparkButton favouriteButton;
+    private ImageButton quoteButton;
     private ImageButton moreButton;
     protected MediaPreviewImageView[] mediaPreviews;
     private ImageView[] mediaOverlays;
@@ -75,6 +81,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     public TextView timestampInfo;
     public TextView content;
     public TextView contentWarningDescription;
+
+    private ConstraintLayout quoteContainer;
 
     private RecyclerView pollOptions;
     private TextView pollDescription;
@@ -105,6 +113,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         replyButton = itemView.findViewById(R.id.status_reply);
         reblogButton = itemView.findViewById(R.id.status_inset);
         favouriteButton = itemView.findViewById(R.id.status_favourite);
+        quoteButton = itemView.findViewById(R.id.status_quote);
         moreButton = itemView.findViewById(R.id.status_more);
 
         mediaPreviews = new MediaPreviewImageView[]{
@@ -130,6 +139,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         contentWarningDescription = itemView.findViewById(R.id.status_content_warning_description);
         contentWarningButton = itemView.findViewById(R.id.status_content_warning_button);
         avatarInset = itemView.findViewById(R.id.status_avatar_inset);
+
+        quoteContainer = itemView.findViewById(R.id.status_quote_inline_container);
 
         pollOptions = itemView.findViewById(R.id.status_poll_options);
         pollDescription = itemView.findViewById(R.id.status_poll_description);
@@ -174,11 +185,12 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                         @Nullable String spoilerText,
                                         @Nullable Status.Mention[] mentions,
                                         @NonNull List<Emoji> emojis,
-                                        final StatusActionListener listener) {
+                                        final StatusActionListener listener,
+                                        boolean removeQuote) {
         if (TextUtils.isEmpty(spoilerText)) {
             contentWarningDescription.setVisibility(View.GONE);
             contentWarningButton.setVisibility(View.GONE);
-            this.setTextVisible(true, content, mentions, emojis, listener);
+            this.setTextVisible(true, content, mentions, emojis, listener, removeQuote);
         } else {
             CharSequence emojiSpoiler = CustomEmojiHelper.emojifyString(spoilerText, emojis, contentWarningDescription);
             contentWarningDescription.setText(emojiSpoiler);
@@ -189,9 +201,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 if (getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onExpandedChange(isChecked, getAdapterPosition());
                 }
-                this.setTextVisible(isChecked, content, mentions, emojis, listener);
+                this.setTextVisible(isChecked, content, mentions, emojis, listener, removeQuote);
             });
-            this.setTextVisible(expanded, content, mentions, emojis, listener);
+            this.setTextVisible(expanded, content, mentions, emojis, listener, removeQuote);
         }
     }
 
@@ -199,10 +211,11 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                 Spanned content,
                                 Status.Mention[] mentions,
                                 List<Emoji> emojis,
-                                final StatusActionListener listener) {
+                                final StatusActionListener listener,
+                                boolean removeQuote) {
         if (expanded) {
             Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, this.content);
-            LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener);
+            LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
         } else {
             LinkHelper.setClickableMentions(this.content, mentions, listener);
         }
@@ -334,8 +347,35 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
+    private void setQuoteEnabled(boolean enabled, Status.Visibility visibility) {
+        quoteButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.UNLEAKABLE);
+
+        if (enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.UNLEAKABLE) {
+            int activeId;
+            activeId = ThemeUtils.getDrawableId(quoteButton.getContext(),
+                    R.attr.status_quote_drawable, R.drawable.ic_quote_24dp);
+            quoteButton.setImageResource(activeId);
+        } else {
+            Resources res = quoteButton.getContext().getResources();
+            Drawable disableIcon = res.getDrawable(R.drawable.ic_quote_disabled_24dp);
+            if (disableIcon != null) {
+                disableIcon.setColorFilter(res.getColor(R.color.status_reblog_button_disabled_dark), PorterDuff.Mode.DST_IN);
+            }
+            quoteButton.setImageDrawable(disableIcon);
+        }
+    }
+
     protected void setFavourited(boolean favourited) {
         favouriteButton.setChecked(favourited);
+    }
+
+    private void setQuoteContainer(Status status, final StatusActionListener listener) {
+        if (status != null) {
+            quoteContainer.setVisibility(View.VISIBLE);
+            new QuoteInlineHelper(status, quoteContainer, listener).setupQuoteContainer();
+        } else {
+            quoteContainer.setVisibility(View.GONE);
+        }
     }
 
     private void loadImage(MediaPreviewImageView imageView, String previewUrl, String description,
@@ -568,6 +608,16 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             public void onEventAnimationStart(ImageView button, boolean buttonState) {
             }
         });
+
+        if (quoteButton != null) {
+            quoteButton.setOnClickListener(view -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onQuote(position);
+                }
+            });
+        }
+
         moreButton.setOnClickListener(v -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
@@ -607,6 +657,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setAvatar(status.getAvatar(), status.getRebloggedAvatar(), status.isBot(), showBotOverlay, animateAvatar);
             setReblogged(status.isReblogged());
             setFavourited(status.isFavourited());
+            setQuoteContainer(status.getQuote(), listener);
             List<Attachment> attachments = status.getAttachments();
             boolean sensitive = status.isSensitive();
             if (mediaPreviewEnabled) {
@@ -631,8 +682,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
             setupButtons(listener, status.getSenderId());
             setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
+            setQuoteEnabled(status.getRebloggingEnabled(), status.getVisibility());
 
-            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), listener);
+            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), listener,
+                    status.getQuote() != null);
 
             setDescriptionForStatus(status);
 

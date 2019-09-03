@@ -33,10 +33,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.BidiFormatter;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.Notification;
+import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.LinkListener;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
@@ -48,16 +56,12 @@ import com.keylesspalace.tusky.viewdata.NotificationViewData;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 import com.mikepenz.iconics.utils.Utils;
 
+import net.accelf.yuito.QuoteInlineHelper;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.text.BidiFormatter;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class NotificationsAdapter extends RecyclerView.Adapter {
 
@@ -352,6 +356,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         private final TextView contentWarningDescriptionTextView;
         private final ToggleButton contentWarningButton;
         private final ToggleButton contentCollapseButton; // TODO: This code SHOULD be based on StatusBaseViewHolder
+        private ConstraintLayout quoteContainer;
 
         private String accountId;
         private String notificationId;
@@ -376,6 +381,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             contentWarningDescriptionTextView = itemView.findViewById(R.id.notification_content_warning_description);
             contentWarningButton = itemView.findViewById(R.id.notification_content_warning_button);
             contentCollapseButton = itemView.findViewById(R.id.button_toggle_notification_content);
+
+            quoteContainer = itemView.findViewById(R.id.status_quote_inline_container);
 
             int darkerFilter = Color.rgb(123, 123, 123);
             statusAvatar.setColorFilter(darkerFilter, PorterDuff.Mode.MULTIPLY);
@@ -520,6 +527,15 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                     notificationAvatar, notificationAvatarRadius, animateAvatar);
         }
 
+        private void setQuoteContainer(Status status, final LinkListener listener) {
+            if (status != null) {
+                quoteContainer.setVisibility(View.VISIBLE);
+                new QuoteInlineHelper(status, quoteContainer, listener).setupQuoteContainer();
+            } else {
+                quoteContainer.setVisibility(View.GONE);
+            }
+        }
+
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
@@ -570,11 +586,14 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
 
             Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, statusContent);
-            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener);
+            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener,
+                    notificationViewData.getStatusViewData().getQuote() != null);
 
             Spanned emojifiedContentWarning =
                     CustomEmojiHelper.emojifyString(statusViewData.getSpoilerText(), statusViewData.getStatusEmojis(), contentWarningDescriptionTextView);
             contentWarningDescriptionTextView.setText(emojifiedContentWarning);
+
+            setQuoteContainer(statusViewData.getQuote(), listener);
         }
 
         @Override

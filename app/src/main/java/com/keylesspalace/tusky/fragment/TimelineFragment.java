@@ -631,6 +631,11 @@ public class TimelineFragment extends SFragment implements
         updateAdapter();
     }
 
+    @Override
+    public void onQuote(int position) {
+        super.quote(statuses.get(position).asRight());
+    }
+
     public void onVoteInPoll(int position, @NonNull List<Integer> choices) {
 
         final Status status = statuses.get(position).asRight();

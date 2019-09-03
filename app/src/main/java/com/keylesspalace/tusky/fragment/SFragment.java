@@ -163,6 +163,35 @@ public abstract class SFragment extends BaseFragment implements Injectable {
         getActivity().startActivity(intent);
     }
 
+    protected void quote(Status status) {
+        String id = status.getActionableId();
+        Status actionableStatus = status.getActionableStatus();
+        Status.Visibility visibility = actionableStatus.getVisibility();
+        String url = actionableStatus.getUrl();
+        Status.Mention[] mentions = actionableStatus.getMentions();
+        Set<String> mentionedUsernames = new LinkedHashSet<>();
+        mentionedUsernames.add(actionableStatus.getAccount().getUsername());
+        String loggedInUsername = null;
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if(activeAccount != null) {
+            loggedInUsername = activeAccount.getUsername();
+        }
+        for (Status.Mention mention : mentions) {
+            mentionedUsernames.add(mention.getUsername());
+        }
+        mentionedUsernames.remove(loggedInUsername);
+        if (status.getReblog() != null) {
+            url = status.getReblog().getUrl();
+        }
+        Intent intent = new ComposeActivity.IntentBuilder()
+                .quoteId(id)
+                .quoteUrl(url)
+                .replyVisibility(visibility)
+                .mentionedUsernames(mentionedUsernames)
+                .build(getContext());
+        startActivity(intent);
+    }
+
     protected void more(@NonNull final Status status, View view, final int position) {
         final String id = status.getActionableId();
         final String accountId = status.getActionableStatus().getAccount().getId();

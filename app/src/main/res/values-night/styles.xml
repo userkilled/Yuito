@@ -37,6 +37,8 @@
         <item name="status_reblog_direct_drawable">@drawable/reblog_direct_dark</item>
         <item name="status_favourite_active_drawable">@drawable/favourite_active_dark</item>
         <item name="status_favourite_inactive_drawable">@drawable/favourite_inactive_dark</item>
+        <item name="status_quote_drawable">@drawable/ic_quote_24dp</item>
+        <item name="status_quote_disabled_drawable">@drawable/ic_quote_disabled_24dp</item>
         <item name="content_warning_button">@drawable/toggle_small</item>
         <item name="sensitive_media_warning_background_color">@color/color_background_dark</item>
         <item name="media_preview_unloaded_drawable">@drawable/media_preview_unloaded_dark</item>

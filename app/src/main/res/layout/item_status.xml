@@ -177,6 +177,18 @@
         app:layout_constraintTop_toBottomOf="@id/status_content"
         tools:visibility="visible" />
 
+    <include
+        android:id="@+id/status_quote_inline_container"
+        layout="@layout/view_quote_inline"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/status_display_name"
+        app:layout_constraintTop_toBottomOf="@id/button_toggle_content" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/status_media_preview_container"
         android:layout_width="0dp"
@@ -185,7 +197,7 @@
         android:importantForAccessibility="noHideDescendants"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/status_display_name"
-        app:layout_constraintTop_toBottomOf="@id/button_toggle_content"
+        app:layout_constraintTop_toBottomOf="@id/status_quote_inline_container"
         tools:visibility="gone">
 
         <com.keylesspalace.tusky.view.MediaPreviewImageView
@@ -449,7 +461,7 @@
         android:contentDescription="@string/action_favourite"
         android:importantForAccessibility="no"
         android:padding="4dp"
-        app:layout_constraintEnd_toStartOf="@id/status_more"
+        app:layout_constraintEnd_toStartOf="@id/status_quote"
         app:layout_constraintStart_toEndOf="@id/status_inset"
         app:layout_constraintTop_toTopOf="@id/status_inset"
         sparkbutton:activeImage="?attr/status_favourite_active_drawable"
@@ -457,6 +469,21 @@
         sparkbutton:inactiveImage="?attr/status_favourite_inactive_drawable"
         sparkbutton:primaryColor="@color/tusky_orange"
         sparkbutton:secondaryColor="@color/tusky_orange_light" />
+
+    <ImageButton
+        android:id="@+id/status_quote"
+        style="?attr/image_button_style"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="4dp"
+        android:contentDescription="@string/action_quote"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/status_reply"
+        app:layout_constraintEnd_toStartOf="@id/status_more"
+        app:layout_constraintStart_toEndOf="@id/status_favourite"
+        app:layout_constraintTop_toTopOf="@id/status_reply"
+        app:srcCompat="@drawable/ic_quote_disabled_24dp" />
 
     <ImageButton
         android:id="@+id/status_more"
@@ -469,7 +496,7 @@
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="@id/status_reply"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/status_favourite"
+        app:layout_constraintStart_toEndOf="@id/status_quote"
         app:layout_constraintTop_toTopOf="@id/status_reply"
         app:srcCompat="@drawable/ic_more_horiz_24dp" />
 

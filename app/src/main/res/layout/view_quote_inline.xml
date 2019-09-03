@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/quote_inline_frame"
+    android:gravity="center_vertical"
+    android:paddingStart="8dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="8dp"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <ImageView
+        android:id="@+id/status_quote_inline_avatar"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/avatar_default" />
+
+    <androidx.emoji.widget.EmojiTextView
+        android:id="@+id/status_quote_inline_display_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="?attr/status_text_medium"
+        android:textStyle="normal|bold"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="@id/status_quote_inline_avatar"
+        app:layout_constraintStart_toEndOf="@id/status_quote_inline_avatar"
+        app:layout_constraintTop_toTopOf="@id/status_quote_inline_avatar"
+        tools:text="Display Name" />
+
+    <TextView
+        android:id="@+id/status_quote_inline_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        android:maxLines="1"
+        android:textColor="?android:textColorSecondary"
+        android:textSize="?attr/status_text_medium"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="@id/status_quote_inline_avatar"
+        app:layout_constraintStart_toEndOf="@id/status_quote_inline_display_name"
+        app:layout_constraintTop_toTopOf="@id/status_quote_inline_avatar"
+        tools:text="\@ars42525\@odakyu.app" />
+
+    <androidx.emoji.widget.EmojiTextView
+        android:id="@+id/status_quote_inline_content_warning_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:importantForAccessibility="no"
+        android:lineSpacingMultiplier="1.1"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="?attr/status_text_medium"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/status_quote_inline_avatar"
+        tools:text="CW"
+        tools:visibility="visible" />
+
+    <ToggleButton
+        android:id="@+id/status_quote_inline_content_warning_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/content_warning_button"
+        android:importantForAccessibility="no"
+        android:minWidth="150dp"
+        android:minHeight="0dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="4dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="4dp"
+        android:textAllCaps="true"
+        android:textOff="@string/status_content_warning_show_more"
+        android:textOn="@string/status_content_warning_show_less"
+        android:textSize="?attr/status_text_medium"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/status_quote_inline_content_warning_description"
+        app:layout_constraintTop_toTopOf="@id/status_quote_inline_content_warning_description"
+        tools:visibility="visible" />
+
+    <androidx.emoji.widget.EmojiTextView
+        android:id="@+id/status_quote_inline_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:importantForAccessibility="no"
+        android:lineSpacingMultiplier="1.1"
+        android:maxLines="8"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="?attr/status_text_medium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/status_quote_inline_content_warning_button"
+        tools:text="This is a status" />
+
+    <TextView
+        android:id="@+id/status_quote_inline_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
+        android:text="@string/status_quote_media"
+        android:textColor="?android:textColorHint"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/status_quote_inline_content"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -107,7 +107,7 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
 
         setupButtons(listener, account.getId());
 
-        setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getEmojis(), listener);
+        setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getEmojis(), listener, false);
 
         setConversationName(conversation.getAccounts());
 

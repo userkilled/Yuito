@@ -17,15 +17,16 @@ package com.keylesspalace.tusky.interfaces;
 
 import android.view.View;
 
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.List;
 
 public interface StatusActionListener extends LinkListener {
     void onReply(int position);
     void onReblog(final boolean reblog, final int position);
     void onFavourite(final boolean favourite, final int position);
+    void onQuote(int position);
     void onMore(@NonNull View view, final int position);
     void onViewMedia(int position, int attachmentIndex, @Nullable View view);
     void onViewThread(int position);

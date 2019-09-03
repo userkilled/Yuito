@@ -117,6 +117,10 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable, Res
         viewModel.favourite(favourite, position)
     }
 
+    override fun onQuote(position: Int) {
+        // its impossible to quote private messages
+    }
+
     override fun onMore(view: View, position: Int) {
         viewModel.conversations.value?.getOrNull(position)?.lastStatus?.let {
             more(it.toStatus(), view, position)

@@ -26,7 +26,8 @@ data class NewStatus(
         val visibility: String,
         val sensitive: Boolean,
         @SerializedName("media_ids") val mediaIds: List<String>?,
-        val poll: NewPoll?
+        val poll: NewPoll?,
+        @SerializedName("quote_id") val quoteId: String?
 )
 
 @Parcelize

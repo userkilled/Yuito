@@ -17,10 +17,10 @@ package com.keylesspalace.tusky
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.annotation.VisibleForTesting
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import android.view.View
 import android.widget.LinearLayout
+import androidx.annotation.VisibleForTesting
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.keylesspalace.tusky.entity.SearchResults
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.util.LinkHelper
@@ -173,6 +173,7 @@ abstract class BottomSheetActivity : BaseActivity() {
 // https://pleroma.foo.bar/users/43456787654678
 // https://pleroma.foo.bar/notice/43456787654678
 // https://pleroma.foo.bar/objects/d4643c42-3ae0-4b73-b8b0-c725f5819207
+// https://mastodon.foo.bar/users/User/statuses/000000000000000000
 fun looksLikeMastodonUrl(urlString: String): Boolean {
     val uri: URI
     try {
@@ -192,5 +193,6 @@ fun looksLikeMastodonUrl(urlString: String): Boolean {
             path.matches("^/users/[^/]+$".toRegex()) ||
             path.matches("^/@[^/]+/\\d+$".toRegex()) ||
             path.matches("^/notice/\\d+$".toRegex()) ||
-            path.matches("^/objects/[-a-f0-9]+$".toRegex())
+            path.matches("^/objects/[-a-f0-9]+$".toRegex()) ||
+            path.matches("^/users/[^/]+/statuses/[0-9]+$".toRegex())
 }

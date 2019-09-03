@@ -46,6 +46,7 @@
     <string name="status_content_warning_show_less">続きを隠す</string>
     <string name="status_content_show_more">続きを読む</string>
     <string name="status_content_show_less">閉じる</string>
+    <string name="status_quote_media">このトゥートには%d件のメディアが存在します。</string>
     <string name="message_empty">何もありません。</string>
     <string name="footer_empty">現在トゥートはありません。更新するにはプルダウンしてください！</string>
     <string name="notification_reblog_format">%sさんがトゥートをブーストしました</string>
@@ -57,6 +58,7 @@
     <string name="action_reply">返信</string>
     <string name="action_reblog">ブースト</string>
     <string name="action_favourite">お気に入り</string>
+    <string name="action_quote">引用</string>
     <string name="action_more">その他</string>
     <string name="action_compose">新規投稿</string>
     <string name="action_login">Mastodonでログイン</string>

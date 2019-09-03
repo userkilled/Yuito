@@ -3,6 +3,7 @@ package com.keylesspalace.tusky.adapter;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -16,9 +17,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.keylesspalace.tusky.R;
+import com.keylesspalace.tusky.ViewThreadActivity;
 import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
@@ -28,10 +34,8 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.text.DateFormat;
 import java.util.Date;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
@@ -209,7 +213,22 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
 
                 }
 
-                cardView.setOnClickListener(v -> LinkHelper.openLink(card.getUrl(), v.getContext()));
+                cardView.setOnClickListener(v -> {
+                    String url = card.getUrl();
+                    String regex = ".*/users/[^/]+/statuses/([0-9]+)";
+                    String replace = "$1";
+                    Pattern p = Pattern.compile(regex);
+                    Matcher m = p.matcher(url);
+                    if (m.find()) {
+                        String id = m.replaceAll(replace);
+                        Intent intent = new Intent(v.getContext(), ViewThreadActivity.class);
+                        intent.putExtra("id", id);
+                        intent.putExtra("url", url);
+                        v.getContext().startActivity(intent);
+                    } else {
+                        LinkHelper.openLink(url, v.getContext());
+                    }
+                });
 
             } else {
                 cardView.setVisibility(View.GONE);

@@ -15,6 +15,8 @@
 
 package com.keylesspalace.tusky.network;
 
+import androidx.annotation.Nullable;
+
 import com.keylesspalace.tusky.entity.AccessToken;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.AppCredentials;
@@ -37,7 +39,6 @@ import com.keylesspalace.tusky.entity.StatusContext;
 import java.util.List;
 import java.util.Set;
 
-import androidx.annotation.Nullable;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import okhttp3.MultipartBody;

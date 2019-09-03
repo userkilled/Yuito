@@ -462,6 +462,11 @@ public class NotificationsFragment extends SFragment implements
         updateAdapter();
     }
 
+    @Override
+    public void onQuote(int position) {
+        super.quote(notifications.get(position).asRight().getStatus());
+    }
+
     public void onVoteInPoll(int position, @NonNull List<Integer> choices) {
         final Notification notification = notifications.get(position).asRight();
         final Status status = notification.getStatus();
