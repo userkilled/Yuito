@@ -217,7 +217,7 @@ public final class ComposeActivity
     private static final int MEDIA_DESCRIPTION_CHARACTER_LIMIT = 420;
 
     public static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "n-sr.org", "odakyu.app"};
-    private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
+    private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com", "comm.cx", "fedibird.com"};
 
     public static final String PREF_DEFAULT_TAG = "default_tag";
     public static final String PREF_USE_DEFAULT_TAG = "use_default_tag";
