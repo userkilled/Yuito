@@ -198,6 +198,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             contentWarningButton.setVisibility(View.VISIBLE);
             contentWarningButton.setChecked(expanded);
             contentWarningButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                contentWarningDescription.invalidate();
                 if (getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onExpandedChange(isChecked, getAdapterPosition());
                 }
@@ -595,7 +596,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     private static CharSequence getAttachmentDescription(Context context, Attachment attachment) {
         String duration = "";
-        if(attachment.getMeta().getDuration() != null && attachment.getMeta().getDuration() > 0) {
+        if(attachment.getMeta() != null && attachment.getMeta().getDuration() != null && attachment.getMeta().getDuration() > 0) {
             duration = formatDuration(attachment.getMeta().getDuration()) + " ";
         }
         if (TextUtils.isEmpty(attachment.getDescription())) {
