@@ -265,18 +265,25 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    protected void setCreatedAt(@NonNull Date createdAt) {
+    protected void setCreatedAt(Date createdAt) {
         if (useAbsoluteTime) {
             timestampInfo.setText(getAbsoluteTime(createdAt));
         } else {
-            long then = createdAt.getTime();
-            long now = System.currentTimeMillis();
-            String readout = TimestampUtils.getRelativeTimeSpanString(timestampInfo.getContext(), then, now);
-            timestampInfo.setText(readout);
+            if(createdAt == null) {
+                timestampInfo.setText("?m");
+            } else {
+                long then = createdAt.getTime();
+                long now = System.currentTimeMillis();
+                String readout = TimestampUtils.getRelativeTimeSpanString(timestampInfo.getContext(), then, now);
+                timestampInfo.setText(readout);
+            }
         }
     }
 
-    private String getAbsoluteTime(@NonNull Date createdAt) {
+    private String getAbsoluteTime(Date createdAt) {
+        if(createdAt == null) {
+            return "??:??:??";
+        }
         if (DateUtils.isToday(createdAt.getTime())) {
             return shortSdf.format(createdAt);
         } else {
@@ -284,22 +291,31 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    private CharSequence getCreatedAtDescription(@NonNull Date createdAt) {
+    private CharSequence getCreatedAtDescription(Date createdAt) {
         if (useAbsoluteTime) {
             return getAbsoluteTime(createdAt);
         } else {
             /* This one is for screen-readers. Frequently, they would mispronounce timestamps like "17m"
              * as 17 meters instead of minutes. */
 
-            long then = createdAt.getTime();
-            long now = System.currentTimeMillis();
-            return DateUtils.getRelativeTimeSpanString(then, now,
-                    DateUtils.SECOND_IN_MILLIS,
-                    DateUtils.FORMAT_ABBREV_RELATIVE);
+            if(createdAt == null) {
+                return "? minutes";
+            } else {
+                long then = createdAt.getTime();
+                long now = System.currentTimeMillis();
+                return DateUtils.getRelativeTimeSpanString(then, now,
+                        DateUtils.SECOND_IN_MILLIS,
+                        DateUtils.FORMAT_ABBREV_RELATIVE);
+            }
         }
     }
 
     private void setStatusVisibility(Status.Visibility visibility) {
+
+        if (visibility == null) {
+            return;
+        }
+
         int visibilityIcon;
         switch (visibility) {
             case PUBLIC:
@@ -854,10 +870,11 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     private static CharSequence getVisibilityDescription(Context context, Status.Visibility visibility) {
 
-        int resource;
-        if (visibility == null) {
+        if(visibility == null) {
             return "";
         }
+
+        int resource;
         switch (visibility) {
             case PUBLIC:
                 resource = R.string.description_visiblity_public;
