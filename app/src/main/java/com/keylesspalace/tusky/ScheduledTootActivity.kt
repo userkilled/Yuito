@@ -8,7 +8,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.gson.Gson
 import com.keylesspalace.tusky.adapter.ScheduledTootAdapter
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.StatusScheduledEvent
@@ -43,8 +42,6 @@ class ScheduledTootActivity : BaseActivity(), ScheduledTootAdapter.ScheduledToot
     lateinit var mastodonApi: MastodonApi
     @Inject
     lateinit var eventHub: EventHub
-
-    val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

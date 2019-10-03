@@ -182,7 +182,7 @@ public final class ComposeActivity
         ComposeAutoCompleteAdapter.AutocompletionProvider,
         OnEmojiSelectedListener,
         Injectable, InputConnectionCompat.OnCommitContentListener,
-        DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
+        TimePickerDialog.OnTimeSetListener {
 
     private static final String TAG = "ComposeActivity"; // logging tag
     static final int STATUS_CHARACTER_LIMIT = 500;
@@ -244,8 +244,8 @@ public final class ComposeActivity
     private ImageButton contentWarningButton;
     private ImageButton emojiButton;
     private ImageButton hideMediaToggle;
-    private TextView actionAddPoll;
     private ImageButton scheduleButton;
+    private TextView actionAddPoll;
     private Button atButton;
     private Button hashButton;
 
@@ -1867,6 +1867,7 @@ public final class ComposeActivity
             color = ContextCompat.getColor(this, R.color.tusky_blue);
         } else {
             contentWarningBar.setVisibility(View.GONE);
+            textEditor.requestFocus();
             color = ThemeUtils.getColor(this, android.R.attr.textColorTertiary);
         }
         contentWarningButton.getDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
@@ -2098,6 +2099,10 @@ public final class ComposeActivity
                 updateVisibleCharactersLeft();
             }
 
+            if (!new VersionUtils(instance.getVersion()).supportsScheduledToots()) {
+                scheduleButton.setVisibility(View.GONE);
+            }
+
             if (instance.getPollLimits() != null) {
                 maxPollOptions = instance.getPollLimits().getMaxOptions();
                 maxPollOptionLength = instance.getPollLimits().getMaxOptionChars();
@@ -2201,13 +2206,6 @@ public final class ComposeActivity
             dest.writeString(readyStage.name());
             dest.writeString(description);
         }
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        scheduleView.onDateSet(year, month, dayOfMonth);
-        updateScheduleButton();
-        scheduleBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override

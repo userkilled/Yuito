@@ -1,3 +1,18 @@
+/* Copyright 2019 kyori19
+ *
+ * This file is a part of Tusky.
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * Tusky is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Tusky; if not,
+ * see <http://www.gnu.org/licenses>. */
+
 package com.keylesspalace.tusky.view;
 
 import android.content.Context;
@@ -10,8 +25,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointForward;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.keylesspalace.tusky.R;
-import com.keylesspalace.tusky.fragment.DatePickerFragment;
 import com.keylesspalace.tusky.fragment.TimePickerFragment;
 
 import java.text.DateFormat;
@@ -29,8 +46,7 @@ public class ComposeScheduleView extends ConstraintLayout {
     private SimpleDateFormat iso8601;
 
     private Button resetScheduleButton;
-    private TextView scheduledDateView;
-    private TextView scheduledTimeView;
+    private TextView scheduledDateTimeView;
 
     private Calendar scheduleDateTime;
 
@@ -58,11 +74,9 @@ public class ComposeScheduleView extends ConstraintLayout {
         iso8601.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         resetScheduleButton = findViewById(R.id.resetScheduleButton);
-        scheduledDateView = findViewById(R.id.scheduledDate);
-        scheduledTimeView = findViewById(R.id.scheduledTime);
+        scheduledDateTimeView = findViewById(R.id.scheduledDateTime);
 
-        scheduledDateView.setOnClickListener(v -> openPickDateDialog());
-        scheduledTimeView.setOnClickListener(v -> openPickTimeDialog());
+        scheduledDateTimeView.setOnClickListener(v -> openPickDateDialog());
 
         scheduleDateTime = null;
 
@@ -73,16 +87,16 @@ public class ComposeScheduleView extends ConstraintLayout {
 
     private void setScheduledDateTime() {
         if (scheduleDateTime == null) {
-            scheduledDateView.setText(R.string.hint_configure_scheduled_toot);
-            scheduledTimeView.setText(R.string.hint_configure_scheduled_toot);
+            scheduledDateTimeView.setText(R.string.hint_configure_scheduled_toot);
         } else {
-            scheduledDateView.setText(dateFormat.format(scheduleDateTime.getTime()));
-            scheduledTimeView.setText(timeFormat.format(scheduleDateTime.getTime()));
+            scheduledDateTimeView.setText(String.format("%s %s",
+                    dateFormat.format(scheduleDateTime.getTime()),
+                    timeFormat.format(scheduleDateTime.getTime())));
         }
     }
 
     private void setEditIcons() {
-        final int size = scheduledDateView.getLineHeight();
+        final int size = scheduledDateTimeView.getLineHeight();
 
         Drawable icon = getContext().getDrawable(R.drawable.ic_create_24dp);
         if (icon == null) {
@@ -91,8 +105,7 @@ public class ComposeScheduleView extends ConstraintLayout {
 
         icon.setBounds(0, 0, size, size);
 
-        scheduledDateView.setCompoundDrawables(null, null, icon, null);
-        scheduledTimeView.setCompoundDrawables(null, null, icon, null);
+        scheduledDateTimeView.setCompoundDrawables(null, null, icon, null);
     }
 
     public void setResetOnClickListener(OnClickListener listener) {
@@ -105,16 +118,20 @@ public class ComposeScheduleView extends ConstraintLayout {
     }
 
     private void openPickDateDialog() {
-        DatePickerFragment picker = new DatePickerFragment();
-        if (scheduleDateTime != null) {
-            Bundle args = new Bundle();
-            args.putInt(DatePickerFragment.PICKER_TIME_YEAR, scheduleDateTime.get(Calendar.YEAR));
-            args.putInt(DatePickerFragment.PICKER_TIME_MONTH, scheduleDateTime.get(Calendar.MONTH));
-            args.putInt(DatePickerFragment.PICKER_TIME_DAY, scheduleDateTime.get(Calendar.DAY_OF_MONTH));
-            picker.setArguments(args);
+        long yesterday = Calendar.getInstance().getTimeInMillis() - 24 * 60 * 60 * 1000;
+        CalendarConstraints calendarConstraints = new CalendarConstraints.Builder()
+                .setValidator(new DateValidatorPointForward(yesterday))
+                .build();
+        if (scheduleDateTime == null) {
+            scheduleDateTime = Calendar.getInstance(TimeZone.getDefault());
         }
-        picker.show(((AppCompatActivity) getContext()).getSupportFragmentManager(),
-                "date_picker");
+        MaterialDatePicker<Long> picker = MaterialDatePicker.Builder
+                .datePicker()
+                .setSelection(scheduleDateTime.getTimeInMillis())
+                .setCalendarConstraints(calendarConstraints)
+                .build();
+        picker.addOnPositiveButtonClickListener(this::onDateSet);
+        picker.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), "date_picker");
     }
 
     private void openPickTimeDialog() {
@@ -125,8 +142,7 @@ public class ComposeScheduleView extends ConstraintLayout {
             args.putInt(TimePickerFragment.PICKER_TIME_MINUTE, scheduleDateTime.get(Calendar.MINUTE));
             picker.setArguments(args);
         }
-        picker.show(((AppCompatActivity) getContext()).getSupportFragmentManager(),
-                "time_picker");
+        picker.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), "time_picker");
     }
 
     public void setDateTime(String scheduledAt) {
@@ -143,12 +159,14 @@ public class ComposeScheduleView extends ConstraintLayout {
         setScheduledDateTime();
     }
 
-    public void onDateSet(int year, int month, int dayOfMonth) {
+    private void onDateSet(long selection) {
         if (scheduleDateTime == null) {
             scheduleDateTime = Calendar.getInstance(TimeZone.getDefault());
         }
-        scheduleDateTime.set(year, month, dayOfMonth);
-        setScheduledDateTime();
+        Calendar newDate = Calendar.getInstance(TimeZone.getDefault());
+        newDate.setTimeInMillis(selection);
+        scheduleDateTime.set(newDate.get(Calendar.YEAR), newDate.get(Calendar.MONTH), newDate.get(Calendar.DATE));
+        openPickTimeDialog();
     }
 
     public void onTimeSet(int hourOfDay, int minute) {

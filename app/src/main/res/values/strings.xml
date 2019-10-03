@@ -125,6 +125,8 @@
     <string name="action_toggle_visibility">Toot visibility</string>
     <string name="action_content_warning">Content warning</string>
     <string name="action_emoji_keyboard">Emoji keyboard</string>
+    <string name="action_schedule_toot">Schedule Toot</string>
+    <string name="action_reset_schedule">Reset</string>
     <string name="action_add_tab">Add Tab</string>
     <string name="action_links">Links</string>
     <string name="action_mentions">Mentions</string>
@@ -134,8 +136,6 @@
     <string name="action_open_faved_by">Show favorites</string>
     <string name="action_quote">Quote</string>
     <string name="action_authorize">Authorize Now!</string>
-    <string name="action_schedule_toot">Schedule Toot</string>
-    <string name="action_reset_schedule">Reset</string>
 
     <string name="title_hashtags_dialog">Hashtags</string>
     <string name="title_mentions_dialog">Mentions</string>
@@ -164,6 +164,7 @@
 
     <string name="hint_domain">Which instance?</string>
     <string name="hint_compose">What\'s happening?</string>
+    <string name="hint_configure_scheduled_toot">Tap here to configure scheduled toot.</string>
     <string name="hint_content_warning">Content warning</string>
     <string name="hint_display_name">Display name</string>
     <string name="hint_note">Bio</string>
@@ -171,7 +172,6 @@
     <string name="hint_toot_area">Quick Toot Area</string>
     <string name="hint_default_text">Default Hashtag</string>
     <string name="hint_access_token">Access Token</string>
-    <string name="hint_configure_scheduled_toot">Tap here to configure scheduled toot.</string>
 
     <string name="search_no_results">No results</string>
 

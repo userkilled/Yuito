@@ -76,7 +76,6 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 import net.accelf.yuito.TimelineStreamingListener;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -356,12 +355,12 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void updateCurrent() {
-        String topId;
         if (this.statuses.isEmpty()) {
-            topId = null;
-        } else {
-            topId = CollectionsKt.first(this.statuses, Either::isRight).asRight().getId();
+            return;
         }
+
+        String topId = CollectionsKt.first(this.statuses, Either::isRight).asRight().getId();
+
         this.timelineRepo.getStatuses(topId, null, null, LOAD_AT_ONCE,
                 TimelineRequestMode.NETWORK)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -373,7 +372,7 @@ public class TimelineFragment extends SFragment implements
                             if (!statuses.isEmpty()) {
                                 filterStatuses(statuses);
 
-                                if (!this.statuses.isEmpty() && topId != null) {
+                                if (!this.statuses.isEmpty()) {
                                     // clear old cached statuses
                                     Iterator<Either<Placeholder, Status>> iterator = this.statuses.iterator();
                                     while (iterator.hasNext()) {
@@ -449,7 +448,7 @@ public class TimelineFragment extends SFragment implements
     }
 
     @Override
-    protected boolean filterIsRelevant(Filter filter) {
+    protected boolean filterIsRelevant(@NonNull Filter filter) {
         return filterContextMatchesKind(kind, filter.getContext());
     }
 

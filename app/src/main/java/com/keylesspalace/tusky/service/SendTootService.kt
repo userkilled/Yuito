@@ -141,8 +141,8 @@ class SendTootService : Service(), Injectable {
                 tootToSend.visibility,
                 tootToSend.sensitive,
                 tootToSend.mediaIds,
-                tootToSend.poll,
                 tootToSend.scheduledAt,
+                tootToSend.poll,
                 tootToSend.quoteId
         )
 
