@@ -27,6 +27,7 @@ public interface StatusActionListener extends LinkListener {
     void onReblog(final boolean reblog, final int position);
     void onFavourite(final boolean favourite, final int position);
     void onQuote(int position);
+    void onBookmark(final boolean bookmark, final int position);
     void onMore(@NonNull View view, final int position);
     void onViewMedia(int position, int attachmentIndex, @Nullable View view);
     void onViewThread(int position);

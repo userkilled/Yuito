@@ -570,10 +570,27 @@
         android:importantForAccessibility="no"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="@id/status_reply"
-        app:layout_constraintEnd_toStartOf="@id/status_more"
+        app:layout_constraintEnd_toStartOf="@id/status_bookmark"
         app:layout_constraintStart_toEndOf="@id/status_favourite"
         app:layout_constraintTop_toTopOf="@id/status_reply"
         app:srcCompat="@drawable/ic_quote_disabled_24dp" />
+
+    <at.connyduck.sparkbutton.SparkButton
+        android:id="@+id/status_bookmark"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:clipToPadding="false"
+        android:contentDescription="@string/action_bookmark"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        app:layout_constraintEnd_toStartOf="@id/status_more"
+        app:layout_constraintStart_toEndOf="@id/status_quote"
+        app:layout_constraintTop_toTopOf="@id/status_reply"
+        sparkbutton:activeImage="@drawable/ic_bookmark_active_24dp"
+        sparkbutton:iconSize="28dp"
+        sparkbutton:inactiveImage="@drawable/ic_bookmark_24dp"
+        sparkbutton:primaryColor="@color/tusky_green"
+        sparkbutton:secondaryColor="@color/tusky_green_light" />
 
     <ImageButton
         android:id="@+id/status_more"
@@ -585,7 +602,7 @@
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="@id/status_reply"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/status_quote"
+        app:layout_constraintStart_toEndOf="@id/status_bookmark"
         app:layout_constraintTop_toTopOf="@id/status_reply"
         app:srcCompat="@drawable/ic_more_horiz_24dp" />
 
