@@ -29,19 +29,13 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import android.util.TypedValue;
 
 /**
  * Provides runtime compatibility to obtain theme information and re-theme views, especially where
  * the ability to do so is not supported in resource files.
  */
-@Singleton
 public class ThemeUtils {
-
-    @Inject
-    public ThemeUtils(){}
 
     public static final String APP_THEME_DEFAULT = ThemeUtils.THEME_NIGHT;
 
@@ -49,7 +43,7 @@ public class ThemeUtils {
     public static final String THEME_DAY = "day";
     private static final String THEME_BLACK = "black";
     private static final String THEME_AUTO = "auto";
-    public static final String THEME_SYSTEM = "auto_system";
+    private static final String THEME_SYSTEM = "auto_system";
 
     public static Drawable getDrawable(@NonNull Context context, @AttrRes int attribute,
             @DrawableRes int fallbackDrawable) {
@@ -63,8 +57,9 @@ public class ThemeUtils {
         return context.getDrawable(resourceId);
     }
 
-    public static @DrawableRes int getDrawableId(@NonNull Context context, @AttrRes int attribute,
-            @DrawableRes int fallbackDrawableId) {
+    @DrawableRes
+    public static int getDrawableId(@NonNull Context context, @AttrRes int attribute,
+                                    @DrawableRes int fallbackDrawableId) {
         TypedValue value = new TypedValue();
         if (context.getTheme().resolveAttribute(attribute, value, true)) {
             return value.resourceId;
@@ -73,7 +68,8 @@ public class ThemeUtils {
         }
     }
 
-    public static @ColorInt int getColor(@NonNull Context context, @AttrRes int attribute) {
+    @ColorInt
+    public static int getColor(@NonNull Context context, @AttrRes int attribute) {
         TypedValue value = new TypedValue();
         if (context.getTheme().resolveAttribute(attribute, value, true)) {
             return value.data;
@@ -82,14 +78,16 @@ public class ThemeUtils {
         }
     }
 
-    public static @ColorRes int getColorId(@NonNull Context context, @AttrRes int attribute) {
+    @ColorRes
+    public static int getColorId(@NonNull Context context, @AttrRes int attribute) {
         TypedValue value = new TypedValue();
         context.getTheme().resolveAttribute(attribute, value, true);
         return value.resourceId;
     }
 
     /** this can be replaced with drawableTint in xml once minSdkVersion >= 23 */
-    public static @Nullable Drawable getTintedDrawable(@NonNull Context context, @DrawableRes int drawableId, @AttrRes int colorAttr) {
+    @Nullable
+    public static Drawable getTintedDrawable(@NonNull Context context, @DrawableRes int drawableId, @AttrRes int colorAttr) {
         Drawable drawable = context.getDrawable(drawableId);
         if(drawable == null) {
             return null;
@@ -102,30 +100,21 @@ public class ThemeUtils {
         drawable.setColorFilter(getColor(context, attribute), PorterDuff.Mode.SRC_IN);
     }
 
-    public void setAppNightMode(String flavor, Context context) {
+    public static void setAppNightMode(String flavor) {
         switch (flavor) {
             default:
             case THEME_NIGHT:
+            case THEME_BLACK:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
             case THEME_DAY:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 break;
-            case THEME_BLACK:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
             case THEME_AUTO:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO_TIME);
                 break;
             case THEME_SYSTEM:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-
-                //stupid workaround to make MODE_NIGHT_FOLLOW_SYSTEM work :(
-                if((Settings.System.getInt(context.getContentResolver(), "display_night_theme", 0) == 1)) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                } else if ((Settings.System.getInt(context.getContentResolver(), "display_night_theme", 0) == 0)) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                }
                 break;
         }
     }

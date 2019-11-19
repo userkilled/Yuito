@@ -22,12 +22,28 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.arch.core.util.Function;
+import androidx.core.util.Pair;
+import androidx.core.widget.ContentLoadingProgressBar;
+import androidx.lifecycle.Lifecycle;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.AsyncListDiffer;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListUpdateCallback;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.keylesspalace.tusky.AccountListActivity;
@@ -85,22 +101,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.arch.core.util.Function;
-import androidx.core.util.Pair;
-import androidx.core.widget.ContentLoadingProgressBar;
-import androidx.lifecycle.Lifecycle;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.AsyncListDiffer;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.ListUpdateCallback;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.Observable;
@@ -377,7 +377,7 @@ public class TimelineFragment extends SFragment implements
                                     Iterator<Either<Placeholder, Status>> iterator = this.statuses.iterator();
                                     while (iterator.hasNext()) {
                                         Either<Placeholder, Status> item = iterator.next();
-                                        if(item.isRight()) {
+                                        if (item.isRight()) {
                                             Status status = item.asRight();
                                             if (status.getId().length() < topId.length() || status.getId().compareTo(topId) < 0) {
 

@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.util.CustomURLSpan
+import com.keylesspalace.tusky.util.hide
 import kotlinx.android.synthetic.main.activity_about.*
 import kotlinx.android.synthetic.main.toolbar_basic.*
 import net.accelf.yuito.AccessTokenLoginActivity
@@ -34,7 +35,11 @@ class AboutActivity : BottomSheetActivity(), Injectable {
             onEasterEggExecute()
         }
 
-        versionTextView.text = getString(R.string.about_tusky_version, BuildConfig.VERSION_NAME)
+        versionTextView.text = getString(R.string.about_app_version, getString(R.string.app_name), BuildConfig.VERSION_NAME)
+
+        if(BuildConfig.CUSTOM_INSTANCE.isBlank()) {
+            aboutPoweredByTusky.hide()
+        }
 
         aboutLicenseInfoTextView.setClickableTextWithoutUnderlines(R.string.about_tusky_license)
         aboutWebsiteInfoTextView.setClickableTextWithoutUnderlines(R.string.about_project_site)
@@ -42,7 +47,7 @@ class AboutActivity : BottomSheetActivity(), Injectable {
         aboutBugsFeaturesInfoTextView.setClickableTextWithoutUnderlines(R.string.about_bug_feature_request_site)
 
         tuskyProfileButton.setOnClickListener {
-            onAccountButtonClick()
+            viewUrl(BuildConfig.SUPPORT_ACCOUNT_URL, BuildConfig.SUPPORT_ACCOUNT_URL)
         }
 
         aboutLicensesButton.setOnClickListener {
@@ -53,10 +58,6 @@ class AboutActivity : BottomSheetActivity(), Injectable {
 
     private fun onEasterEggExecute() {
         startActivityWithSlideInAnimation(Intent(this, AccessTokenLoginActivity::class.java))
-    }
-
-    private fun onAccountButtonClick() {
-        viewUrl("https://odakyu.app/@ars42525", getString(R.string.about_tusky_account))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

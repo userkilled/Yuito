@@ -5,7 +5,7 @@
 
 Yuito is fork of [Tusky](https://github.com/tuskyapp/Tusky).
 
-Tusky is a beautiful Android client for [Mastodon](https://github.com/tootsuite/mastodon). Mastodon is a GNU social-compatible federated social network. That means not one entity controls the whole network, rather, like e-mail, volunteers and organisations operate their own independent servers, users from which can all interact with each other seamlessly.
+Tusky is a beautiful Android client for [Mastodon](https://github.com/tootsuite/mastodon). Mastodon is an ActivityPub federated social network. That means no single entity controls the whole network, rather, like e-mail, volunteers and organisations operate their own independent servers, users from which can all interact with each other seamlessly.
 
 ## Features
 
@@ -21,6 +21,8 @@ Tusky is a beautiful Android client for [Mastodon](https://github.com/tootsuite/
 ### Support
 
 If you have any bug reports, feature requests or questions please open an issue or send us a toot at [@ars42525@odakyu.app](https://odakyu.app/@ars42525)!
+
+For translating Tusky into your language, visit https://weblate.tusky.app/
 
 ### Head of development
 

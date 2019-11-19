@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Yuito</string>
-    <string name="app_website" translatable="false">https://accelf.net/yuito</string>
+    <string name="tusky_website" translatable="false">https://accelf.net/yuito</string>
+    <string name="about_app_version">%1$s %2$s</string>
 
     <string name="oauth_scheme" translatable="false">oauth2redirect</string>
     <string name="preferences_file_key" translatable="false">com.keylesspalace.tusky.PREFERENCES</string>
@@ -9,6 +9,7 @@
     <string name="status_sensitive_media_template" translatable="false">&lt;b>%1$s&lt;/b>&lt;br>%2$s</string>
     <string name="at_symbol" translatable="false">\@</string>
     <string name="hash_symbol" translatable="false">#</string>
+    <string name="title_tag" translatable="false">#%s</string>
 
     <string name="emoji_shortcode_format" translatable="false">:%s:</string>
 
@@ -130,5 +131,5 @@
         <item>604800</item>
     </integer-array>
 
-
+    <string name="poll_percent_format"><!-- 15% --> &lt;b>%1$d%%&lt;/b></string>
 </resources>

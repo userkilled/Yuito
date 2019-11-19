@@ -24,7 +24,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Environment
-import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -36,6 +35,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.keylesspalace.tusky.*
@@ -305,8 +305,7 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
                 }
                 R.id.status_copy_link -> {
                     val clipboard = activity!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText(null, statusUrl)
-                    clipboard.primaryClip = clip
+                    clipboard.setPrimaryClip(ClipData.newPlainText(null, statusUrl))
                     return@setOnMenuItemClickListener true
                 }
                 R.id.status_open_as -> {
