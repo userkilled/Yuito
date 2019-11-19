@@ -259,7 +259,7 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
                     menu.findItem(R.id.status_reblog_private).isVisible = !reblogged
                     menu.findItem(R.id.status_unreblog_private).isVisible = reblogged
                 }
-                Status.Visibility.UNKNOWN, Status.Visibility.DIRECT -> {
+                Status.Visibility.UNKNOWN, Status.Visibility.UNLEAKABLE, Status.Visibility.DIRECT -> {
                 } //Ignore
             }
         }
