@@ -22,6 +22,7 @@ import android.view.MenuItem
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.keylesspalace.tusky.appstore.EventHub
 
 import com.keylesspalace.tusky.fragment.TimelineFragment
@@ -74,12 +75,14 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
         }
 
         val quickTootContainer = findViewById<ConstraintLayout>(R.id.quick_toot_container)
+        val composeButton = findViewById<FloatingActionButton>(R.id.floating_btn)
         val quickTootHelper = QuickTootHelper(quickTootContainer, accountManager, eventHub)
 
         eventHub.events
                 .observeOn(AndroidSchedulers.mainThread())
                 .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe(quickTootHelper::handleEvent)
+        composeButton.setOnClickListener { quickTootHelper.composeButton() }
 
     }
 
