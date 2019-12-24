@@ -1595,6 +1595,11 @@ public class TimelineFragment extends SFragment implements
     }
 
     @Override
+    public void onReset() {
+        fullyRefresh();
+    }
+
+    @Override
     public void refreshContent() {
         if (isAdded())
             onRefresh();

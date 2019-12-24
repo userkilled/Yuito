@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageButton
+        android:id="@+id/tab_jump_to_top"
+        style="?attr/image_button_style"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_margin="4dp"
+        android:contentDescription="@string/action_tab_jump_to_top"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        app:layout_constraintBottom_toTopOf="@id/tab_text_jump_to_top"
+        app:layout_constraintEnd_toStartOf="@id/tab_reset"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_arrow_upward" />
+
+    <TextView
+        android:id="@+id/tab_text_jump_to_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_tab_jump_to_top"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tab_jump_to_top"
+        app:layout_constraintStart_toStartOf="@id/tab_jump_to_top"
+        app:layout_constraintTop_toBottomOf="@id/tab_jump_to_top" />
+
+    <ImageButton
+        android:id="@+id/tab_reset"
+        style="?attr/image_button_style"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_margin="4dp"
+        android:contentDescription="@string/action_tab_reset"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        app:layout_constraintBottom_toTopOf="@id/tab_text_reset"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tab_jump_to_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_reject_24dp" />
+
+    <TextView
+        android:id="@+id/tab_text_reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_tab_reset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tab_reset"
+        app:layout_constraintStart_toStartOf="@id/tab_reset"
+        app:layout_constraintTop_toBottomOf="@id/tab_reset" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

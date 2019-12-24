@@ -1258,4 +1258,9 @@ public class NotificationsFragment extends SFragment implements
     public void onReselect() {
         jumpToTop();
     }
+
+    @Override
+    public void onReset() {
+        fullyRefresh();
+    }
 }

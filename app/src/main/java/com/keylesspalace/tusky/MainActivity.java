@@ -15,6 +15,7 @@
 
 package com.keylesspalace.tusky;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -129,6 +131,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
     private int notificationTabPosition;
     private MainPagerAdapter adapter;
+    private List<TabData> tabs;
 
     private final EmojiCompat.InitCallback emojiInitCallback = new EmojiCompat.InitCallback() {
         @Override
@@ -226,6 +229,13 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
             viewPager.setOffscreenPageLimit(9);
         }
 
+        PopupWindow popupWindow = new PopupWindow(this);
+        @SuppressLint("InflateParams")
+        View popupView = getLayoutInflater().inflate(R.layout.view_tab_action, null);
+        popupWindow.setContentView(popupView);
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setFocusable(true);
+
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -242,12 +252,34 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                if (adapter != null) {
-                    Fragment fragment = adapter.getFragment(tab.getPosition());
-                    if (fragment instanceof ReselectableFragment) {
-                        ((ReselectableFragment) fragment).onReselect();
-                    }
+                if (tabs.get(tab.getPosition()).getId().equals(TabDataKt.DIRECT)) {
+                    popupView.findViewById(R.id.tab_reset).setVisibility(View.GONE);
+                    popupView.findViewById(R.id.tab_text_reset).setVisibility(View.GONE);
                 }
+
+                popupView.findViewById(R.id.tab_jump_to_top)
+                        .setOnClickListener(v -> {
+                            if (adapter != null) {
+                                Fragment fragment = adapter.getFragment(tab.getPosition());
+                                if (fragment instanceof ReselectableFragment) {
+                                    ((ReselectableFragment) fragment).onReselect();
+                                }
+                            }
+
+                            popupWindow.dismiss();
+                        });
+                popupView.findViewById(R.id.tab_reset)
+                        .setOnClickListener(v -> {
+                            if (adapter != null) {
+                                Fragment fragment = adapter.getFragment(tab.getPosition());
+                                if (fragment instanceof ReselectableFragment) {
+                                    ((ReselectableFragment) fragment).onReset();
+                                }
+                            }
+
+                            popupWindow.dismiss();
+                        });
+                popupWindow.showAsDropDown(tab.view);
             }
         });
 
@@ -543,7 +575,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     }
 
     private void setupTabs(boolean selectNotificationTab) {
-        List<TabData> tabs = accountManager.getActiveAccount().getTabPreferences();
+        tabs = accountManager.getActiveAccount().getTabPreferences();
 
         adapter = new MainPagerAdapter(tabs, this);
         viewPager.setAdapter(adapter);
