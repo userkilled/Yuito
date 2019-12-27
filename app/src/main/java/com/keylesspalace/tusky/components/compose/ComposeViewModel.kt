@@ -397,7 +397,6 @@ class ComposeViewModel
         val replyVisibility = composeOptions?.replyVisibility ?: Status.Visibility.UNKNOWN
         startingVisibility = Status.Visibility.byNum(
                 preferredVisibility.num.coerceAtLeast(replyVisibility.num))
-        statusVisibility.value = startingVisibility
 
         inReplyToId = composeOptions?.inReplyToId
 
@@ -441,6 +440,7 @@ class ComposeViewModel
         if (tootVisibility.num != Status.Visibility.UNKNOWN.num) {
             startingVisibility = tootVisibility
         }
+        statusVisibility.value = startingVisibility
         val builder = StringBuilder()
         val mentionedUsernames = composeOptions?.mentionedUsernames
         if (mentionedUsernames != null) {
