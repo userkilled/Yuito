@@ -189,12 +189,13 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                         @Nullable String spoilerText,
                                         @Nullable Status.Mention[] mentions,
                                         @NonNull List<Emoji> emojis,
+                                        @Nullable PollViewData poll,
                                         final StatusActionListener listener,
                                         boolean removeQuote) {
         if (TextUtils.isEmpty(spoilerText)) {
             contentWarningDescription.setVisibility(View.GONE);
             contentWarningButton.setVisibility(View.GONE);
-            this.setTextVisible(true, content, mentions, emojis, listener, removeQuote);
+            this.setTextVisible(true, content, mentions, emojis, poll, listener, removeQuote);
         } else {
             CharSequence emojiSpoiler = CustomEmojiHelper.emojifyString(spoilerText, emojis, contentWarningDescription);
             contentWarningDescription.setText(emojiSpoiler);
@@ -206,9 +207,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 if (getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onExpandedChange(isChecked, getAdapterPosition());
                 }
-                this.setTextVisible(isChecked, content, mentions, emojis, listener, removeQuote);
+                this.setTextVisible(isChecked, content, mentions, emojis, poll, listener, removeQuote);
             });
-            this.setTextVisible(expanded, content, mentions, emojis, listener, removeQuote);
+            this.setTextVisible(expanded, content, mentions, emojis, poll, listener, removeQuote);
         }
     }
 
@@ -216,11 +217,15 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                 Spanned content,
                                 Status.Mention[] mentions,
                                 List<Emoji> emojis,
+                                @Nullable PollViewData poll,
                                 final StatusActionListener listener,
                                 boolean removeQuote) {
         if (expanded) {
             Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, this.content);
             LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
+            if (poll != null) {
+                setupPoll(poll, emojis, listener);
+            }
         } else {
             LinkHelper.setClickableMentions(this.content, mentions, listener);
         }
@@ -229,6 +234,14 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         } else {
             this.content.setVisibility(View.VISIBLE);
         }
+        setPollVisible(poll != null && expanded);
+    }
+
+    private void setPollVisible(boolean visible) {
+        int visibility = visible ? View.VISIBLE : View.GONE;
+        pollButton.setVisibility(visibility);
+        pollDescription.setVisibility(visibility);
+        pollOptions.setVisibility(visibility);
     }
 
     private void setAvatar(String url,
@@ -663,40 +676,18 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         replyButton.setEnabled(!isNotestock);
         replyButton.setClickable(!isNotestock);
         if (reblogButton != null) {
-            reblogButton.setEventListener(new SparkEventListener() {
-                @Override
-                public void onEvent(ImageView button, boolean buttonState) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        listener.onReblog(buttonState, position);
-                    }
-                }
-
-                @Override
-                public void onEventAnimationEnd(ImageView button, boolean buttonState) {
-                }
-
-                @Override
-                public void onEventAnimationStart(ImageView button, boolean buttonState) {
+            reblogButton.setEventListener((button, buttonState) -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onReblog(buttonState, position);
                 }
             });
         }
 
-        favouriteButton.setEventListener(new SparkEventListener() {
-            @Override
-            public void onEvent(ImageView button, boolean buttonState) {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    listener.onFavourite(buttonState, position);
-                }
-            }
-
-            @Override
-            public void onEventAnimationEnd(ImageView button, boolean buttonState) {
-            }
-
-            @Override
-            public void onEventAnimationStart(ImageView button, boolean buttonState) {
+        favouriteButton.setEventListener((button, buttonState) -> {
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                listener.onFavourite(buttonState, position);
             }
         });
 
@@ -712,23 +703,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             });
         }
 
-        bookmarkButton.setEventListener(new SparkEventListener() {
-            @Override
-            public void onEvent(ImageView button, boolean buttonState) {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    listener.onBookmark(buttonState, position);
-                }
-            }
-
-            @Override
-            public void onEventAnimationEnd(ImageView button, boolean buttonState) {
-
-            }
-
-            @Override
-            public void onEventAnimationStart(ImageView button, boolean buttonState) {
-
+        bookmarkButton.setEventListener((button, buttonState) -> {
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                listener.onBookmark(buttonState, position);
             }
         });
 
@@ -802,12 +780,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setRebloggingEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
             setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
 
-            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), listener,
-                    status.getQuote() != null);
+            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), status.getPoll(), listener, status.getQuote() != null);
 
             setDescriptionForStatus(status);
-
-            setupPoll(status.getPoll(), status.getStatusEmojis(), listener);
 
             // Workaround for RecyclerView 1.0.0 / androidx.core 1.0.0
             // RecyclerView tries to set AccessibilityDelegateCompat to null
@@ -963,55 +938,44 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    protected void setupPoll(PollViewData poll, List<Emoji> emojis, StatusActionListener listener) {
-        if (poll == null) {
+    private void setupPoll(PollViewData poll, List<Emoji> emojis, StatusActionListener listener) {
+        long timestamp = System.currentTimeMillis();
 
-            pollOptions.setVisibility(View.GONE);
+        boolean expired = poll.getExpired() || (poll.getExpiresAt() != null && timestamp > poll.getExpiresAt().getTime());
 
-            pollDescription.setVisibility(View.GONE);
+        Context context = pollDescription.getContext();
+
+        pollOptions.setVisibility(View.VISIBLE);
+
+        if (expired || poll.getVoted()) {
+            // no voting possible
+            pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), emojis, PollAdapter.RESULT);
 
             pollButton.setVisibility(View.GONE);
-
         } else {
-            long timestamp = System.currentTimeMillis();
+            // voting possible
+            pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), emojis, poll.getMultiple() ? PollAdapter.MULTIPLE : PollAdapter.SINGLE);
 
-            boolean expired = poll.getExpired() || (poll.getExpiresAt() != null && timestamp > poll.getExpiresAt().getTime());
+            pollButton.setVisibility(View.VISIBLE);
 
-            Context context = pollDescription.getContext();
+            pollButton.setOnClickListener(v -> {
 
-            pollOptions.setVisibility(View.VISIBLE);
+                int position = getAdapterPosition();
 
-            if (expired || poll.getVoted()) {
-                // no voting possible
-                pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), emojis, PollAdapter.RESULT);
+                if (position != RecyclerView.NO_POSITION) {
 
-                pollButton.setVisibility(View.GONE);
-            } else {
-                // voting possible
-                pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), emojis, poll.getMultiple() ? PollAdapter.MULTIPLE : PollAdapter.SINGLE);
+                    List<Integer> pollResult = pollAdapter.getSelected();
 
-                pollButton.setVisibility(View.VISIBLE);
-
-                pollButton.setOnClickListener(v -> {
-
-                    int position = getAdapterPosition();
-
-                    if (position != RecyclerView.NO_POSITION) {
-
-                        List<Integer> pollResult = pollAdapter.getSelected();
-
-                        if (!pollResult.isEmpty()) {
-                            listener.onVoteInPoll(position, pollResult);
-                        }
+                    if (!pollResult.isEmpty()) {
+                        listener.onVoteInPoll(position, pollResult);
                     }
+                }
 
-                });
-            }
-
-            pollDescription.setVisibility(View.VISIBLE);
-            pollDescription.setText(getPollInfoText(timestamp, poll, context));
-
+            });
         }
+
+        pollDescription.setVisibility(View.VISIBLE);
+        pollDescription.setText(getPollInfoText(timestamp, poll, context));
     }
 
     private CharSequence getPollInfoText(long timestamp, PollViewData poll, Context context) {

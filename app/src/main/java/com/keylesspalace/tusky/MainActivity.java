@@ -52,6 +52,7 @@ import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.MainTabsChangedEvent;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
+import com.keylesspalace.tusky.components.compose.ComposeActivity;
 import com.keylesspalace.tusky.components.conversation.ConversationsRepository;
 import com.keylesspalace.tusky.components.search.SearchActivity;
 import com.keylesspalace.tusky.db.AccountEntity;

@@ -12,13 +12,13 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.keylesspalace.tusky.ComposeActivity;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.Event;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.QuickReplyEvent;
+import com.keylesspalace.tusky.components.compose.ComposeActivity;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.entity.Status;
@@ -28,8 +28,9 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static com.keylesspalace.tusky.ComposeActivity.PREF_DEFAULT_TAG;
-import static com.keylesspalace.tusky.ComposeActivity.PREF_USE_DEFAULT_TAG;
+import static com.keylesspalace.tusky.components.compose.ComposeActivity.CAN_USE_UNLEAKABLE;
+import static com.keylesspalace.tusky.components.compose.ComposeActivity.PREF_DEFAULT_TAG;
+import static com.keylesspalace.tusky.components.compose.ComposeActivity.PREF_USE_DEFAULT_TAG;
 
 public class QuickTootHelper {
 
@@ -74,8 +75,7 @@ public class QuickTootHelper {
 
     public void composeButton() {
         if (tootEditText.getText().length() == 0 && inReplyTo == null) {
-            Intent composeIntent = new Intent(context, ComposeActivity.class);
-            context.startActivity(composeIntent);
+            context.startActivity(getComposeIntent(context, true, false));
         } else {
             startComposeWithQuickComposeData();
         }
@@ -107,43 +107,45 @@ public class QuickTootHelper {
     }
 
     private void startComposeWithQuickComposeData() {
-        Intent composeIntent = setupIntentBuilder(false);
+        Intent intent = getComposeIntent(context, false, false);
         resetQuickCompose();
-        context.startActivity(composeIntent);
+        context.startActivity(intent);
     }
 
     private void quickToot() {
         if (tootEditText.getText().toString().length() > 0) {
-            Intent composeIntent = setupIntentBuilder(true);
+            Intent intent = getComposeIntent(context, false, true);
             resetQuickCompose();
-            context.startActivity(composeIntent);
+            context.startActivity(intent);
         }
     }
 
-    private Intent setupIntentBuilder(boolean tootRightNow) {
-        ComposeActivity.IntentBuilder intentBuilder = new ComposeActivity.IntentBuilder()
-                .tootText(tootEditText.getText().toString())
-                .visibility(getCurrentVisibility())
-                .tootRightNow(tootRightNow);
+    private Intent getComposeIntent(Context context, boolean onlyVisibility, boolean tootRightNow) {
+        ComposeActivity.ComposeOptions options = new ComposeActivity.ComposeOptions();
+        options.setVisibility(getCurrentVisibility());
+        if (onlyVisibility) {
+            return ComposeActivity.startIntent(context, options);
+        }
+        options.setTootText(tootEditText.getText().toString());
+        options.setTootRightNow(tootRightNow);
 
-        if (inReplyTo == null) {
-            return intentBuilder.build(context);
+        if (inReplyTo != null) {
+            Status.Mention[] mentions = inReplyTo.getMentions();
+            Set<String> mentionedUsernames = new LinkedHashSet<>();
+            mentionedUsernames.add(inReplyTo.getAccount().getUsername());
+            for (Status.Mention mention : mentions) {
+                mentionedUsernames.add(mention.getUsername());
+            }
+            mentionedUsernames.remove(loggedInUsername);
+
+            options.setInReplyToId(inReplyTo.getId());
+            options.setContentWarning(inReplyTo.getSpoilerText());
+            options.setMentionedUsernames(mentionedUsernames);
+            options.setReplyingStatusAuthor(inReplyTo.getAccount().getLocalUsername());
+            options.setReplyingStatusContent(inReplyTo.getContent().toString());
         }
 
-        Status.Mention[] mentions = inReplyTo.getMentions();
-        Set<String> mentionedUsernames = new LinkedHashSet<>();
-        mentionedUsernames.add(inReplyTo.getAccount().getUsername());
-        for (Status.Mention mention : mentions) {
-            mentionedUsernames.add(mention.getUsername());
-        }
-        mentionedUsernames.remove(loggedInUsername);
-
-        return intentBuilder.inReplyToId(inReplyTo.getId())
-                .contentWarning(inReplyTo.getSpoilerText())
-                .mentionedUsernames(mentionedUsernames)
-                .replyingStatusAuthor(inReplyTo.getAccount().getLocalUsername())
-                .replyingStatusContent(inReplyTo.getContent().toString())
-                .build(context);
+        return ComposeActivity.startIntent(context, options);
     }
 
     private void resetQuickCompose() {
@@ -178,7 +180,7 @@ public class QuickTootHelper {
 
     private Status.Visibility getCurrentVisibility() {
         Status.Visibility visibility = Status.Visibility.byNum(defPrefs.getInt(PREF_CURRENT_VISIBILITY, Status.Visibility.PUBLIC.getNum()));
-        if (!Arrays.asList(ComposeActivity.CAN_USE_UNLEAKABLE)
+        if (!Arrays.asList(CAN_USE_UNLEAKABLE)
                 .contains(domain) && visibility == Status.Visibility.UNLEAKABLE) {
             defPrefs.edit()
                     .putInt(PREF_CURRENT_VISIBILITY, Status.Visibility.PUBLIC.getNum())
@@ -217,8 +219,7 @@ public class QuickTootHelper {
                 visibility = Status.Visibility.PRIVATE;
                 break;
             case PRIVATE:
-                if (Arrays.asList(ComposeActivity.CAN_USE_UNLEAKABLE)
-                        .contains(domain)) {
+                if (Arrays.asList(CAN_USE_UNLEAKABLE).contains(domain)) {
                     visibility = Status.Visibility.UNLEAKABLE;
                 } else {
                     visibility = Status.Visibility.PUBLIC;

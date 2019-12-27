@@ -18,9 +18,10 @@ package com.keylesspalace.tusky.fragment.preference
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import com.keylesspalace.tusky.ComposeActivity
 import com.keylesspalace.tusky.PreferencesActivity
 import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.components.compose.ComposeActivity
+import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.getNonNullString
 import com.mikepenz.google_material_typeface_library.GoogleMaterial
@@ -120,10 +121,10 @@ class PreferencesFragment : PreferenceFragmentCompat() {
             val sendCrashReportPreference = requirePreference("sendCrashReport")
             sendCrashReportPreference.setOnPreferenceClickListener {
                 activity?.let { activity ->
-                    val intent = ComposeActivity.IntentBuilder()
-                            .tootText("@ars42525@odakyu.app $stackTrace".substring(0, 400))
-                            .contentWarning("Yuito StackTrace")
-                            .build(activity)
+                    val intent = ComposeActivity.startIntent(activity, ComposeOptions(
+                            tootText = "@ars42525@odakyu.app $stackTrace".substring(0, 400),
+                            contentWarning = "Yuito StackTrace"
+                    ))
                     activity.startActivity(intent)
                     sharedPreferences.edit()
                             .remove("stack_trace")

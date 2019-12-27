@@ -108,14 +108,11 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
 
         setupButtons(listener, account.getId(), false, account.getUsername());
 
-        setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getEmojis(), listener, false);
+        setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getEmojis(), PollViewDataKt.toViewData(status.getPoll()), listener, false);
 
         setConversationName(conversation.getAccounts());
 
         setAvatars(conversation.getAccounts());
-
-        setupPoll(PollViewDataKt.toViewData(status.getPoll()), status.getEmojis(), listener);
-
     }
 
     private void setConversationName(List<ConversationAccountEntity> accounts) {

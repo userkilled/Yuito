@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.MenuItem
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.keylesspalace.tusky.adapter.ScheduledTootAdapter
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.StatusScheduledEvent
+import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.ScheduledStatus
 import com.keylesspalace.tusky.network.MastodonApi
@@ -79,6 +81,16 @@ class ScheduledTootActivity : BaseActivity(), ScheduledTootAdapter.ScheduledToot
                 }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     fun loadStatuses() {
         progress_bar.visibility = View.VISIBLE
         mastodonApi.scheduledStatuses()
@@ -135,15 +147,15 @@ class ScheduledTootActivity : BaseActivity(), ScheduledTootAdapter.ScheduledToot
         if (item == null) {
             return
         }
-        val intent = ComposeActivity.IntentBuilder()
-                .tootText(item.params.text)
-                .contentWarning(item.params.spoilerText)
-                .mediaAttachments(item.mediaAttachments)
-                .inReplyToId(item.params.inReplyToId)
-                .visibility(item.params.visibility)
-                .scheduledAt(item.scheduledAt)
-                .sensitive(item.params.sensitive)
-                .build(this)
+        val intent = ComposeActivity.startIntent(this, ComposeActivity.ComposeOptions(
+                tootText = item.params.text,
+                contentWarning = item.params.spoilerText,
+                mediaAttachments = item.mediaAttachments,
+                inReplyToId = item.params.inReplyToId,
+                visibility = item.params.visibility,
+                scheduledAt = item.scheduledAt,
+                sensitive = item.params.sensitive
+        ))
         startActivity(intent)
         delete(position, item)
     }
