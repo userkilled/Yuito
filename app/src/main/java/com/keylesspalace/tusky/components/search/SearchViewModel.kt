@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.keylesspalace.tusky.components.search.adapter.SearchNotestockRepository
 import com.keylesspalace.tusky.components.search.adapter.SearchRepository
@@ -16,19 +15,18 @@ import com.keylesspalace.tusky.network.NotestockApi
 import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.util.Listing
 import com.keylesspalace.tusky.util.NetworkState
+import com.keylesspalace.tusky.util.RxAwareViewModel
 import com.keylesspalace.tusky.util.ViewDataUtils
 import com.keylesspalace.tusky.viewdata.StatusViewData
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
 import javax.inject.Inject
 
 class SearchViewModel @Inject constructor(
         mastodonApi: MastodonApi,
         notestockApi: NotestockApi,
         private val timelineCases: TimelineCases,
-        private val accountManager: AccountManager) : ViewModel() {
+        private val accountManager: AccountManager) : RxAwareViewModel() {
 
     var currentQuery: String = ""
 
@@ -40,7 +38,6 @@ class SearchViewModel @Inject constructor(
 
     val mediaPreviewEnabled: Boolean
         get() = activeAccount?.mediaPreviewEnabled ?: false
-    private val disposables = CompositeDisposable()
 
     private val statusesRepository = SearchRepository<Pair<Status, StatusViewData.Concrete>>(mastodonApi)
     private val accountsRepository = SearchRepository<Account>(mastodonApi)
@@ -101,11 +98,6 @@ class SearchViewModel @Inject constructor(
 
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
-
     fun removeItem(status: Pair<Status, StatusViewData.Concrete>) {
         timelineCases.delete(status.first.id)
                 .subscribe({
@@ -114,7 +106,7 @@ class SearchViewModel @Inject constructor(
                 }, {
                     err -> Log.d(TAG, "Failed to delete status", err)
                 })
-                .addTo(disposables)
+                .autoDispose()
 
     }
 
@@ -142,13 +134,13 @@ class SearchViewModel @Inject constructor(
     }
 
     fun reblog(status: Pair<Status, StatusViewData.Concrete>, reblog: Boolean) {
-        disposables.add(timelineCases.reblog(status.first, reblog)
+        timelineCases.reblog(status.first, reblog)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         { setRebloggedForStatus(status, reblog) },
                         { err -> Log.d(TAG, "Failed to reblog status ${status.first.id}", err) }
                 )
-        )
+                .autoDispose()
     }
 
     private fun setRebloggedForStatus(status: Pair<Status, StatusViewData.Concrete>, reblog: Boolean) {
@@ -202,7 +194,7 @@ class SearchViewModel @Inject constructor(
     fun voteInPoll(status: Pair<Status, StatusViewData.Concrete>, choices: MutableList<Int>) {
         val votedPoll = status.first.actionableStatus.poll!!.votedCopy(choices)
         updateStatus(status, votedPoll)
-        disposables.add(timelineCases.voteInPoll(status.first, choices)
+        timelineCases.voteInPoll(status.first, choices)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         { newPoll -> updateStatus(status, newPoll) },
@@ -210,7 +202,8 @@ class SearchViewModel @Inject constructor(
                             Log.d(TAG,
                                     "Failed to vote in poll: ${status.first.id}", t)
                         }
-                ))
+                )
+                .autoDispose()
     }
 
     private fun updateStatus(status: Pair<Status, StatusViewData.Concrete>, newPoll: Poll) {
@@ -232,9 +225,10 @@ class SearchViewModel @Inject constructor(
             loadedStatuses[idx] = newPair
             repoResultStatus.value?.refresh?.invoke()
         }
-        disposables.add(timelineCases.favourite(status.first, isFavorited)
+        timelineCases.favourite(status.first, isFavorited)
                 .onErrorReturnItem(status.first)
-                .subscribe())
+                .subscribe()
+                .autoDispose()
     }
 
     fun bookmark(status: Pair<Status, StatusViewData.Concrete>, isBookmarked: Boolean) {
@@ -244,9 +238,10 @@ class SearchViewModel @Inject constructor(
             loadedStatuses[idx] = newPair
             repoResultStatus.value?.refresh?.invoke()
         }
-        disposables.add(timelineCases.favourite(status.first, isBookmarked)
+        timelineCases.favourite(status.first, isBookmarked)
                 .onErrorReturnItem(status.first)
-                .subscribe())
+                .subscribe()
+                .autoDispose()
     }
 
     fun getAllAccountsOrderedByActive(): List<AccountEntity> {

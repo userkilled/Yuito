@@ -23,7 +23,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.keylesspalace.tusky.R;
@@ -32,6 +31,7 @@ import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.util.ImageLoadingHelper;
 import com.keylesspalace.tusky.util.SmartLengthInputFilter;
+import com.keylesspalace.tusky.util.StatusDisplayOptions;
 import com.keylesspalace.tusky.viewdata.PollViewDataKt;
 
 import java.util.List;
@@ -44,15 +44,13 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
     private ToggleButton contentCollapseButton;
     private ImageView[] avatars;
 
+    private StatusDisplayOptions statusDisplayOptions;
     private StatusActionListener listener;
-    private boolean mediaPreviewEnabled;
-    private boolean animateAvatars;
 
     ConversationViewHolder(View itemView,
-                           StatusActionListener listener,
-                           boolean useAbsoluteTime,
-                           boolean mediaPreviewEnabled) {
-        super(itemView, useAbsoluteTime);
+                           StatusDisplayOptions statusDisplayOptions,
+                           StatusActionListener listener) {
+        super(itemView);
         conversationNameTextView = itemView.findViewById(R.id.conversation_name);
         contentCollapseButton = itemView.findViewById(R.id.button_toggle_content);
         avatars = new ImageView[]{
@@ -60,11 +58,10 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
                 itemView.findViewById(R.id.status_avatar_1),
                 itemView.findViewById(R.id.status_avatar_2)
         };
+        this.statusDisplayOptions = statusDisplayOptions;
 
         this.listener = listener;
-        this.mediaPreviewEnabled = mediaPreviewEnabled;
 
-        this.animateAvatars = PreferenceManager.getDefaultSharedPreferences(itemView.getContext()).getBoolean("animateGifAvatars", false);
     }
 
     @Override
@@ -80,14 +77,15 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
 
         setDisplayName(account.getDisplayName(), account.getEmojis());
         setUsername(account.getUsername());
-        setCreatedAt(status.getCreatedAt());
+        setCreatedAt(status.getCreatedAt(), statusDisplayOptions);
         setIsReply(status.getInReplyToId() != null);
         setFavourited(status.getFavourited());
         setBookmarked(status.getBookmarked());
         List<Attachment> attachments = status.getAttachments();
         boolean sensitive = status.getSensitive();
-        if(mediaPreviewEnabled && !hasAudioAttachment(attachments)) {
-            setMediaPreviews(attachments, sensitive, listener, status.getShowingHiddenContent());
+        if (statusDisplayOptions.mediaPreviewEnabled() && !hasAudioAttachment(attachments)) {
+            setMediaPreviews(attachments, sensitive, listener, status.getShowingHiddenContent(),
+                    statusDisplayOptions.useBlurhash());
 
             if (attachments.size() == 0) {
                 hideSensitiveMediaWarning();
@@ -108,7 +106,9 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
 
         setupButtons(listener, account.getId(), false, account.getUsername());
 
-        setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getEmojis(), PollViewDataKt.toViewData(status.getPoll()), listener, false);
+        setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(),
+                status.getMentions(), status.getEmojis(),
+                PollViewDataKt.toViewData(status.getPoll()), statusDisplayOptions, listener, false);
 
         setConversationName(conversation.getAccounts());
 
@@ -118,11 +118,11 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
     private void setConversationName(List<ConversationAccountEntity> accounts) {
         Context context = conversationNameTextView.getContext();
         String conversationName = "";
-        if(accounts.size() == 1) {
+        if (accounts.size() == 1) {
             conversationName = context.getString(R.string.conversation_1_recipients, accounts.get(0).getUsername());
-        } else if(accounts.size() == 2) {
+        } else if (accounts.size() == 2) {
             conversationName = context.getString(R.string.conversation_2_recipients, accounts.get(0).getUsername(), accounts.get(1).getUsername());
-        } else if (accounts.size() > 2){
+        } else if (accounts.size() > 2) {
             conversationName = context.getString(R.string.conversation_more_recipients, accounts.get(0).getUsername(), accounts.get(1).getUsername(), accounts.size() - 2);
         }
 
@@ -130,10 +130,11 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
     }
 
     private void setAvatars(List<ConversationAccountEntity> accounts) {
-        for(int i=0; i < avatars.length; i++) {
+        for (int i = 0; i < avatars.length; i++) {
             ImageView avatarView = avatars[i];
-            if(i < accounts.size()) {
-                ImageLoadingHelper.loadAvatar(accounts.get(i).getAvatar(), avatarView, avatarRadius48dp, animateAvatars);
+            if (i < accounts.size()) {
+                ImageLoadingHelper.loadAvatar(accounts.get(i).getAvatar(), avatarView,
+                        avatarRadius48dp, statusDisplayOptions.animateAvatars());
                 avatarView.setVisibility(View.VISIBLE);
             } else {
                 avatarView.setVisibility(View.GONE);

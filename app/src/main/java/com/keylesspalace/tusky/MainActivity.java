@@ -54,6 +54,7 @@ import com.keylesspalace.tusky.appstore.MainTabsChangedEvent;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
 import com.keylesspalace.tusky.components.compose.ComposeActivity;
 import com.keylesspalace.tusky.components.conversation.ConversationsRepository;
+import com.keylesspalace.tusky.components.scheduled.ScheduledTootActivity;
 import com.keylesspalace.tusky.components.search.SearchActivity;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.entity.Account;

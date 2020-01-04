@@ -21,37 +21,22 @@ import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import com.keylesspalace.tusky.adapter.ComposeAutoCompleteAdapter
 import com.keylesspalace.tusky.components.compose.ComposeActivity.QueuedMedia
 import com.keylesspalace.tusky.components.search.SearchType
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
 import com.keylesspalace.tusky.db.InstanceEntity
-import com.keylesspalace.tusky.entity.Attachment
-import com.keylesspalace.tusky.entity.Emoji
-import com.keylesspalace.tusky.entity.NewPoll
+import com.keylesspalace.tusky.entity.*
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.service.ServiceClient
 import com.keylesspalace.tusky.service.TootToSend
 import com.keylesspalace.tusky.util.*
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.Singles
 import java.util.*
 import javax.inject.Inject
-
-open class RxAwareViewModel : ViewModel() {
-    private val disposables = CompositeDisposable()
-
-    fun Disposable.autoDispose() = disposables.add(this)
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
-}
 
 /**
  * Throw when trying to add an image when video is already present or the other way around
