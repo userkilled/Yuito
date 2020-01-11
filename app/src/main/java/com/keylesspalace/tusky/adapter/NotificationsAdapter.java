@@ -521,10 +521,13 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                     notificationAvatarRadius, statusDisplayOptions.animateAvatars());
         }
 
-        private void setQuoteContainer(Status status, final LinkListener listener) {
+        private void setQuoteContainer(Status status, final LinkListener listener, StatusDisplayOptions statusDisplayOptions) {
             if (status != null) {
                 quoteContainer.setVisibility(View.VISIBLE);
-                new QuoteInlineHelper(status, quoteContainer, listener).setupQuoteContainer();
+                new QuoteInlineHelper(status, quoteContainer, listener,
+                        quoteContainer.getContext().getResources().getDimensionPixelSize(R.dimen.avatar_radius_24dp),
+                        statusDisplayOptions)
+                        .setupQuoteContainer();
             } else {
                 quoteContainer.setVisibility(View.GONE);
             }
@@ -587,7 +590,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                     CustomEmojiHelper.emojifyString(statusViewData.getSpoilerText(), statusViewData.getStatusEmojis(), contentWarningDescriptionTextView);
             contentWarningDescriptionTextView.setText(emojifiedContentWarning);
 
-            setQuoteContainer(statusViewData.getQuote(), listener);
+            setQuoteContainer(statusViewData.getQuote(), listener, statusDisplayOptions);
         }
 
     }

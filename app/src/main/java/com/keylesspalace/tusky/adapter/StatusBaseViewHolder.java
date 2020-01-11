@@ -465,10 +465,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         favouriteButton.setChecked(favourited);
     }
 
-    private void setQuoteContainer(Status status, final StatusActionListener listener) {
+    private void setQuoteContainer(Status status, final StatusActionListener listener, StatusDisplayOptions statusDisplayOptions) {
         if (status != null) {
             quoteContainer.setVisibility(View.VISIBLE);
-            new QuoteInlineHelper(status, quoteContainer, listener).setupQuoteContainer();
+            new QuoteInlineHelper(status, quoteContainer, listener, avatarRadius24dp, statusDisplayOptions).setupQuoteContainer();
         } else {
             quoteContainer.setVisibility(View.GONE);
         }
@@ -786,7 +786,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setAvatar(status.getAvatar(), status.getRebloggedAvatar(), status.isBot(), statusDisplayOptions);
             setReblogged(status.isReblogged());
             setFavourited(status.isFavourited());
-            setQuoteContainer(status.getQuote(), listener);
+            setQuoteContainer(status.getQuote(), listener, statusDisplayOptions);
             setBookmarked(status.isBookmarked());
             List<Attachment> attachments = status.getAttachments();
             boolean sensitive = status.isSensitive();

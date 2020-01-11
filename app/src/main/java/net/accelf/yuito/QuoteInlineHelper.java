@@ -2,12 +2,12 @@ package net.accelf.yuito;
 
 import android.content.Context;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
+import androidx.annotation.Px;
+
 import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Account;
@@ -15,7 +15,9 @@ import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.LinkListener;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
+import com.keylesspalace.tusky.util.ImageLoadingHelper;
 import com.keylesspalace.tusky.util.LinkHelper;
+import com.keylesspalace.tusky.util.StatusDisplayOptions;
 
 import java.util.List;
 
@@ -32,8 +34,12 @@ public class QuoteInlineHelper {
     private TextView quoteMedia;
 
     private LinkListener listener;
+    @Px
+    private int avatarRadius24dp;
+    private StatusDisplayOptions statusDisplayOptions;
 
-    public QuoteInlineHelper(Status status, View container, LinkListener listener) {
+    public QuoteInlineHelper(Status status, View container, LinkListener listener,
+                             @Px int avatarRadius24dp, StatusDisplayOptions statusDisplayOptions) {
         quoteStatus = status;
         quoteContainer = container;
         quoteAvatar = container.findViewById(R.id.status_quote_inline_avatar);
@@ -44,6 +50,8 @@ public class QuoteInlineHelper {
         quoteContent = container.findViewById(R.id.status_quote_inline_content);
         quoteMedia = container.findViewById(R.id.status_quote_inline_media);
         this.listener = listener;
+        this.avatarRadius24dp = avatarRadius24dp;
+        this.statusDisplayOptions = statusDisplayOptions;
     }
 
     private void setDisplayName(String name, List<Emoji> customEmojis) {
@@ -65,15 +73,8 @@ public class QuoteInlineHelper {
         LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener, false);
     }
 
-    private void setAvatar(String url) {
-        if (TextUtils.isEmpty(url)) {
-            quoteAvatar.setImageResource(R.drawable.avatar_default);
-        } else {
-            Glide.with(quoteAvatar.getContext())
-                    .load(url)
-                    .placeholder(R.drawable.avatar_default)
-                    .into(quoteAvatar);
-        }
+    private void setAvatar(String url, @Px int avatarRadius24dp, StatusDisplayOptions statusDisplayOptions) {
+        ImageLoadingHelper.loadAvatar(url, quoteAvatar, avatarRadius24dp, statusDisplayOptions.animateAvatars());
     }
 
     private void setSpoilerText(String spoilerText, List<Emoji> emojis) {
@@ -118,7 +119,7 @@ public class QuoteInlineHelper {
         setUsername(account.getUsername());
         setContent(quoteStatus.getContent(), quoteStatus.getMentions(),
                 quoteStatus.getEmojis(), listener);
-        setAvatar(account.getAvatar());
+        setAvatar(account.getAvatar(), avatarRadius24dp, statusDisplayOptions);
         setOnClickListener(account.getId(), quoteStatus.getUrl());
 
         if (quoteStatus.getSpoilerText().isEmpty()) {
