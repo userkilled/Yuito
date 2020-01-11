@@ -15,7 +15,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -26,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Attachment.Focus;
@@ -79,7 +79,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private TextView sensitiveMediaWarning;
     private View sensitiveMediaShow;
     protected TextView[] mediaLabels;
-    private ToggleButton contentWarningButton;
+    private MaterialButton contentWarningButton;
     private ImageView avatarInset;
 
     public ImageView avatar;
@@ -184,7 +184,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void toggleContentWarning() {
-        contentWarningButton.toggle();
+        contentWarningButton.performClick();
     }
 
     protected void setSpoilerAndContent(boolean expanded,
@@ -205,15 +205,25 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             contentWarningDescription.setText(emojiSpoiler);
             contentWarningDescription.setVisibility(View.VISIBLE);
             contentWarningButton.setVisibility(View.VISIBLE);
-            contentWarningButton.setChecked(expanded);
-            contentWarningButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            setContentWarningButtonText(expanded);
+            contentWarningButton.setOnClickListener( view -> {
                 contentWarningDescription.invalidate();
                 if (getAdapterPosition() != RecyclerView.NO_POSITION) {
-                    listener.onExpandedChange(isChecked, getAdapterPosition());
+                    listener.onExpandedChange(!expanded, getAdapterPosition());
                 }
-                this.setTextVisible(isChecked, content, mentions, emojis, poll, statusDisplayOptions, listener, removeQuote);
+                setContentWarningButtonText(!expanded);
+
+                this.setTextVisible(!expanded, content, mentions, emojis, poll, statusDisplayOptions, listener, removeQuote);
             });
             this.setTextVisible(expanded, content, mentions, emojis, poll, statusDisplayOptions, listener, removeQuote);
+        }
+    }
+
+    private void setContentWarningButtonText(boolean expanded) {
+        if(expanded) {
+            contentWarningButton.setText(R.string.status_content_warning_show_less);
+        } else {
+            contentWarningButton.setText(R.string.status_content_warning_show_more);
         }
     }
 
@@ -566,15 +576,11 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setAttachmentClickListener(imageView, listener, i, attachment, true);
         }
 
-
-        final String hiddenContentText;
         if (sensitive) {
-            hiddenContentText = context.getString(R.string.status_sensitive_media_title);
+            sensitiveMediaWarning.setText(R.string.status_sensitive_media_title);
         } else {
-            hiddenContentText = context.getString(R.string.status_media_hidden_title);
+            sensitiveMediaWarning.setText(R.string.status_media_hidden_title);
         }
-
-        sensitiveMediaWarning.setText(HtmlUtils.fromHtml(hiddenContentText));
 
         sensitiveMediaWarning.setVisibility(showingContent ? View.GONE : View.VISIBLE);
         sensitiveMediaShow.setVisibility(showingContent ? View.VISIBLE : View.GONE);

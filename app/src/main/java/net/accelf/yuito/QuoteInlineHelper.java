@@ -6,9 +6,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Emoji;
@@ -27,7 +27,7 @@ public class QuoteInlineHelper {
     private TextView quoteDisplayName;
     private TextView quoteUsername;
     private TextView quoteContentWarningDescription;
-    private ToggleButton quoteContentWarningButton;
+    private MaterialButton quoteContentWarningButton;
     private TextView quoteContent;
     private TextView quoteMedia;
 
@@ -82,11 +82,19 @@ public class QuoteInlineHelper {
         quoteContentWarningDescription.setText(emojiSpoiler);
         quoteContentWarningDescription.setVisibility(View.VISIBLE);
         quoteContentWarningButton.setVisibility(View.VISIBLE);
-        quoteContentWarningButton.setChecked(false);
-        quoteContentWarningButton.setOnCheckedChangeListener((buttonView, isChecked)
-                -> quoteContent.setVisibility(isChecked ? View.VISIBLE : View.GONE));
-        quoteContent.setVisibility(View.GONE);
+        quoteContentWarningButton.setOnClickListener(v
+                -> setContentVisibility(!(quoteContent.getVisibility() == View.VISIBLE)));
+        setContentVisibility(false);
+    }
 
+    private void setContentVisibility(boolean show) {
+        if (show) {
+            quoteContent.setVisibility(View.VISIBLE);
+            quoteContentWarningButton.setText(R.string.status_content_warning_show_less);
+        } else {
+            quoteContent.setVisibility(View.GONE);
+            quoteContentWarningButton.setText(R.string.status_content_warning_show_more);
+        }
     }
 
     private void hideSpoilerText() {

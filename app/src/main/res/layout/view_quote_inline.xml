@@ -71,11 +71,11 @@
         tools:text="CW"
         tools:visibility="visible" />
 
-    <ToggleButton
+    <Button
         android:id="@+id/status_quote_inline_content_warning_button"
+        style="@style/TuskyButton.Outlined"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="?attr/content_warning_button"
         android:importantForAccessibility="no"
         android:minWidth="150dp"
         android:minHeight="0dp"
@@ -84,12 +84,11 @@
         android:paddingRight="16dp"
         android:paddingBottom="4dp"
         android:textAllCaps="true"
-        android:textOff="@string/status_content_warning_show_more"
-        android:textOn="@string/status_content_warning_show_less"
         android:textSize="?attr/status_text_medium"
         android:visibility="gone"
         app:layout_constraintStart_toEndOf="@id/status_quote_inline_content_warning_description"
         app:layout_constraintTop_toTopOf="@id/status_quote_inline_content_warning_description"
+        tools:text="@string/status_content_warning_show_more"
         tools:visibility="visible" />
 
     <androidx.emoji.widget.EmojiTextView
