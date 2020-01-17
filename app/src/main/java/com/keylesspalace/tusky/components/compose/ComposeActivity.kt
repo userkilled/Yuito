@@ -181,8 +181,7 @@ class ComposeActivity : BaseActivity(),
         setupContentWarningField(composeOptions?.contentWarning)
         setupPollView()
         applyShareIntent(intent, savedInstanceState)
-
-        composeEditField.requestFocus()
+        viewModel.setupComplete.value = true
 
         if (composeOptions?.tootRightNow == true && calculateTextLength() > 0) {
             onSendClicked()
@@ -222,7 +221,7 @@ class ComposeActivity : BaseActivity(),
              * instance state will be re-queued. */
             val type = intent.type
             if (type != null) {
-                if (type.startsWith("image/") || type.startsWith("video/")) {
+                if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/")) {
                     val uriList = ArrayList<Uri>()
                     if (intent.action != null) {
                         when (intent.action) {
@@ -376,12 +375,16 @@ class ComposeActivity : BaseActivity(),
             combineOptionalLiveData(viewModel.media, viewModel.poll) { media, poll ->
                 val active = poll == null
                         && media!!.size != 4
-                        && media.firstOrNull()?.type != QueuedMedia.Type.VIDEO
+                        && (media.isEmpty() || media.first().type == QueuedMedia.Type.IMAGE)
                 enableButton(composeAddMediaButton, active, active)
                 enablePollButton(media.isNullOrEmpty())
             }.subscribe()
             viewModel.uploadError.observe {
                 displayTransientError(R.string.error_media_upload_sending)
+            }
+            viewModel.setupComplete.observe {
+                // Focus may have changed during view model setup, ensure initial focus is on the edit field
+                composeEditField.requestFocus()
             }
         }
     }
@@ -478,18 +481,63 @@ class ComposeActivity : BaseActivity(),
         // If you select "backward" in an editable, you get SelectionStart > SelectionEnd
         val start = composeEditField.selectionStart.coerceAtMost(composeEditField.selectionEnd)
         val end = composeEditField.selectionStart.coerceAtLeast(composeEditField.selectionEnd)
-        composeEditField.text.replace(start, end, text)
+        val textToInsert = if (
+                composeEditField.text.isNotEmpty()
+                && !composeEditField.text[start - 1].isWhitespace()
+        ) " $text" else text
+        composeEditField.text.replace(start, end, textToInsert)
 
         // Set the cursor after the inserted text
         composeEditField.setSelection(start + text.length)
     }
 
+    fun prependSelectedWordsWith(text: CharSequence) {
+        // If you select "backward" in an editable, you get SelectionStart > SelectionEnd
+        val start = composeEditField.selectionStart.coerceAtMost(composeEditField.selectionEnd)
+        val end = composeEditField.selectionStart.coerceAtLeast(composeEditField.selectionEnd)
+        val editorText = composeEditField.text
+
+        if (start == end) {
+            // No selection, just insert text at caret
+            editorText.insert(start, text)
+            // Set the cursor after the inserted text
+            composeEditField.setSelection(start + text.length)
+        } else {
+            var wasWord: Boolean
+            var isWord = end < editorText.length && !Character.isWhitespace(editorText[end])
+            var newEnd = end
+
+            // Iterate the selection backward so we don't have to juggle indices on insertion
+            var index = end - 1
+            while (index >= start - 1 && index >= 0) {
+                wasWord = isWord
+                isWord = !Character.isWhitespace(editorText[index])
+                if (wasWord && !isWord) {
+                    // We've reached the beginning of a word, perform insert
+                    editorText.insert(index + 1, text)
+                    newEnd += text.length
+                }
+                --index
+            }
+
+            if (start == 0 && isWord) {
+                // Special case when the selection includes the start of the text
+                editorText.insert(0, text)
+                newEnd += text.length
+            }
+
+            // Keep the same text (including insertions) selected
+            composeEditField.setSelection(start, newEnd)
+        }
+    }
+
+
     private fun atButtonClicked() {
-        replaceTextAtCaret("@")
+        prependSelectedWordsWith("@")
     }
 
     private fun hashButtonClicked() {
-        replaceTextAtCaret("#")
+        prependSelectedWordsWith("#")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -843,7 +891,7 @@ class ComposeActivity : BaseActivity(),
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
 
-        val mimeTypes = arrayOf("image/*", "video/*")
+        val mimeTypes = arrayOf("image/*", "video/*", "audio/*")
         intent.type = "*/*"
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
         startActivityForResult(intent, MEDIA_PICK_RESULT)
@@ -885,6 +933,9 @@ class ComposeActivity : BaseActivity(),
                     val errorId = when (it) {
                         is VideoSizeException -> {
                             R.string.error_video_upload_size
+                        }
+                        is AudioSizeException -> {
+                            R.string.error_audio_upload_size
                         }
                         is VideoOrImageException -> {
                             R.string.error_media_upload_image_or_video
@@ -1010,7 +1061,7 @@ class ComposeActivity : BaseActivity(),
             val description: String? = null
     ) {
         enum class Type {
-            IMAGE, VIDEO;
+            IMAGE, VIDEO, AUDIO;
         }
     }
 
@@ -1075,7 +1126,7 @@ class ComposeActivity : BaseActivity(),
 
         @JvmStatic
         fun canHandleMimeType(mimeType: String?): Boolean {
-            return mimeType != null && (mimeType.startsWith("image/") || mimeType.startsWith("video/") || mimeType == "text/plain")
+            return mimeType != null && (mimeType.startsWith("image/") || mimeType.startsWith("video/") || mimeType.startsWith("audio/") || mimeType == "text/plain")
         }
     }
 }

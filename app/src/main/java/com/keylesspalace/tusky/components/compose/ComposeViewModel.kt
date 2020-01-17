@@ -84,6 +84,7 @@ class ComposeViewModel
 
     val statusVisibility = mutableLiveData(Status.Visibility.UNKNOWN)
     val showContentWarning = mutableLiveData(false)
+    val setupComplete = mutableLiveData(false)
     val poll: MutableLiveData<NewPoll?> = mutableLiveData(null)
     val scheduledAt: MutableLiveData<String?> = mutableLiveData(null)
 
@@ -142,7 +143,7 @@ class ComposeViewModel
         mediaUploader.prepareMedia(uri)
                 .map { (type, uri, size) ->
                     val mediaItems = media.value!!
-                    if (type == QueuedMedia.Type.VIDEO
+                    if (type != QueuedMedia.Type.IMAGE
                             && mediaItems.isNotEmpty()
                             && mediaItems[0].type == QueuedMedia.Type.IMAGE) {
                         throw VideoOrImageException()
@@ -392,6 +393,7 @@ class ComposeViewModel
         if (contentWarning != null) {
             startingContentWarning = contentWarning
         }
+        showContentWarning.value = !contentWarning.isNullOrBlank()
 
         // recreate media list
         // when coming from SavedTootActivity
@@ -411,6 +413,7 @@ class ComposeViewModel
             val mediaType = when (a.type) {
                 Attachment.Type.VIDEO, Attachment.Type.GIFV -> QueuedMedia.Type.VIDEO
                 Attachment.Type.UNKNOWN, Attachment.Type.IMAGE -> QueuedMedia.Type.IMAGE
+                Attachment.Type.AUDIO -> QueuedMedia.Type.AUDIO
                 else -> QueuedMedia.Type.IMAGE
             }
             addUploadedMedia(a.id, mediaType, a.url.toUri(), a.description)
