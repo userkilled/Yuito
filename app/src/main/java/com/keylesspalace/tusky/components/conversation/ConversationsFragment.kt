@@ -200,14 +200,7 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable, Res
     }
 
     override fun onReset() {
-        viewModel.conversations.observe(this, Observer<PagedList<ConversationEntity>> {
-            adapter.submitList(it)
-        })
-        viewModel.networkState.observe(this, Observer {
-            adapter.setNetworkState(it)
-        })
-
-        viewModel.load()
+        viewModel.refresh()
     }
 
     override fun onVoteInPoll(position: Int, choices: MutableList<Int>) {

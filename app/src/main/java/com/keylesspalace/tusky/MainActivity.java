@@ -133,7 +133,6 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
     private int notificationTabPosition;
     private MainPagerAdapter adapter;
-    private List<TabData> tabs;
 
     private final EmojiCompat.InitCallback emojiInitCallback = new EmojiCompat.InitCallback() {
         @Override
@@ -254,11 +253,6 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                if (tabs.get(tab.getPosition()).getId().equals(TabDataKt.DIRECT)) {
-                    popupView.findViewById(R.id.tab_reset).setVisibility(View.GONE);
-                    popupView.findViewById(R.id.tab_text_reset).setVisibility(View.GONE);
-                }
-
                 popupView.findViewById(R.id.tab_jump_to_top)
                         .setOnClickListener(v -> {
                             if (adapter != null) {
@@ -577,7 +571,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     }
 
     private void setupTabs(boolean selectNotificationTab) {
-        tabs = accountManager.getActiveAccount().getTabPreferences();
+        List<TabData> tabs = accountManager.getActiveAccount().getTabPreferences();
 
         adapter = new MainPagerAdapter(tabs, this);
         viewPager.setAdapter(adapter);
