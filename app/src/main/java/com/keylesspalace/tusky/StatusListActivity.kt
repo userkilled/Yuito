@@ -24,14 +24,10 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.keylesspalace.tusky.appstore.EventHub
-
 import com.keylesspalace.tusky.fragment.TimelineFragment
 import com.keylesspalace.tusky.fragment.TimelineFragment.Kind
 import com.uber.autodispose.AutoDispose
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-
-import javax.inject.Inject
-
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -39,6 +35,7 @@ import kotlinx.android.extensions.CacheImplementation
 import kotlinx.android.extensions.ContainerOptions
 import kotlinx.android.synthetic.main.toolbar_basic.*
 import net.accelf.yuito.QuickTootHelper
+import javax.inject.Inject
 
 class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
@@ -76,7 +73,7 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
         val quickTootContainer = findViewById<ConstraintLayout>(R.id.quick_toot_container)
         val composeButton = findViewById<FloatingActionButton>(R.id.floating_btn)
-        val quickTootHelper = QuickTootHelper(quickTootContainer, accountManager, eventHub)
+        val quickTootHelper = QuickTootHelper(this, quickTootContainer, accountManager, eventHub)
 
         eventHub.events
                 .observeOn(AndroidSchedulers.mainThread())

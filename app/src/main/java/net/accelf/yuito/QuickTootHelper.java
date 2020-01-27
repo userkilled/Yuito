@@ -5,14 +5,21 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.Lifecycle;
 
+import com.keylesspalace.tusky.AccountActivity;
+import com.keylesspalace.tusky.BottomSheetActivity;
+import com.keylesspalace.tusky.PostLookupFallbackBehavior;
 import com.keylesspalace.tusky.R;
+import com.keylesspalace.tusky.ViewTagActivity;
 import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.Event;
 import com.keylesspalace.tusky.appstore.EventHub;
@@ -21,16 +28,26 @@ import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.components.compose.ComposeActivity;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
+import com.keylesspalace.tusky.entity.Announcement;
 import com.keylesspalace.tusky.entity.Status;
+import com.keylesspalace.tusky.interfaces.LinkListener;
+import com.keylesspalace.tusky.util.LinkHelper;
+import com.keylesspalace.tusky.util.ListUtils;
 import com.keylesspalace.tusky.util.ThemeUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 import static com.keylesspalace.tusky.components.compose.ComposeActivity.CAN_USE_UNLEAKABLE;
 import static com.keylesspalace.tusky.components.compose.ComposeActivity.PREF_DEFAULT_TAG;
 import static com.keylesspalace.tusky.components.compose.ComposeActivity.PREF_USE_DEFAULT_TAG;
+import static com.uber.autodispose.AutoDispose.autoDisposable;
+import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
 public class QuickTootHelper {
 
@@ -39,22 +56,36 @@ public class QuickTootHelper {
     private TextView defaultTagInfo;
     private ImageView visibilityButton;
     private EditText tootEditText;
+    private ImageButton openAnnouncementsButton;
+    private TextView announcementsText;
+    private ImageButton prevButton;
+    private ImageButton nextButton;
+    private TextView announcementsCountText;
 
     private SharedPreferences defPrefs;
     private String domain;
     private String loggedInUsername;
     private EventHub eventHub;
+    private LinkListener listener;
 
     private Status inReplyTo;
+    private boolean open = false;
+    private int index = 0;
+    private List<Announcement> announcements;
 
     private static final String PREF_CURRENT_VISIBILITY = "current_visibility";
 
-    public QuickTootHelper(ConstraintLayout root, AccountManager accountManager, EventHub eventHub) {
+    public QuickTootHelper(BottomSheetActivity activity, ConstraintLayout root, AccountManager accountManager, EventHub eventHub) {
         context = root.getContext();
         quickReplyInfo = root.findViewById(R.id.quick_reply_info);
         defaultTagInfo = root.findViewById(R.id.default_tag_info);
         visibilityButton = root.findViewById(R.id.visibility_button);
         tootEditText = root.findViewById(R.id.toot_edit_text);
+        openAnnouncementsButton = root.findViewById(R.id.button_open_announcements);
+        announcementsText = root.findViewById(R.id.text_view_announcements);
+        prevButton = root.findViewById(R.id.button_prev_announcements);
+        nextButton = root.findViewById(R.id.button_next_announcements);
+        announcementsCountText = root.findViewById(R.id.text_view_announcements_count);
         Button quickTootButton = root.findViewById(R.id.toot_button);
 
         context = root.getContext();
@@ -71,6 +102,37 @@ public class QuickTootHelper {
         updateDefaultTagInfo();
         visibilityButton.setOnClickListener(v -> setNextVisibility());
         quickTootButton.setOnClickListener(v -> quickToot());
+
+        listener = new LinkListener() {
+            @Override
+            public void onViewTag(String tag) {
+                context.startActivity(ViewTagActivity.getIntent(context, tag));
+            }
+
+            @Override
+            public void onViewAccount(String id) {
+                context.startActivity(AccountActivity.getIntent(context, id));
+            }
+
+            @Override
+            public void onViewUrl(String url, String text) {
+                activity.viewUrl(url, text, PostLookupFallbackBehavior.OPEN_IN_BROWSER);
+            }
+        };
+        activity.mastodonApi.listAnnouncements()
+                .observeOn(AndroidSchedulers.mainThread())
+                .as(autoDisposable(from(activity, Lifecycle.Event.ON_DESTROY)))
+                .subscribe(
+                        a -> {
+                            announcements = a;
+                            updateAnnouncements();
+                        },
+                        Throwable::printStackTrace
+                );
+        updateAnnouncements();
+        openAnnouncementsButton.setOnClickListener(v -> toggleOpenAnnouncements());
+        prevButton.setOnClickListener(v -> prevAnnouncement());
+        nextButton.setOnClickListener(v -> nextAnnouncement());
     }
 
     public void composeButton() {
@@ -235,5 +297,51 @@ public class QuickTootHelper {
                 .apply();
         eventHub.dispatch(new PreferenceChangedEvent(PREF_CURRENT_VISIBILITY));
         updateVisibilityButton();
+    }
+
+    private void updateAnnouncements() {
+        if (ListUtils.isEmpty(announcements)) {
+            openAnnouncementsButton.setVisibility(View.GONE);
+            announcementsText.setVisibility(View.GONE);
+            announcementsCountText.setVisibility(View.GONE);
+            prevButton.setVisibility(View.GONE);
+            nextButton.setVisibility(View.GONE);
+        } else {
+            openAnnouncementsButton.setVisibility(View.VISIBLE);
+            announcementsText.setVisibility(View.VISIBLE);
+            announcementsCountText.setVisibility(View.VISIBLE);
+            if (open) {
+                prevButton.setVisibility(View.VISIBLE);
+                nextButton.setVisibility(View.VISIBLE);
+            } else {
+                prevButton.setVisibility(View.GONE);
+                nextButton.setVisibility(View.GONE);
+            }
+
+            openAnnouncementsButton.setImageDrawable(context.getDrawable(open ? R.drawable.ic_arrow_drop_down : R.drawable.ic_arrow_drop_up));
+            announcementsText.setSingleLine(!open);
+            announcementsCountText.setText(String.format(Locale.getDefault(), "(%d/%d)", index + 1, announcements.size()));
+            Announcement announcement = announcements.get(index);
+            LinkHelper.setClickableText(announcementsText, announcement.getContent(), announcement.getMentions(), listener, false);
+        }
+    }
+
+    private void toggleOpenAnnouncements() {
+        open = !open;
+        updateAnnouncements();
+    }
+
+    private void prevAnnouncement() {
+        if (index > 0) {
+            index--;
+            updateAnnouncements();
+        }
+    }
+
+    private void nextAnnouncement() {
+        if (index < announcements.size() - 1) {
+            index++;
+            updateAnnouncements();
+        }
     }
 }

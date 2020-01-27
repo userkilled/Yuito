@@ -81,7 +81,7 @@ public class ViewTagActivity extends BottomSheetActivity implements HasAndroidIn
         fragmentTransaction.commit();
 
         ConstraintLayout quickTootContainer = findViewById(R.id.quick_toot_container);
-        QuickTootHelper quickTootHelper = new QuickTootHelper(quickTootContainer, accountManager, eventHub);
+        QuickTootHelper quickTootHelper = new QuickTootHelper(this, quickTootContainer, accountManager, eventHub);
 
         eventHub.getEvents()
                 .observeOn(AndroidSchedulers.mainThread())

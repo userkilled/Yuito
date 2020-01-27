@@ -5,6 +5,69 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageButton
+        android:id="@+id/button_open_announcements"
+        style="?attr/image_button_style"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:padding="4dp"
+        android:contentDescription="@string/action_more"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toTopOf="@+id/quick_reply_info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/ic_arrow_drop_up" />
+
+    <TextView
+        android:id="@+id/text_view_announcements"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/quick_reply_info"
+        app:layout_constraintStart_toEndOf="@+id/button_open_announcements" />
+
+    <ImageButton
+        android:id="@+id/button_prev_announcements"
+        style="?attr/image_button_style"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="4dp"
+        android:padding="4dp"
+        android:contentDescription="@string/action_more"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_announcements_count"
+        app:layout_constraintEnd_toStartOf="@id/button_next_announcements"
+        app:srcCompat="@drawable/ic_chevron_left" />
+
+    <ImageButton
+        android:id="@+id/button_next_announcements"
+        style="?attr/image_button_style"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="4dp"
+        android:padding="4dp"
+        android:contentDescription="@string/action_more"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_announcements_count"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_chevron_right" />
+
+    <TextView
+        android:id="@+id/text_view_announcements_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toTopOf="@id/quick_reply_info"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <TextView
         android:id="@+id/quick_reply_info"
         android:layout_width="wrap_content"

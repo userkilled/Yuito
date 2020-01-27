@@ -209,7 +209,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         viewPager = findViewById(R.id.pager);
 
         ConstraintLayout quickTootContainer = findViewById(R.id.quick_toot_container);
-        QuickTootHelper quickTootHelper = new QuickTootHelper(quickTootContainer, accountManager, eventHub);
+        QuickTootHelper quickTootHelper = new QuickTootHelper(this, quickTootContainer, accountManager, eventHub);
 
         composeButton.setOnClickListener(v -> quickTootHelper.composeButton());
         tabLayout.requestFocus();
