@@ -131,6 +131,7 @@ public class QuickTootHelper {
                 );
         updateAnnouncements();
         openAnnouncementsButton.setOnClickListener(v -> toggleOpenAnnouncements());
+        announcementsText.setOnClickListener(v -> toggleOpenAnnouncements());
         prevButton.setOnClickListener(v -> prevAnnouncement());
         nextButton.setOnClickListener(v -> nextAnnouncement());
     }
