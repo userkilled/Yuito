@@ -19,13 +19,14 @@ import android.animation.ArgbEvaluator
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.graphics.*
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import androidx.appcompat.app.AlertDialog
@@ -239,9 +240,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             setDisplayShowTitleEnabled(false)
         }
 
-        ThemeUtils.setDrawableTint(this, accountToolbar.navigationIcon, R.attr.account_toolbar_icon_tint_uncollapsed)
-        ThemeUtils.setDrawableTint(this, accountToolbar.overflowIcon, R.attr.account_toolbar_icon_tint_uncollapsed)
-
         val appBarElevation = resources.getDimension(R.dimen.actionbar_elevation)
 
         val toolbarBackground = MaterialShapeDrawable.createWithElevationOverlay(this, appBarElevation)
@@ -262,9 +260,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         // Add a listener to change the toolbar icon color when it enters/exits its collapsed state.
         accountAppBarLayout.addOnOffsetChangedListener(object : AppBarLayout.OnOffsetChangedListener {
 
-            @AttrRes
-            var priorAttribute = R.attr.account_toolbar_icon_tint_uncollapsed
-
             override fun onOffsetChanged(appBarLayout: AppBarLayout, verticalOffset: Int) {
 
                 if (verticalOffset == oldOffset) {
@@ -272,20 +267,10 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 }
                 oldOffset = verticalOffset
 
-                @AttrRes val attribute = if (titleVisibleHeight + verticalOffset < 0) {
+                if (titleVisibleHeight + verticalOffset < 0) {
                     supportActionBar?.setDisplayShowTitleEnabled(true)
-
-                    R.attr.account_toolbar_icon_tint_collapsed
                 } else {
                     supportActionBar?.setDisplayShowTitleEnabled(false)
-
-                    R.attr.account_toolbar_icon_tint_uncollapsed
-                }
-                if (attribute != priorAttribute) {
-                    priorAttribute = attribute
-                    val context = accountToolbar.context
-                    ThemeUtils.setDrawableTint(context, accountToolbar.navigationIcon, attribute)
-                    ThemeUtils.setDrawableTint(context, accountToolbar.overflowIcon, attribute)
                 }
 
                 if (hideFab && !viewModel.isSelf && !blocking) {
@@ -473,7 +458,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
             loadAvatar(movedAccount.avatar, accountMovedAvatar, avatarRadius, animateAvatar)
 
-            accountMovedText.text = getString(R.string.account_moved_description, movedAccount.displayName)
+            accountMovedText.text = getString(R.string.account_moved_description, movedAccount.name)
 
             // this is necessary because API 19 can't handle vector compound drawables
             val movedIcon = ContextCompat.getDrawable(this, R.drawable.ic_briefcase)?.mutate()

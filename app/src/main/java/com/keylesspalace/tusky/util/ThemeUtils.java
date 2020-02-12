@@ -19,17 +19,14 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.provider.Settings;
 import android.util.TypedValue;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
-import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
-import android.util.TypedValue;
 
 /**
  * Provides runtime compatibility to obtain theme information and re-theme views, especially where
@@ -45,29 +42,6 @@ public class ThemeUtils {
     private static final String THEME_AUTO = "auto";
     private static final String THEME_SYSTEM = "auto_system";
 
-    public static Drawable getDrawable(@NonNull Context context, @AttrRes int attribute,
-            @DrawableRes int fallbackDrawable) {
-        TypedValue value = new TypedValue();
-        @DrawableRes int resourceId;
-        if (context.getTheme().resolveAttribute(attribute, value, true)) {
-            resourceId = value.resourceId;
-        } else {
-            resourceId = fallbackDrawable;
-        }
-        return context.getDrawable(resourceId);
-    }
-
-    @DrawableRes
-    public static int getDrawableId(@NonNull Context context, @AttrRes int attribute,
-                                    @DrawableRes int fallbackDrawableId) {
-        TypedValue value = new TypedValue();
-        if (context.getTheme().resolveAttribute(attribute, value, true)) {
-            return value.resourceId;
-        } else {
-            return fallbackDrawableId;
-        }
-    }
-
     @ColorInt
     public static int getColor(@NonNull Context context, @AttrRes int attribute) {
         TypedValue value = new TypedValue();
@@ -76,13 +50,6 @@ public class ThemeUtils {
         } else {
             return Color.BLACK;
         }
-    }
-
-    @ColorRes
-    public static int getColorId(@NonNull Context context, @AttrRes int attribute) {
-        TypedValue value = new TypedValue();
-        context.getTheme().resolveAttribute(attribute, value, true);
-        return value.resourceId;
     }
 
     /** this can be replaced with drawableTint in xml once minSdkVersion >= 23 */

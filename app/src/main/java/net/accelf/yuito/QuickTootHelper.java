@@ -267,7 +267,7 @@ public class QuickTootHelper {
                 visibilityButton.setImageResource(R.drawable.ic_lock_outline_24dp);
                 break;
             case UNLEAKABLE:
-                visibilityButton.setImageResource(R.drawable.ic_unleakable_24dp);
+                visibilityButton.setImageResource(R.drawable.ic_low_vision_24dp);
                 break;
         }
     }

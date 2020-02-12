@@ -31,7 +31,7 @@ data class Account(
         val id: String,
         @SerializedName("username") val localUsername: String,
         @SerializedName("acct", alternate = ["subject"]) val username: String,
-        @SerializedName("display_name") val displayName: String = "",
+        @SerializedName("display_name") val displayName: String?, // should never be null per Api definition, but some servers break the contract
         val note: @WriteWith<SpannedParceler>() Spanned,
         val url: String,
         val avatar: String,
@@ -50,7 +50,7 @@ data class Account(
 ) : Parcelable {
 
     val name: String
-        get() = notestockUsername ?: if (displayName.isEmpty()) {
+        get() = notestockUsername ?: if (displayName.isNullOrEmpty()) {
             localUsername
         } else displayName
 

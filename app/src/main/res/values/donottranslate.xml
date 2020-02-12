@@ -6,7 +6,6 @@
     <string name="oauth_scheme" translatable="false">oauth2redirect</string>
     <string name="preferences_file_key" translatable="false">com.keylesspalace.tusky.PREFERENCES</string>
 
-    <string name="status_sensitive_media_template" translatable="false">&lt;b>%1$s&lt;/b>&lt;br>%2$s</string>
     <string name="at_symbol" translatable="false">\@</string>
     <string name="hash_symbol" translatable="false">#</string>
     <string name="title_tag" translatable="false">#%s</string>
@@ -47,6 +46,7 @@
         <item>Español</item>
         <item>Euskara</item>
         <item>Français</item>
+        <item>íslenska</item>
         <item>Italiano</item>
         <item>Magyar</item>
         <item>Nederlands</item>
@@ -56,9 +56,11 @@
         <item>Português (Brasil)</item>
         <item>Slovenščina</item>
         <item>Svenska</item>
+        <item>Taqbaylit</item>
         <item>Türkçe</item>
         <item>Русский</item>
-        <item>العَرَبِيَّة‎</item>
+        <item>العربية</item>
+        <item>বাংলা</item>
         <item>فارسی</item>
         <item>தமிழ்</item>
         <item>한국어</item>
@@ -82,6 +84,7 @@
         <item>es</item>
         <item>eu</item>
         <item>fr</item>
+        <item>is</item>
         <item>it</item>
         <item>hu</item>
         <item>nl</item>
@@ -91,9 +94,11 @@
         <item>pt-BR</item>
         <item>sl</item>
         <item>sv</item>
+        <item>kab</item>
         <item>tr</item>
         <item>ru</item>
         <item>ar</item>
+        <item>bn-in</item>
         <item>fa</item>
         <item>ta</item>
         <item>ko</item>

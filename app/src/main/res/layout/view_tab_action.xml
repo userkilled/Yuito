@@ -6,7 +6,7 @@
 
     <ImageButton
         android:id="@+id/tab_jump_to_top"
-        style="?attr/image_button_style"
+        style="@style/TuskyImageButton"
         android:layout_width="42dp"
         android:layout_height="42dp"
         android:layout_margin="4dp"
@@ -31,7 +31,7 @@
 
     <ImageButton
         android:id="@+id/tab_reset"
-        style="?attr/image_button_style"
+        style="@style/TuskyImageButton"
         android:layout_width="42dp"
         android:layout_height="42dp"
         android:layout_margin="4dp"

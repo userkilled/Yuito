@@ -7,7 +7,7 @@
 
     <ImageButton
         android:id="@+id/button_open_announcements"
-        style="?attr/image_button_style"
+        style="@style/TuskyImageButton"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="12dp"
@@ -31,7 +31,7 @@
 
     <ImageButton
         android:id="@+id/button_prev_announcements"
-        style="?attr/image_button_style"
+        style="@style/TuskyImageButton"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginEnd="12dp"
@@ -45,7 +45,7 @@
 
     <ImageButton
         android:id="@+id/button_next_announcements"
-        style="?attr/image_button_style"
+        style="@style/TuskyImageButton"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginEnd="12dp"
