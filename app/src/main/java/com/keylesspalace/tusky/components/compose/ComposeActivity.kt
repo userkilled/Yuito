@@ -39,6 +39,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.viewModels
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
@@ -52,7 +53,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -70,6 +70,7 @@ import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.components.compose.dialog.makeCaptionDialog
 import com.keylesspalace.tusky.components.compose.dialog.showAddPollDialog
 import com.keylesspalace.tusky.components.compose.view.ComposeOptionsListener
+import com.keylesspalace.tusky.components.compose.view.ComposeScheduleView
 import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.di.ViewModelFactory
@@ -110,14 +111,12 @@ class ComposeActivity : BaseActivity(),
 
     // this only exists when a status is trying to be sent, but uploads are still occurring
     private var finishingUploadDialog: ProgressDialog? = null
-    private var currentInputContentInfo: InputContentInfoCompat? = null
-    private var currentFlags: Int = 0
     private var photoUploadUri: Uri? = null
     @VisibleForTesting
     var maximumTootCharacters = DEFAULT_CHARACTER_LIMIT
 
     private var composeOptions: ComposeOptions? = null
-    private lateinit var viewModel: ComposeViewModel
+    private val viewModel: ComposeViewModel by viewModels { viewModelFactory }
 
     private var mediaCount = 0
 
@@ -149,10 +148,10 @@ class ComposeActivity : BaseActivity(),
         composeMediaPreviewBar.adapter = mediaAdapter
         composeMediaPreviewBar.itemAnimator = null
 
-        viewModel = ViewModelProviders.of(this, viewModelFactory)[ComposeViewModel::class.java]
-
         subscribeToUpdates(mediaAdapter)
         setupButtons()
+
+        photoUploadUri = savedInstanceState?.getParcelable(PHOTO_UPLOAD_URI_KEY)
 
         /* If the composer is started up as a reply to another post, override the "starting" state
          * based on what the intent from the reply request passes. */
@@ -544,14 +543,7 @@ class ComposeActivity : BaseActivity(),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        if (currentInputContentInfo != null) {
-            outState.putParcelable("commitContentInputContentInfo",
-                    currentInputContentInfo!!.unwrap() as Parcelable?)
-            outState.putInt("commitContentFlags", currentFlags)
-        }
-        currentInputContentInfo = null
-        currentFlags = 0
-        outState.putParcelable("photoUploadUri", photoUploadUri)
+        outState.putParcelable(PHOTO_UPLOAD_URI_KEY, photoUploadUri)
         super.onSaveInstanceState(outState)
     }
 
@@ -777,47 +769,42 @@ class ComposeActivity : BaseActivity(),
         updateVisibleCharactersLeft()
     }
 
+    private fun verifyScheduledTime(): Boolean {
+        return composeScheduleView.verifyScheduledTime(composeScheduleView.getDateTime(viewModel.scheduledAt.value))
+    }
+
     private fun onSendClicked() {
-        enableButtons(false)
-        sendStatus()
+        if (verifyScheduledTime()) {
+            sendStatus()
+        } else {
+            showScheduleView()
+        }
     }
 
     /** This is for the fancy keyboards which can insert images and stuff. */
-    override fun onCommitContent(inputContentInfo: InputContentInfoCompat, flags: Int, opts: Bundle): Boolean {
-        try {
-            currentInputContentInfo?.releasePermission()
-        } catch (e: Exception) {
-            Log.e(TAG, "InputContentInfoCompat#releasePermission() failed." + e.message)
-        } finally {
-            currentInputContentInfo = null
-        }
-
+    override fun onCommitContent(inputContentInfo: InputContentInfoCompat, flags: Int, opts: Bundle?): Boolean {
         // Verify the returned content's type is of the correct MIME type
         val supported = inputContentInfo.description.hasMimeType("image/*")
 
-        return supported && onCommitContentInternal(inputContentInfo, flags)
-    }
-
-    private fun onCommitContentInternal(inputContentInfo: InputContentInfoCompat, flags: Int): Boolean {
-        if (flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0) {
-            try {
-                inputContentInfo.requestPermission()
-            } catch (e: Exception) {
-                Log.e(TAG, "InputContentInfoCompat#requestPermission() failed." + e.message)
-                return false
+        if(supported) {
+            val lacksPermission = (flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0
+            if(lacksPermission) {
+                try {
+                    inputContentInfo.requestPermission()
+                } catch (e: Exception) {
+                    Log.e(TAG, "InputContentInfoCompat#requestPermission() failed." + e.message)
+                    return false
+                }
             }
+            pickMedia(inputContentInfo.contentUri, inputContentInfo)
+            return true
         }
 
-        // Determine the file size before putting handing it off to be put in the queue.
-        pickMedia(inputContentInfo.contentUri)
-
-        currentInputContentInfo = inputContentInfo
-        currentFlags = flags
-
-        return true
+        return false
     }
 
     private fun sendStatus() {
+        enableButtons(false)
         var contentText = composeEditField.text.toString()
         var spoilerText = ""
         if (viewModel.showContentWarning.value!!) {
@@ -927,9 +914,12 @@ class ComposeActivity : BaseActivity(),
         }
     }
 
-    private fun pickMedia(uri: Uri) {
+    private fun pickMedia(uri: Uri, contentInfoCompat: InputContentInfoCompat? = null) {
         withLifecycleContext {
             viewModel.pickMedia(uri).observe { exceptionOrItem ->
+
+                contentInfoCompat?.releasePermission()
+
                 exceptionOrItem.asLeftOrNull()?.let {
                     val errorId = when (it) {
                         is VideoSizeException -> {
@@ -1069,7 +1059,11 @@ class ComposeActivity : BaseActivity(),
     override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
         composeScheduleView.onTimeSet(hourOfDay, minute)
         viewModel.updateScheduledAt(composeScheduleView.time)
-        scheduleBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        if (verifyScheduledTime()) {
+            scheduleBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        } else {
+            showScheduleView()
+        }
     }
 
     private fun resetSchedule() {
@@ -1107,6 +1101,7 @@ class ComposeActivity : BaseActivity(),
         private const val PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1
 
         private const val COMPOSE_OPTIONS_EXTRA = "COMPOSE_OPTIONS"
+        private const val PHOTO_UPLOAD_URI_KEY = "PHOTO_UPLOAD_URI"
 
         // Mastodon only counts URLs as this long in terms of status character limits
         @VisibleForTesting
