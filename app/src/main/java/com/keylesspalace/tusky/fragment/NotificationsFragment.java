@@ -65,10 +65,13 @@ import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Notification;
 import com.keylesspalace.tusky.entity.Poll;
+import com.keylesspalace.tusky.entity.Relationship;
 import com.keylesspalace.tusky.entity.Status;
+import com.keylesspalace.tusky.interfaces.AccountActionListener;
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity;
 import com.keylesspalace.tusky.interfaces.ReselectableFragment;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
+import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.Either;
 import com.keylesspalace.tusky.util.HttpHeaderLink;
 import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate;
@@ -97,6 +100,7 @@ import javax.inject.Inject;
 
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import kotlin.Unit;
 import kotlin.collections.CollectionsKt;
@@ -114,6 +118,7 @@ public class NotificationsFragment extends SFragment implements
         SwipeRefreshLayout.OnRefreshListener,
         StatusActionListener,
         NotificationsAdapter.NotificationActionListener,
+        AccountActionListener,
         Injectable, ReselectableFragment {
     private static final String TAG = "NotificationF"; // logging tag
 
@@ -244,11 +249,13 @@ public class NotificationsFragment extends SFragment implements
                 accountManager.getActiveAccount().getMediaPreviewEnabled(),
                 preferences.getBoolean("absoluteTimeView", false),
                 preferences.getBoolean("showBotOverlay", true),
-                preferences.getBoolean("useBlurhash", true)
+                preferences.getBoolean("useBlurhash", true),
+                CardViewMode.NONE,
+                preferences.getBoolean("confirmReblogs", true)
         );
 
         adapter = new NotificationsAdapter(accountManager.getActiveAccount().getAccountId(),
-                dataSource, statusDisplayOptions, this, this);
+                dataSource, statusDisplayOptions, this, this, this);
         alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
         alwaysOpenSpoiler = accountManager.getActiveAccount().getAlwaysOpenSpoiler();
         recyclerView.setAdapter(adapter);
@@ -767,6 +774,8 @@ public class NotificationsFragment extends SFragment implements
                 return getString(R.string.notification_boost_name);
             case FOLLOW:
                 return getString(R.string.notification_follow_name);
+            case FOLLOW_REQUEST:
+                return getString(R.string.notification_follow_request_name);
             case POLL:
                 return getString(R.string.notification_poll_name);
             default:
@@ -817,6 +826,29 @@ public class NotificationsFragment extends SFragment implements
     @Override
     public void onViewAccount(String id) {
         super.viewAccount(id);
+    }
+
+    @Override
+    public void onMute(boolean mute, String id, int position) {
+        // No muting from notifications yet
+    }
+
+    @Override
+    public void onBlock(boolean block, String id, int position) {
+        // No blocking from notifications yet
+    }
+
+    @Override
+    public void onRespondToFollowRequest(boolean accept, String id, int position) {
+        Single<Relationship> request = accept ?
+                mastodonApi.authorizeFollowRequestObservable(id) :
+                mastodonApi.rejectFollowRequestObservable(id);
+        request.observeOn(AndroidSchedulers.mainThread())
+                .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                .subscribe(
+                        (relationship) -> fullyRefreshWithProgressBar(true),
+                        (error) -> Log.e(TAG, String.format("Failed to %s account id %s", accept ? "accept" : "reject", id))
+                );
     }
 
     @Override

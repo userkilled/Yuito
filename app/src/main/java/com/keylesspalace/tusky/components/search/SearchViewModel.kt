@@ -243,7 +243,7 @@ class SearchViewModel @Inject constructor(
         return accountManager.getAllAccountsOrderedByActive()
     }
 
-    fun muteAcount(accountId: String) {
+    fun muteAccount(accountId: String) {
         timelineCases.mute(accountId)
     }
 
@@ -263,6 +263,18 @@ class SearchViewModel @Inject constructor(
         search(currentQuery)
     }
 
+    fun muteConversation(status: Pair<Status, StatusViewData.Concrete>, mute: Boolean) {
+        val idx = loadedStatuses.indexOf(status)
+        if (idx >= 0) {
+            val newPair = Pair(status.first, StatusViewData.Builder(status.second).setMuted(mute).createStatusViewData())
+            loadedStatuses[idx] = newPair
+            repoResultStatus.value?.refresh?.invoke()
+        }
+        timelineCases.muteConversation(status.first, mute)
+                .onErrorReturnItem(status.first)
+                .subscribe()
+                .autoDispose()
+    }
 
     companion object {
         private const val TAG = "SearchViewModel"

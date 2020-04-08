@@ -29,8 +29,6 @@ import com.keylesspalace.tusky.db.AppDatabase
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.network.TimelineCasesImpl
-import com.keylesspalace.tusky.util.HtmlConverter
-import com.keylesspalace.tusky.util.HtmlConverterImpl
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -79,13 +77,9 @@ class AppModule {
                         AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_10_13,
                         AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16,
                         AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18, AppDatabase.MIGRATION_18_19,
-                        AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_20_21)
-                .build()
+                        AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_20_21, AppDatabase.MIGRATION_21_22,
+                        AppDatabase.MIGRATION_22_23)
+        .build()
     }
 
-    @Provides
-    @Singleton
-    fun providesHtmlConverter(): HtmlConverter {
-        return HtmlConverterImpl()
-    }
 }

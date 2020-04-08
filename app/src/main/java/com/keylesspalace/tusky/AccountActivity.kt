@@ -52,8 +52,6 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.report.ReportActivity
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
-import com.keylesspalace.tusky.entity.Field
-import com.keylesspalace.tusky.entity.IdentityProof
 import com.keylesspalace.tusky.entity.Relationship
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
 import com.keylesspalace.tusky.interfaces.LinkListener
@@ -311,7 +309,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
      * Subscribe to data loaded at the view model
      */
     private fun subscribeObservables() {
-        viewModel.accountData.observe(this, Observer<Resource<Account>> {
+        viewModel.accountData.observe(this, Observer {
             when (it) {
                 is Success -> onAccountChanged(it.data)
                 is Error -> {
@@ -321,7 +319,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 }
             }
         })
-        viewModel.relationshipData.observe(this, Observer<Resource<Relationship>> {
+        viewModel.relationshipData.observe(this, Observer {
             val relation = it?.data
             if (relation != null) {
                 onRelationshipChanged(relation)
@@ -334,7 +332,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             }
 
         })
-        viewModel.accountFieldData.observe(this, Observer<List<Either<IdentityProof, Field>>> {
+        viewModel.accountFieldData.observe(this, Observer {
             accountFieldAdapter.fields = it
             accountFieldAdapter.notifyDataSetChanged()
 
@@ -681,6 +679,30 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 .show()
     }
 
+    private fun toggleBlock() {
+        if (viewModel.relationshipData.value?.data?.blocking != true) {
+            AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.dialog_block_warning, loadedAccount?.username))
+                    .setPositiveButton(android.R.string.ok) { _, _ -> viewModel.changeBlockState() }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+        } else {
+            viewModel.changeBlockState()
+        }
+    }
+
+    private fun toggleMute() {
+        if (viewModel.relationshipData.value?.data?.muting != true) {
+            AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.dialog_mute_warning, loadedAccount?.username))
+                    .setPositiveButton(android.R.string.ok) { _, _ -> viewModel.changeMuteState() }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+        } else {
+            viewModel.changeMuteState()
+        }
+    }
+
     private fun mention() {
         loadedAccount?.let {
             val intent = ComposeActivity.startIntent(this,
@@ -727,11 +749,11 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 return true
             }
             R.id.action_block -> {
-                viewModel.changeBlockState()
+                toggleBlock()
                 return true
             }
             R.id.action_mute -> {
-                viewModel.changeMuteState()
+                toggleMute()
                 return true
             }
             R.id.action_mute_domain -> {

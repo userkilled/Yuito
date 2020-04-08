@@ -58,6 +58,7 @@ public abstract class StatusViewData {
         final boolean reblogged;
         final boolean favourited;
         final boolean bookmarked;
+        private final boolean muted;
         @Nullable
         private final String spoilerText;
         private final Status.Visibility visibility;
@@ -96,7 +97,7 @@ public abstract class StatusViewData {
         private final Status quote;
         private final boolean isNotestock;
 
-        public Concrete(String id, Spanned content, boolean reblogged, boolean favourited, boolean bookmarked,
+        public Concrete(String id, Spanned content, boolean reblogged, boolean favourited, boolean bookmarked, boolean muted,
                         @Nullable String spoilerText, Status.Visibility visibility, List<Attachment> attachments,
                         @Nullable String rebloggedByUsername, @Nullable String rebloggedAvatar, boolean sensitive, boolean isExpanded,
                         boolean isShowingContent, String userFullName, String nickname, String avatar,
@@ -119,6 +120,7 @@ public abstract class StatusViewData {
             this.reblogged = reblogged;
             this.favourited = favourited;
             this.bookmarked = bookmarked;
+            this.muted = muted;
             this.visibility = visibility;
             this.attachments = attachments;
             this.rebloggedByUsername = rebloggedByUsername;
@@ -165,6 +167,10 @@ public abstract class StatusViewData {
 
         public boolean isBookmarked() {
             return bookmarked;
+        }
+
+        public boolean isMuted() {
+            return muted;
         }
 
         @Nullable
@@ -419,6 +425,7 @@ public abstract class StatusViewData {
         private boolean reblogged;
         private boolean favourited;
         private boolean bookmarked;
+        private boolean muted;
         private String spoilerText;
         private Status.Visibility visibility;
         private List<Attachment> attachments;
@@ -457,6 +464,7 @@ public abstract class StatusViewData {
             reblogged = viewData.reblogged;
             favourited = viewData.favourited;
             bookmarked = viewData.bookmarked;
+            muted = viewData.muted;
             spoilerText = viewData.spoilerText;
             visibility = viewData.visibility;
             attachments = viewData.attachments == null ? null : new ArrayList<>(viewData.attachments);
@@ -509,6 +517,11 @@ public abstract class StatusViewData {
 
         public Builder setBookmarked(boolean bookmarked) {
             this.bookmarked = bookmarked;
+            return this;
+        }
+
+        public Builder setMuted(boolean muted) {
+            this.muted = muted;
             return this;
         }
 
@@ -675,7 +688,7 @@ public abstract class StatusViewData {
             if (this.accountEmojis == null) accountEmojis = Collections.emptyList();
             if (this.createdAt == null) createdAt = new Date();
 
-            return new StatusViewData.Concrete(id, content, reblogged, favourited, bookmarked, spoilerText,
+            return new StatusViewData.Concrete(id, content, reblogged, favourited, bookmarked, muted, spoilerText,
                     visibility, attachments, rebloggedByUsername, rebloggedAvatar, isSensitive, isExpanded,
                     isShowingContent, userFullName, nickname, avatar, createdAt, reblogsCount,
                     favouritesCount, inReplyToId, mentions, senderId, rebloggingEnabled, application,

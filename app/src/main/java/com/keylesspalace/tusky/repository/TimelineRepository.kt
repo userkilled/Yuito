@@ -1,6 +1,8 @@
 package com.keylesspalace.tusky.repository
 
 import android.text.SpannedString
+import androidx.core.text.parseAsHtml
+import androidx.core.text.toHtml
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.keylesspalace.tusky.db.*
@@ -9,7 +11,6 @@ import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.repository.TimelineRequestMode.DISK
 import com.keylesspalace.tusky.repository.TimelineRequestMode.NETWORK
 import com.keylesspalace.tusky.util.Either
-import com.keylesspalace.tusky.util.HtmlConverter
 import com.keylesspalace.tusky.util.dec
 import com.keylesspalace.tusky.util.inc
 import io.reactivex.Single
@@ -41,8 +42,7 @@ class TimelineRepositoryImpl(
         private val timelineDao: TimelineDao,
         private val mastodonApi: MastodonApi,
         private val accountManager: AccountManager,
-        private val gson: Gson,
-        private val htmlConverter: HtmlConverter
+        private val gson: Gson
 ) : TimelineRepository {
 
     init {
@@ -67,7 +67,7 @@ class TimelineRepositoryImpl(
         val accountId = acc.id
 
         timelineDao.insertInTransaction(
-                status.toEntity(accountId, htmlConverter, gson),
+                status.toEntity(accountId, gson),
                 status.account.toEntity(accountId, gson),
                 status.reblog?.account?.toEntity(accountId, gson)
         )
@@ -162,7 +162,7 @@ class TimelineRepositoryImpl(
 
             for (status in statuses) {
                 timelineDao.insertInTransaction(
-                        status.toEntity(accountId, htmlConverter, gson),
+                        status.toEntity(accountId, gson),
                         status.account.toEntity(accountId, gson),
                         status.reblog?.account?.toEntity(accountId, gson)
                 )
@@ -226,7 +226,7 @@ class TimelineRepositoryImpl(
                     inReplyToId = status.inReplyToId,
                     inReplyToAccountId = status.inReplyToAccountId,
                     reblog = null,
-                    content = status.content?.let(htmlConverter::fromHtml) ?: SpannedString(""),
+                    content = status.content?.parseAsHtml() ?: SpannedString(""),
                     createdAt = Date(status.createdAt),
                     emojis = emojis,
                     reblogsCount = status.reblogsCount,
@@ -241,6 +241,7 @@ class TimelineRepositoryImpl(
                     mentions = mentions,
                     application = application,
                     pinned = false,
+                    muted = status.muted,
                     poll = poll,
                     card = null,
                     quote = null
@@ -269,6 +270,7 @@ class TimelineRepositoryImpl(
                     mentions = arrayOf(),
                     application = null,
                     pinned = false,
+                    muted = status.muted,
                     poll = null,
                     card = null,
                     quote = null
@@ -281,7 +283,7 @@ class TimelineRepositoryImpl(
                     inReplyToId = status.inReplyToId,
                     inReplyToAccountId = status.inReplyToAccountId,
                     reblog = null,
-                    content = status.content?.let(htmlConverter::fromHtml) ?: SpannedString(""),
+                    content = status.content?.parseAsHtml() ?: SpannedString(""),
                     createdAt = Date(status.createdAt),
                     emojis = emojis,
                     reblogsCount = status.reblogsCount,
@@ -296,6 +298,7 @@ class TimelineRepositoryImpl(
                     mentions = mentions,
                     application = application,
                     pinned = false,
+                    muted = status.muted,
                     poll = poll,
                     card = null,
                     quote = null
@@ -368,12 +371,12 @@ fun Placeholder.toEntity(timelineUserId: Long): TimelineStatusEntity {
             application = null,
             reblogServerId = null,
             reblogAccountId = null,
-            poll = null
+            poll = null,
+            muted = false
     )
 }
 
 fun Status.toEntity(timelineUserId: Long,
-                    htmlConverter: HtmlConverter,
                     gson: Gson): TimelineStatusEntity {
     val actionable = actionableStatus
     return TimelineStatusEntity(
@@ -383,7 +386,7 @@ fun Status.toEntity(timelineUserId: Long,
             authorServerId = actionable.account.id,
             inReplyToId = actionable.inReplyToId,
             inReplyToAccountId = actionable.inReplyToAccountId,
-            content = htmlConverter.toHtml(actionable.content),
+            content = actionable.content.toHtml(),
             createdAt = actionable.createdAt.time,
             emojis = actionable.emojis.let(gson::toJson),
             reblogsCount = actionable.reblogsCount,
@@ -396,10 +399,11 @@ fun Status.toEntity(timelineUserId: Long,
             visibility = actionable.visibility,
             attachments = actionable.attachments.let(gson::toJson),
             mentions = actionable.mentions.let(gson::toJson),
-            application = actionable.let(gson::toJson),
+            application = actionable.application.let(gson::toJson),
             reblogServerId = reblog?.id,
             reblogAccountId = reblog?.let { this.account.id },
-            poll = actionable.poll.let(gson::toJson)
+            poll = actionable.poll.let(gson::toJson),
+            muted = actionable.muted
     )
 }
 

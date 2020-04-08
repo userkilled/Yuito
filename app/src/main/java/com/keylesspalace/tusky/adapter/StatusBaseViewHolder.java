@@ -8,31 +8,38 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Attachment.Focus;
 import com.keylesspalace.tusky.entity.Attachment.MetaData;
+import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
+import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
-import com.keylesspalace.tusky.util.HtmlUtils;
 import com.keylesspalace.tusky.util.ImageLoadingHelper;
 import com.keylesspalace.tusky.util.LinkHelper;
 import com.keylesspalace.tusky.util.StatusDisplayOptions;
@@ -92,6 +99,12 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private TextView pollDescription;
     private Button pollButton;
 
+    private LinearLayout cardView;
+    private LinearLayout cardInfo;
+    private ImageView cardImage;
+    private TextView cardTitle;
+    private TextView cardDescription;
+    private TextView cardUrl;
     private PollAdapter pollAdapter;
 
     private SimpleDateFormat shortSdf;
@@ -152,6 +165,13 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         pollDescription = itemView.findViewById(R.id.status_poll_description);
         pollButton = itemView.findViewById(R.id.status_poll_button);
 
+        cardView = itemView.findViewById(R.id.status_card_view);
+        cardInfo = itemView.findViewById(R.id.card_info);
+        cardImage = itemView.findViewById(R.id.card_image);
+        cardTitle = itemView.findViewById(R.id.card_title);
+        cardDescription = itemView.findViewById(R.id.card_description);
+        cardUrl = itemView.findViewById(R.id.card_link);
+
         pollAdapter = new PollAdapter();
         pollOptions.setAdapter(pollAdapter);
         pollOptions.setLayoutManager(new LinearLayoutManager(pollOptions.getContext()));
@@ -200,7 +220,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             contentWarningDescription.setVisibility(View.VISIBLE);
             contentWarningButton.setVisibility(View.VISIBLE);
             setContentWarningButtonText(expanded);
-            contentWarningButton.setOnClickListener( view -> {
+            contentWarningButton.setOnClickListener(view -> {
                 contentWarningDescription.invalidate();
                 if (getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onExpandedChange(!expanded, getAdapterPosition());
@@ -218,7 +238,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void setContentWarningButtonText(boolean expanded) {
-        if(expanded) {
+        if (expanded) {
             contentWarningButton.setText(R.string.status_content_warning_show_less);
         } else {
             contentWarningButton.setText(R.string.status_content_warning_show_more);
@@ -673,8 +693,12 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         sensitiveMediaShow.setVisibility(View.GONE);
     }
 
-    protected void setupButtons(final StatusActionListener listener, final String accountId,
-                                final boolean isNotestock, final String acct) {
+    protected void setupButtons(final StatusActionListener listener,
+                                final String accountId,
+                                final String statusContent,
+                                final boolean isNotestock,
+                                final String acct,
+                                StatusDisplayOptions statusDisplayOptions) {
 
         avatar.setOnClickListener(v -> {
             if (isNotestock) {
@@ -702,9 +726,18 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         replyButton.setClickable(!isNotestock);
         if (reblogButton != null) {
             reblogButton.setEventListener((button, buttonState) -> {
+                // return true to play animaion
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    listener.onReblog(buttonState, position);
+                    if (statusDisplayOptions.confirmReblogs()) {
+                        showConfirmReblogDialog(listener, statusContent, buttonState, position);
+                        return false;
+                    } else {
+                        listener.onReblog(!buttonState, position);
+                        return true;
+                    }
+                } else {
+                    return false;
                 }
             });
         }
@@ -712,8 +745,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         favouriteButton.setEventListener((button, buttonState) -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
-                listener.onFavourite(buttonState, position);
+                listener.onFavourite(!buttonState, position);
             }
+            return true;
         });
 
         favouriteButton.setEnabled(!isNotestock);
@@ -731,8 +765,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         bookmarkButton.setEventListener((button, buttonState) -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
-                listener.onBookmark(buttonState, position);
+                listener.onBookmark(!buttonState, position);
             }
+            return true;
         });
 
         moreButton.setOnClickListener(v -> {
@@ -755,6 +790,23 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         };
         content.setOnClickListener(viewThreadListener);
         itemView.setOnClickListener(viewThreadListener);
+    }
+
+    private void showConfirmReblogDialog(StatusActionListener listener,
+                                         String statusContent,
+                                         boolean buttonState,
+                                         int position) {
+        int okButtonTextId = buttonState ? R.string.action_unreblog : R.string.action_reblog;
+        new AlertDialog.Builder(reblogButton.getContext())
+                .setMessage(statusContent)
+                .setPositiveButton(okButtonTextId, (__, ___) -> {
+                    listener.onReblog(!buttonState, position);
+                    if (!buttonState) {
+                        // Play animation only when it's reblog, not unreblog
+                        reblogButton.playAnimation();
+                    }
+                })
+                .show();
     }
 
     public void setupWithStatus(StatusViewData.Concrete status, final StatusActionListener listener,
@@ -799,8 +851,13 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 hideSensitiveMediaWarning();
             }
 
-            setupButtons(listener, status.getSenderId(), status.isNotestock(), status.getNickname());
-            setRebloggingEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
+            if (cardView != null) {
+                setupCard(status, statusDisplayOptions.cardViewMode());
+            }
+
+            setupButtons(listener, status.getSenderId(), status.getContent().toString(),
+                    status.isNotestock(), status.getNickname(), statusDisplayOptions);
+            setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
             setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
 
             setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), status.getPoll(), statusDisplayOptions, listener, status.getQuote() != null);
@@ -934,7 +991,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             List<PollOptionViewData> options = poll.getOptions();
             for (int i = 0; i < args.length; i++) {
                 if (i < options.size()) {
-                    int percent = PollViewDataKt.calculatePercent(options.get(i).getVotesCount(), poll.getVotesCount());
+                    int percent = PollViewDataKt.calculatePercent(options.get(i).getVotesCount(), poll.getVotersCount(), poll.getVotesCount());
                     args[i] = buildDescription(options.get(i).getTitle(), percent, context);
                 } else {
                     args[i] = "";
@@ -949,7 +1006,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     protected CharSequence getFavsText(Context context, int count) {
         if (count > 0) {
             String countString = numberFormat.format(count);
-            return HtmlUtils.fromHtml(context.getResources().getQuantityString(R.plurals.favs, count, countString));
+            return HtmlCompat.fromHtml(context.getResources().getQuantityString(R.plurals.favs, count, countString), HtmlCompat.FROM_HTML_MODE_LEGACY);
         } else {
             return "";
         }
@@ -958,7 +1015,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     protected CharSequence getReblogsText(Context context, int count) {
         if (count > 0) {
             String countString = numberFormat.format(count);
-            return HtmlUtils.fromHtml(context.getResources().getQuantityString(R.plurals.reblogs, count, countString));
+            return HtmlCompat.fromHtml(context.getResources().getQuantityString(R.plurals.reblogs, count, countString), HtmlCompat.FROM_HTML_MODE_LEGACY);
         } else {
             return "";
         }
@@ -977,12 +1034,12 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
         if (expired || poll.getVoted()) {
             // no voting possible
-            pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), emojis, PollAdapter.RESULT);
+            pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), poll.getVotersCount(), emojis, PollAdapter.RESULT);
 
             pollButton.setVisibility(View.GONE);
         } else {
             // voting possible
-            pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), emojis, poll.getMultiple() ? PollAdapter.MULTIPLE : PollAdapter.SINGLE);
+            pollAdapter.setup(poll.getOptions(), poll.getVotesCount(), poll.getVotersCount(), emojis, poll.getMultiple() ? PollAdapter.MULTIPLE : PollAdapter.SINGLE);
 
             pollButton.setVisibility(View.VISIBLE);
 
@@ -1009,8 +1066,14 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private CharSequence getPollInfoText(long timestamp, PollViewData poll,
                                          StatusDisplayOptions statusDisplayOptions,
                                          Context context) {
-        String votes = numberFormat.format(poll.getVotesCount());
-        String votesText = context.getResources().getQuantityString(R.plurals.poll_info_votes, poll.getVotesCount(), votes);
+        String votesText;
+        if(poll.getVotersCount() == null) {
+            String voters = numberFormat.format(poll.getVotesCount());
+            votesText = context.getResources().getQuantityString(R.plurals.poll_info_votes, poll.getVotesCount(), voters);
+        } else {
+            String voters = numberFormat.format(poll.getVotersCount());
+            votesText = context.getResources().getQuantityString(R.plurals.poll_info_people, poll.getVotersCount(), voters);
+        }
         CharSequence pollDurationInfo;
         if (poll.getExpired()) {
             pollDurationInfo = context.getString(R.string.poll_info_closed);
@@ -1026,6 +1089,80 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
 
         return pollDescription.getContext().getString(R.string.poll_info_format, votesText, pollDurationInfo);
+    }
+
+    protected void setupCard(StatusViewData.Concrete status, CardViewMode cardViewMode) {
+        if (cardViewMode != CardViewMode.NONE && status.getAttachments().size() == 0 && status.getCard() != null && !TextUtils.isEmpty(status.getCard().getUrl())) {
+            final Card card = status.getCard();
+            cardView.setVisibility(View.VISIBLE);
+            cardTitle.setText(card.getTitle());
+            if (TextUtils.isEmpty(card.getDescription()) && TextUtils.isEmpty(card.getAuthorName())) {
+                cardDescription.setVisibility(View.GONE);
+            } else {
+                cardDescription.setVisibility(View.VISIBLE);
+                if (TextUtils.isEmpty(card.getDescription())) {
+                    cardDescription.setText(card.getAuthorName());
+                } else {
+                    cardDescription.setText(card.getDescription());
+                }
+            }
+
+            cardUrl.setText(card.getUrl());
+
+            if (!TextUtils.isEmpty(card.getImage())) {
+
+                int topLeftRadius = 0;
+                int topRightRadius = 0;
+                int bottomRightRadius = 0;
+                int bottomLeftRadius = 0;
+
+                int radius = cardImage.getContext().getResources()
+                        .getDimensionPixelSize(R.dimen.card_radius);
+
+                if (card.getWidth() > card.getHeight()) {
+                    cardView.setOrientation(LinearLayout.VERTICAL);
+
+                    cardImage.getLayoutParams().height = cardImage.getContext().getResources()
+                            .getDimensionPixelSize(R.dimen.card_image_vertical_height);
+                    cardImage.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    cardInfo.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    cardInfo.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    topLeftRadius = radius;
+                    topRightRadius = radius;
+                } else {
+                    cardView.setOrientation(LinearLayout.HORIZONTAL);
+                    cardImage.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    cardImage.getLayoutParams().width = cardImage.getContext().getResources()
+                            .getDimensionPixelSize(R.dimen.card_image_horizontal_width);
+                    cardInfo.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    cardInfo.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    topLeftRadius = radius;
+                    bottomLeftRadius = radius;
+                }
+
+
+                Glide.with(cardImage)
+                        .load(card.getImage())
+                        .transform(
+                                new CenterCrop(),
+                                new GranularRoundedCorners(topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius)
+                        )
+                        .into(cardImage);
+            } else {
+                cardView.setOrientation(LinearLayout.HORIZONTAL);
+                cardImage.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                cardImage.getLayoutParams().width = cardImage.getContext().getResources()
+                        .getDimensionPixelSize(R.dimen.card_image_horizontal_width);
+                cardInfo.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                cardInfo.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                cardImage.setImageResource(R.drawable.card_image_placeholder);
+            }
+
+            cardView.setOnClickListener(v -> LinkHelper.openLink(card.getUrl(), v.getContext()));
+            cardView.setClipToOutline(true);
+        } else {
+            cardView.setVisibility(View.GONE);
+        }
     }
 
     private static String formatDuration(double durationInSeconds) {

@@ -200,6 +200,16 @@ interface MastodonApi {
             @Path("id") statusId: String
     ): Single<Status>
 
+    @POST("api/v1/statuses/{id}/mute")
+    fun muteConversation(
+            @Path("id") statusId: String
+    ): Single<Status>
+
+    @POST("api/v1/statuses/{id}/unmute")
+    fun unmuteConversation(
+            @Path("id") statusId: String
+    ): Single<Status>
+
     @GET("api/v1/scheduled_statuses")
     fun scheduledStatuses(
             @Query("limit") limit: Int? = null,
@@ -382,6 +392,16 @@ interface MastodonApi {
     fun rejectFollowRequest(
             @Path("id") accountId: String
     ): Call<Relationship>
+
+    @POST("api/v1/follow_requests/{id}/authorize")
+    fun authorizeFollowRequestObservable(
+            @Path("id") accountId: String
+    ): Single<Relationship>
+
+    @POST("api/v1/follow_requests/{id}/reject")
+    fun rejectFollowRequestObservable(
+            @Path("id") accountId: String
+    ): Single<Relationship>
 
     @FormUrlEncoded
     @POST("api/v1/apps")

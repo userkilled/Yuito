@@ -5,26 +5,19 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.ViewThreadActivity;
-import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
+import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.LinkHelper;
 import com.keylesspalace.tusky.util.StatusDisplayOptions;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
@@ -37,27 +30,13 @@ import java.util.regex.Pattern;
 class StatusDetailedViewHolder extends StatusBaseViewHolder {
     private TextView reblogs;
     private TextView favourites;
-    private LinearLayout cardView;
-    private LinearLayout cardInfo;
-    private ImageView cardImage;
-    private TextView cardTitle;
-    private TextView cardDescription;
-    private TextView cardUrl;
     private View infoDivider;
 
     StatusDetailedViewHolder(View view) {
         super(view);
         reblogs = view.findViewById(R.id.status_reblogs);
         favourites = view.findViewById(R.id.status_favourites);
-        cardView = view.findViewById(R.id.card_view);
-        cardInfo = view.findViewById(R.id.card_info);
-        cardImage = view.findViewById(R.id.card_image);
-        cardTitle = view.findViewById(R.id.card_title);
-        cardDescription = view.findViewById(R.id.card_description);
-        cardUrl = view.findViewById(R.id.card_link);
         infoDivider = view.findViewById(R.id.status_info_divider);
-
-        cardView.setClipToOutline(true);
     }
 
     @Override
@@ -131,6 +110,7 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
                                    StatusDisplayOptions statusDisplayOptions,
                                    @Nullable Object payloads) {
         super.setupWithStatus(status, listener, statusDisplayOptions, payloads);
+        setupCard(status, CardViewMode.FULL_WIDTH); // Always show card for detailed status
         if (payloads == null) {
             setReblogAndFavCount(status.getReblogsCount(), status.getFavouritesCount(), listener);
 
@@ -149,97 +129,6 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
 
             content.setOnLongClickListener(longClickListener);
             contentWarningDescription.setOnLongClickListener(longClickListener);
-
-            if (status.getAttachments().size() == 0 && status.getCard() != null && !TextUtils.isEmpty(status.getCard().getUrl())) {
-                final Card card = status.getCard();
-                cardView.setVisibility(View.VISIBLE);
-                cardTitle.setText(card.getTitle());
-                if (TextUtils.isEmpty(card.getDescription()) && TextUtils.isEmpty(card.getAuthorName())) {
-                    cardDescription.setVisibility(View.GONE);
-                } else {
-                    cardDescription.setVisibility(View.VISIBLE);
-                    if (TextUtils.isEmpty(card.getDescription())) {
-                        cardDescription.setText(card.getAuthorName());
-                    } else {
-                        cardDescription.setText(card.getDescription());
-                    }
-                }
-
-                cardUrl.setText(card.getUrl());
-
-                if (!TextUtils.isEmpty(card.getImage())) {
-
-                    int topLeftRadius = 0;
-                    int topRightRadius = 0;
-                    int bottomRightRadius = 0;
-                    int bottomLeftRadius = 0;
-
-                    int radius = cardImage.getContext().getResources()
-                            .getDimensionPixelSize(R.dimen.card_radius);
-
-                    if (card.getWidth() > card.getHeight()) {
-                        cardView.setOrientation(LinearLayout.VERTICAL);
-
-                        cardImage.getLayoutParams().height = cardImage.getContext().getResources()
-                                .getDimensionPixelSize(R.dimen.card_image_vertical_height);
-                        cardImage.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                        cardInfo.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-                        cardInfo.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                        topLeftRadius = radius;
-                        topRightRadius = radius;
-                    } else {
-                        cardView.setOrientation(LinearLayout.HORIZONTAL);
-                        cardImage.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-                        cardImage.getLayoutParams().width = cardImage.getContext().getResources()
-                                .getDimensionPixelSize(R.dimen.card_image_horizontal_width);
-                        cardInfo.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                        cardInfo.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                        topLeftRadius = radius;
-                        bottomLeftRadius = radius;
-                    }
-
-
-                    Glide.with(cardImage)
-                            .load(card.getImage())
-                            .transform(
-                                    new CenterCrop(),
-                                    new GranularRoundedCorners(topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius)
-                            )
-                            .into(cardImage);
-
-                } else {
-                    cardView.setOrientation(LinearLayout.HORIZONTAL);
-                    cardImage.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-                    cardImage.getLayoutParams().width = cardImage.getContext().getResources()
-                            .getDimensionPixelSize(R.dimen.card_image_horizontal_width);
-                    cardInfo.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                    cardInfo.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-
-                    cardImage.setImageResource(R.drawable.card_image_placeholder);
-
-                }
-
-                cardView.setOnClickListener(v -> {
-                    String url = card.getUrl();
-                    String regex = ".*/users/[^/]+/statuses/([0-9]+)";
-                    String replace = "$1";
-                    Pattern p = Pattern.compile(regex);
-                    Matcher m = p.matcher(url);
-                    if (m.find()) {
-                        String id = m.replaceAll(replace);
-                        Intent intent = new Intent(v.getContext(), ViewThreadActivity.class);
-                        intent.putExtra("id", id);
-                        intent.putExtra("url", url);
-                        v.getContext().startActivity(intent);
-                    } else {
-                        LinkHelper.openLink(url, v.getContext());
-                    }
-                });
-
-            } else {
-                cardView.setVisibility(View.GONE);
-            }
-
         }
     }
 }

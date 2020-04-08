@@ -49,8 +49,10 @@ import com.keylesspalace.tusky.components.search.adapter.SearchStatusesAdapter
 import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.entity.Attachment
 import com.keylesspalace.tusky.entity.Status
+import com.keylesspalace.tusky.entity.Status.Mention
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.StatusActionListener
+import com.keylesspalace.tusky.util.CardViewMode
 import com.keylesspalace.tusky.util.NetworkState
 import com.keylesspalace.tusky.util.StatusDisplayOptions
 import com.keylesspalace.tusky.viewdata.AttachmentViewData
@@ -70,7 +72,7 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
         get() = viewModel.statuses
 
     private val searchAdapter
-            get() = super.adapter as SearchStatusesAdapter
+        get() = super.adapter as SearchStatusesAdapter
 
     override fun createAdapter(): PagedListAdapter<Pair<Status, StatusViewData.Concrete>, *> {
         val preferences = PreferenceManager.getDefaultSharedPreferences(searchRecyclerView.context)
@@ -79,7 +81,9 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
                 mediaPreviewEnabled = viewModel.mediaPreviewEnabled,
                 useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false),
                 showBotOverlay = preferences.getBoolean("showBotOverlay", true),
-                useBlurhash = preferences.getBoolean("useBlurhash", true)
+                useBlurhash = preferences.getBoolean("useBlurhash", true),
+                cardViewMode = CardViewMode.NONE,
+                confirmReblogs = preferences.getBoolean("confirmReblogs", false)
         )
 
         searchRecyclerView.addItemDecoration(DividerItemDecoration(searchRecyclerView.context, DividerItemDecoration.VERTICAL))
@@ -250,12 +254,9 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
         val loggedInAccountId = viewModel.activeAccount?.accountId
 
         val popup = PopupMenu(view.context, view)
+        val statusIsByCurrentUser = loggedInAccountId?.equals(accountId) == true
         // Give a different menu depending on whether this is the user's own toot or not.
-        if (loggedInAccountId == null || loggedInAccountId != accountId) {
-            popup.inflate(R.menu.status_more)
-            val menu = popup.menu
-            menu.findItem(R.id.status_download_media).isVisible = status.attachments.isNotEmpty()
-        } else {
+        if (statusIsByCurrentUser) {
             popup.inflate(R.menu.status_more_for_user)
             val menu = popup.menu
             menu.findItem(R.id.status_open_as).isVisible = !statusUrl.isNullOrBlank()
@@ -273,6 +274,10 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
                 Status.Visibility.UNKNOWN, Status.Visibility.UNLEAKABLE, Status.Visibility.DIRECT -> {
                 } //Ignore
             }
+        } else {
+            popup.inflate(R.menu.status_more)
+            val menu = popup.menu
+            menu.findItem(R.id.status_download_media).isVisible = status.attachments.isNotEmpty()
         }
 
         val openAsItem = popup.menu.findItem(R.id.status_open_as)
@@ -287,6 +292,19 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
             else -> openAsTitle = String.format(getString(R.string.action_open_as), "…")
         }
         openAsItem.title = openAsTitle
+
+        val mutable = statusIsByCurrentUser || accountIsInMentions(viewModel.activeAccount, status.mentions)
+        val muteConversationItem = popup.menu.findItem(R.id.status_mute_conversation).apply {
+            isVisible = mutable
+        }
+        if (mutable) {
+            muteConversationItem.setTitle(
+                    if (status.muted == true) {
+                        R.string.action_unmute_conversation
+                    } else {
+                        R.string.action_mute_conversation
+                    })
+        }
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -325,12 +343,18 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
                     requestDownloadAllMedia(status)
                     return@setOnMenuItemClickListener true
                 }
+                R.id.status_mute_conversation -> {
+                    searchAdapter.getItem(position)?.let { foundStatus ->
+                        viewModel.muteConversation(foundStatus, status.muted != true)
+                    }
+                    return@setOnMenuItemClickListener true
+                }
                 R.id.status_mute -> {
-                    viewModel.muteAcount(accountId)
+                    onMute(accountId, accountUsername)
                     return@setOnMenuItemClickListener true
                 }
                 R.id.status_block -> {
-                    viewModel.blockAccount(accountId)
+                    onBlock(accountId, accountUsername)
                     return@setOnMenuItemClickListener true
                 }
                 R.id.status_report -> {
@@ -361,6 +385,28 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
             false
         }
         popup.show()
+    }
+
+    private fun onBlock(accountId: String, accountUsername: String) {
+        AlertDialog.Builder(requireContext())
+                .setMessage(getString(R.string.dialog_block_warning, accountUsername))
+                .setPositiveButton(android.R.string.ok) { _, _ -> viewModel.blockAccount(accountId) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+    }
+
+    private fun onMute(accountId: String, accountUsername: String) {
+        AlertDialog.Builder(requireContext())
+                .setMessage(getString(R.string.dialog_mute_warning, accountUsername))
+                .setPositiveButton(android.R.string.ok) { _, _ -> viewModel.muteAccount(accountId) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+    }
+
+    private fun accountIsInMentions(account: AccountEntity?, mentions: Array<Mention>): Boolean {
+        return mentions.firstOrNull {
+            account?.username == it.username && account.domain == Uri.parse(it.url)?.host
+        } != null
     }
 
     private fun showOpenAsDialog(statusUrl: String, dialogTitle: CharSequence) {

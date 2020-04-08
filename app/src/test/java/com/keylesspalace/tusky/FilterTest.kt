@@ -11,6 +11,7 @@ import com.keylesspalace.tusky.fragment.SFragment
 import com.keylesspalace.tusky.network.MastodonApi
 import com.nhaarman.mockitokotlin2.mock
 import okhttp3.Request
+import okio.Timeout
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -98,6 +99,10 @@ class FilterTest {
                                 )
                         )
                 )
+            }
+
+            override fun timeout(): Timeout {
+                throw Error("not implemented")
             }
         })
 
@@ -214,6 +219,7 @@ class FilterTest {
                 mentions = emptyArray(),
                 application = null,
                 pinned = false,
+                muted = false,
                 poll = if (pollOptions != null) {
                     Poll(
                             id = "1234",
@@ -221,6 +227,7 @@ class FilterTest {
                             expired = false,
                             multiple = false,
                             votesCount = 0,
+                            votersCount = 0,
                             options = pollOptions.map {
                                 PollOption(it, 0)
                             },

@@ -18,26 +18,19 @@ package com.keylesspalace.tusky.components.compose.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.RadioGroup
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Status
 import kotlinx.android.synthetic.main.view_compose_options.view.*
 
-
-class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : LinearLayout(context, attrs, defStyleAttr) {
+class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : RadioGroup(context, attrs) {
 
     var listener: ComposeOptionsListener? = null
 
     init {
         inflate(context, R.layout.view_compose_options, this)
 
-        publicRadioButton.setButtonDrawable(R.drawable.ic_public_24dp)
-        unlistedRadioButton.setButtonDrawable(R.drawable.ic_lock_open_24dp)
-        privateRadioButton.setButtonDrawable(R.drawable.ic_lock_outline_24dp)
-        unleakableRadioButton.setButtonDrawable(R.drawable.ic_low_vision_24dp)
-        directRadioButton.setButtonDrawable(R.drawable.ic_email_24dp)
-
-        visibilityRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+        setOnCheckedChangeListener { _, checkedId ->
             val visibility = when (checkedId) {
                 R.id.publicRadioButton ->
                     Status.Visibility.PUBLIC
@@ -80,7 +73,7 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
 
         }
 
-        visibilityRadioGroup.check(selectedButton)
+        check(selectedButton)
     }
 
 }

@@ -56,6 +56,7 @@ import com.keylesspalace.tusky.appstore.BookmarkEvent;
 import com.keylesspalace.tusky.appstore.DomainMuteEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.FavoriteEvent;
+import com.keylesspalace.tusky.appstore.MuteConversationEvent;
 import com.keylesspalace.tusky.appstore.MuteEvent;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.QuickReplyEvent;
@@ -78,6 +79,7 @@ import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.repository.Placeholder;
 import com.keylesspalace.tusky.repository.TimelineRepository;
 import com.keylesspalace.tusky.repository.TimelineRequestMode;
+import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.Either;
 import com.keylesspalace.tusky.util.LinkHelper;
 import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate;
@@ -229,7 +231,7 @@ public class TimelineFragment extends SFragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle arguments = Objects.requireNonNull(getArguments());
+        Bundle arguments = requireArguments();
         kind = Kind.valueOf(arguments.getString(KIND_ARG));
         if (kind == Kind.TAG
                 || kind == Kind.USER
@@ -245,7 +247,11 @@ public class TimelineFragment extends SFragment implements
                 accountManager.getActiveAccount().getMediaPreviewEnabled(),
                 preferences.getBoolean("absoluteTimeView", false),
                 preferences.getBoolean("showBotOverlay", true),
-                preferences.getBoolean("useBlurhash", true)
+                preferences.getBoolean("useBlurhash", true),
+                preferences.getBoolean("showCardsInTimelines", false) ?
+                        CardViewMode.INDENTED :
+                        CardViewMode.NONE,
+                preferences.getBoolean("confirmReblogs", true)
         );
         adapter = new TimelineAdapter(dataSource, statusDisplayOptions, this);
 
@@ -568,6 +574,9 @@ public class TimelineFragment extends SFragment implements
                         } else if (event instanceof BookmarkEvent) {
                             BookmarkEvent bookmarkEvent = (BookmarkEvent) event;
                             handleBookmarkEvent(bookmarkEvent);
+                        } else if (event instanceof MuteConversationEvent) {
+                            MuteConversationEvent muteEvent = (MuteConversationEvent) event;
+                            handleMuteConversationEvent(muteEvent);
                         } else if (event instanceof UnfollowEvent) {
                             if (kind == Kind.HOME) {
                                 String id = ((UnfollowEvent) event).getAccountId();
@@ -1426,6 +1435,10 @@ public class TimelineFragment extends SFragment implements
         if (pos < 0) return;
         Status status = statuses.get(pos).asRight();
         setBookmarkForStatus(pos, status, bookmarkEvent.getBookmark());
+    }
+
+    private void handleMuteConversationEvent(@NonNull MuteConversationEvent event) {
+        fullyRefresh();
     }
 
     private void handleStatusComposeEvent(@NonNull Status status) {
