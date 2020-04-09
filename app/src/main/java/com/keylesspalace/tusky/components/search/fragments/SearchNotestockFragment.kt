@@ -1,13 +1,53 @@
 package com.keylesspalace.tusky.components.search.fragments
 
+import android.Manifest
+import android.app.DownloadManager
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.view.ViewCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
+import androidx.paging.PagedListAdapter
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.keylesspalace.tusky.BaseActivity
+import com.keylesspalace.tusky.MainActivity
+import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.ViewMediaActivity
+import com.keylesspalace.tusky.components.compose.ComposeActivity
+import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
+import com.keylesspalace.tusky.components.report.ReportActivity
 import com.keylesspalace.tusky.components.search.adapter.SearchStatusesAdapter
+import com.keylesspalace.tusky.db.AccountEntity
+import com.keylesspalace.tusky.entity.Attachment
 import com.keylesspalace.tusky.entity.Status
+import com.keylesspalace.tusky.entity.Status.Mention
+import com.keylesspalace.tusky.interfaces.AccountSelectionListener
+import com.keylesspalace.tusky.interfaces.StatusActionListener
+import com.keylesspalace.tusky.util.CardViewMode
 import com.keylesspalace.tusky.util.NetworkState
+import com.keylesspalace.tusky.util.StatusDisplayOptions
+import com.keylesspalace.tusky.viewdata.AttachmentViewData
 import com.keylesspalace.tusky.viewdata.StatusViewData
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
+import com.uber.autodispose.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.android.synthetic.main.fragment_search.*
 
-class SearchNotestockFragment : SearchStatusesFragment() {
+class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
 
     override val networkStateRefresh: LiveData<NetworkState>
         get() = viewModel.networkStateNotestockRefresh
@@ -16,14 +56,84 @@ class SearchNotestockFragment : SearchStatusesFragment() {
     override val data: LiveData<PagedList<Pair<Status, StatusViewData.Concrete>>>
         get() = viewModel.notestockStatuses
 
+    private val searchAdapter
+        get() = super.adapter as SearchStatusesAdapter
+
+    override fun createAdapter(): PagedListAdapter<Pair<Status, StatusViewData.Concrete>, *> {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(searchRecyclerView.context)
+        val statusDisplayOptions = StatusDisplayOptions(
+                animateAvatars = preferences.getBoolean("animateGifAvatars", false),
+                mediaPreviewEnabled = viewModel.mediaPreviewEnabled,
+                useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false),
+                showBotOverlay = preferences.getBoolean("showBotOverlay", true),
+                useBlurhash = preferences.getBoolean("useBlurhash", true),
+                cardViewMode = CardViewMode.NONE,
+                confirmReblogs = preferences.getBoolean("confirmReblogs", false)
+        )
+
+        searchRecyclerView.addItemDecoration(DividerItemDecoration(searchRecyclerView.context, DividerItemDecoration.VERTICAL))
+        searchRecyclerView.layoutManager = LinearLayoutManager(searchRecyclerView.context)
+        return SearchStatusesAdapter(statusDisplayOptions, this)
+    }
+
+
     override fun onContentHiddenChange(isShowing: Boolean, position: Int) {
         (adapter as? SearchStatusesAdapter)?.getItem(position)?.let {
             viewModel.contentHiddenNotestockChange(it, isShowing)
         }
     }
 
+    override fun onReply(position: Int) {
+        searchAdapter.getItem(position)?.first?.let { status ->
+            reply(status)
+        }
+    }
+
     override fun onFavourite(favourite: Boolean, position: Int) {
         // Forbidden
+    }
+
+    override fun onQuote(position: Int) {
+        searchAdapter.getItem(position)?.first?.let { status ->
+            quote(status)
+        }
+    }
+
+    override fun onBookmark(bookmark: Boolean, position: Int) {
+        searchAdapter.getItem(position)?.let { status ->
+            viewModel.bookmark(status, bookmark)
+        }
+    }
+
+    override fun onMore(view: View, position: Int) {
+        searchAdapter.getItem(position)?.first?.let {
+            more(it, view, position)
+        }
+    }
+
+    override fun onViewMedia(position: Int, attachmentIndex: Int, view: View?) {
+        searchAdapter.getItem(position)?.first?.actionableStatus?.let { actionable ->
+            when (actionable.attachments[attachmentIndex].type) {
+                Attachment.Type.GIFV, Attachment.Type.VIDEO, Attachment.Type.IMAGE, Attachment.Type.AUDIO -> {
+                    val attachments = AttachmentViewData.list(actionable)
+                    val intent = ViewMediaActivity.newIntent(context, attachments,
+                            attachmentIndex)
+                    if (view != null) {
+                        val url = actionable.attachments[attachmentIndex].url
+                        ViewCompat.setTransitionName(view, url)
+                        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(),
+                                view, url)
+                        startActivity(intent, options.toBundle())
+                    } else {
+                        startActivity(intent)
+                    }
+                }
+                Attachment.Type.UNKNOWN -> {
+                }
+            }
+
+        }
+
     }
 
     override fun onViewThread(position: Int) {
@@ -33,10 +143,20 @@ class SearchNotestockFragment : SearchStatusesFragment() {
         }
     }
 
+    override fun onOpenReblog(position: Int) {
+        searchAdapter.getItem(position)?.first?.let { status ->
+            bottomSheetActivity?.viewAccount(status.account.id)
+        }
+    }
+
     override fun onExpandedChange(expanded: Boolean, position: Int) {
         (adapter as? SearchStatusesAdapter)?.getItem(position)?.let {
             viewModel.expandedNotestockChange(it, expanded)
         }
+    }
+
+    override fun onLoadMore(position: Int) {
+        // Not possible here
     }
 
     override fun onContentCollapsedChange(isCollapsed: Boolean, position: Int) {
@@ -49,7 +169,7 @@ class SearchNotestockFragment : SearchStatusesFragment() {
         // Forbidden
     }
 
-    override fun removeItem(position: Int) {
+    fun removeItem(position: Int) {
         (adapter as? SearchStatusesAdapter)?.getItem(position)?.let {
             viewModel.removeNotestockItem(it)
         }
@@ -61,6 +181,307 @@ class SearchNotestockFragment : SearchStatusesFragment() {
 
     companion object {
         fun newInstance() = SearchNotestockFragment()
+    }
+
+    private fun reply(status: Status) {
+        val actionableStatus = status.actionableStatus
+        val mentionedUsernames = actionableStatus.mentions.map { it.username }
+                .toMutableSet()
+                .apply {
+                    add(actionableStatus.account.username)
+                    remove(viewModel.activeAccount?.username)
+                }
+
+        val intent = ComposeActivity.startIntent(requireContext(), ComposeOptions(
+                inReplyToId = status.actionableId,
+                replyVisibility = actionableStatus.visibility,
+                contentWarning = actionableStatus.spoilerText,
+                mentionedUsernames = mentionedUsernames,
+                replyingStatusAuthor = actionableStatus.account.localUsername,
+                replyingStatusContent = actionableStatus.content.toString()
+        ))
+        startActivity(intent)
+    }
+
+    private fun quote(status: Status) {
+        val actionableStatus = status.actionableStatus
+        val mentionedUsernames = actionableStatus.mentions.map { it.username }
+                .toMutableSet()
+                .apply {
+                    add(actionableStatus.account.name)
+                    remove(viewModel.activeAccount?.username)
+                }
+
+        val intent = ComposeActivity.startIntent(requireContext(), ComposeOptions(
+                quoteId = status.actionableId,
+                quoteUrl = actionableStatus.url,
+                replyVisibility = actionableStatus.visibility,
+                contentWarning = actionableStatus.spoilerText,
+                mentionedUsernames = mentionedUsernames
+        ))
+        startActivity(intent)
+    }
+
+    private fun more(status: Status, view: View, position: Int) {
+        val id = status.actionableId
+        val accountId = status.actionableStatus.account.id
+        val accountUsername = status.actionableStatus.account.username
+        val statusUrl = status.actionableStatus.url
+        val accounts = viewModel.getAllAccountsOrderedByActive()
+        var openAsTitle: String? = null
+
+        val loggedInAccountId = viewModel.activeAccount?.accountId
+
+        val popup = PopupMenu(view.context, view)
+        val statusIsByCurrentUser = loggedInAccountId?.equals(accountId) == true
+        // Give a different menu depending on whether this is the user's own toot or not.
+        if (statusIsByCurrentUser) {
+            popup.inflate(R.menu.status_more_for_user)
+            val menu = popup.menu
+            menu.findItem(R.id.status_open_as).isVisible = !statusUrl.isNullOrBlank()
+            when (status.visibility) {
+                Status.Visibility.PUBLIC, Status.Visibility.UNLISTED -> {
+                    val textId = getString(if (status.isPinned()) R.string.unpin_action else R.string.pin_action)
+                    menu.add(0, R.id.pin, 1, textId)
+                }
+                Status.Visibility.PRIVATE -> {
+                    var reblogged = status.reblogged
+                    if (status.reblog != null) reblogged = status.reblog.reblogged
+                    menu.findItem(R.id.status_reblog_private).isVisible = !reblogged
+                    menu.findItem(R.id.status_unreblog_private).isVisible = reblogged
+                }
+                Status.Visibility.UNKNOWN, Status.Visibility.UNLEAKABLE, Status.Visibility.DIRECT -> {
+                } //Ignore
+            }
+        } else {
+            popup.inflate(R.menu.status_more)
+            val menu = popup.menu
+            menu.findItem(R.id.status_download_media).isVisible = status.attachments.isNotEmpty()
+        }
+
+        val openAsItem = popup.menu.findItem(R.id.status_open_as)
+        when (accounts.size) {
+            0, 1 -> openAsItem.isVisible = false
+            2 -> for (account in accounts) {
+                if (account !== viewModel.activeAccount) {
+                    openAsTitle = String.format(getString(R.string.action_open_as), account.fullName)
+                    break
+                }
+            }
+            else -> openAsTitle = String.format(getString(R.string.action_open_as), "…")
+        }
+        openAsItem.title = openAsTitle
+
+        val mutable = statusIsByCurrentUser || accountIsInMentions(viewModel.activeAccount, status.mentions)
+        val muteConversationItem = popup.menu.findItem(R.id.status_mute_conversation).apply {
+            isVisible = mutable
+        }
+        if (mutable) {
+            muteConversationItem.setTitle(
+                    if (status.muted == true) {
+                        R.string.action_unmute_conversation
+                    } else {
+                        R.string.action_mute_conversation
+                    })
+        }
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.status_share_content -> {
+                    val statusToShare: Status = status.actionableStatus
+
+                    val sendIntent = Intent()
+                    sendIntent.action = Intent.ACTION_SEND
+
+                    val stringToShare = statusToShare.account.username +
+                            " - " +
+                            statusToShare.content.toString()
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, stringToShare)
+                    sendIntent.type = "text/plain"
+                    startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.send_status_content_to)))
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_share_link -> {
+                    val sendIntent = Intent()
+                    sendIntent.action = Intent.ACTION_SEND
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, statusUrl)
+                    sendIntent.type = "text/plain"
+                    startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.send_status_link_to)))
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_copy_link -> {
+                    val clipboard = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText(null, statusUrl))
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_open_as -> {
+                    showOpenAsDialog(statusUrl!!, item.title)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_download_media -> {
+                    requestDownloadAllMedia(status)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_mute_conversation -> {
+                    searchAdapter.getItem(position)?.let { foundStatus ->
+                        viewModel.muteConversation(foundStatus, status.muted != true)
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_mute -> {
+                    onMute(accountId, accountUsername)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_block -> {
+                    onBlock(accountId, accountUsername)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_report -> {
+                    openReportPage(accountId, accountUsername, id)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_unreblog_private -> {
+                    onReblog(false, position)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_reblog_private -> {
+                    onReblog(true, position)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_delete -> {
+                    showConfirmDeleteDialog(id, position)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.status_delete_and_redraft -> {
+                    showConfirmEditDialog(id, position, status)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.pin -> {
+                    viewModel.pinAccount(status, !status.isPinned())
+                    return@setOnMenuItemClickListener true
+                }
+            }
+            false
+        }
+        popup.show()
+    }
+
+    private fun onBlock(accountId: String, accountUsername: String) {
+        AlertDialog.Builder(requireContext())
+                .setMessage(getString(R.string.dialog_block_warning, accountUsername))
+                .setPositiveButton(android.R.string.ok) { _, _ -> viewModel.blockAccount(accountId) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+    }
+
+    private fun onMute(accountId: String, accountUsername: String) {
+        AlertDialog.Builder(requireContext())
+                .setMessage(getString(R.string.dialog_mute_warning, accountUsername))
+                .setPositiveButton(android.R.string.ok) { _, _ -> viewModel.muteAccount(accountId) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+    }
+
+    private fun accountIsInMentions(account: AccountEntity?, mentions: Array<Mention>): Boolean {
+        return mentions.firstOrNull {
+            account?.username == it.username && account.domain == Uri.parse(it.url)?.host
+        } != null
+    }
+
+    private fun showOpenAsDialog(statusUrl: String, dialogTitle: CharSequence) {
+        bottomSheetActivity?.showAccountChooserDialog(dialogTitle, false, object : AccountSelectionListener {
+            override fun onAccountSelected(account: AccountEntity) {
+                openAsAccount(statusUrl, account)
+            }
+        })
+    }
+
+    private fun openAsAccount(statusUrl: String, account: AccountEntity) {
+        viewModel.activeAccount = account
+        val intent = Intent(context, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        intent.putExtra(MainActivity.STATUS_URL, statusUrl)
+        startActivity(intent)
+        (activity as BaseActivity).finishWithoutSlideOutAnimation()
+    }
+
+    private fun downloadAllMedia(status: Status) {
+        Toast.makeText(context, R.string.downloading_media, Toast.LENGTH_SHORT).show()
+        for ((_, url) in status.attachments) {
+            val uri = Uri.parse(url)
+            val filename = uri.lastPathSegment
+
+            val downloadManager = requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val request = DownloadManager.Request(uri)
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
+            downloadManager.enqueue(request)
+        }
+    }
+
+    private fun requestDownloadAllMedia(status: Status) {
+        val permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        (activity as BaseActivity).requestPermissions(permissions) { _, grantResults ->
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                downloadAllMedia(status)
+            } else {
+                Toast.makeText(context, R.string.error_media_download_permission, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun openReportPage(accountId: String, accountUsername: String, statusId: String) {
+        startActivity(ReportActivity.getIntent(requireContext(), accountId, accountUsername, statusId))
+    }
+
+    private fun showConfirmDeleteDialog(id: String, position: Int) {
+        context?.let {
+            AlertDialog.Builder(it)
+                    .setMessage(R.string.dialog_delete_toot_warning)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        viewModel.deleteStatus(id)
+                        removeItem(position)
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+        }
+    }
+
+    private fun showConfirmEditDialog(id: String, position: Int, status: Status) {
+        activity?.let {
+            AlertDialog.Builder(it)
+                    .setMessage(R.string.dialog_redraft_toot_warning)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        viewModel.deleteStatus(id)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .autoDispose(from(this, Lifecycle.Event.ON_DESTROY))
+                                .subscribe({ deletedStatus ->
+                                    removeItem(position)
+
+                                    val redraftStatus = if (deletedStatus.isEmpty()) {
+                                        status.toDeletedStatus()
+                                    } else {
+                                        deletedStatus
+                                    }
+
+                                    val intent = ComposeActivity.startIntent(requireContext(), ComposeOptions(
+                                            tootText = redraftStatus.text ?: "",
+                                            inReplyToId = redraftStatus.inReplyToId,
+                                            visibility = redraftStatus.visibility,
+                                            contentWarning = redraftStatus.spoilerText,
+                                            mediaAttachments = redraftStatus.attachments,
+                                            sensitive = redraftStatus.sensitive,
+                                            poll = redraftStatus.poll?.toNewPoll(status.createdAt)
+                                    ))
+                                    startActivity(intent)
+                                }, { error ->
+                                    Log.w("SearchStatusesFragment", "error deleting status", error)
+                                    Toast.makeText(context, R.string.error_generic, Toast.LENGTH_SHORT).show()
+                                })
+
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+        }
     }
 
 }

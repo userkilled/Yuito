@@ -15,7 +15,7 @@ class SearchNotestockRepository(private val notestockApi: NotestockApi) {
 
     private val executor = Executors.newSingleThreadExecutor()
 
-    fun getSearchData(searchRequest: String?, disposables: CompositeDisposable, pageSize: Int = 20,
+    fun getSearchData(searchRequest: String, disposables: CompositeDisposable, pageSize: Int = 20,
                       initialItems: List<Pair<Status, StatusViewData.Concrete>>? = null,
                       parser: (SearchResult?) -> List<Pair<Status, StatusViewData.Concrete>>): Listing<Pair<Status, StatusViewData.Concrete>> {
         val sourceFactory = SearchNotestockDataSourceFactory(notestockApi, searchRequest, disposables, executor, initialItems, parser)

@@ -62,7 +62,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_search.*
 
-open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
+class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
 
     override val networkStateRefresh: LiveData<NetworkState>
         get() = viewModel.networkStateStatusRefresh
@@ -188,7 +188,7 @@ open class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.C
         }
     }
 
-    open fun removeItem(position: Int) {
+    fun removeItem(position: Int) {
         searchAdapter.getItem(position)?.let {
             viewModel.removeItem(it)
         }
