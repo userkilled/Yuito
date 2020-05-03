@@ -21,12 +21,13 @@
 
     <TextView
         android:id="@+id/text_view_announcements"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         app:layout_constraintBottom_toTopOf="@+id/quick_reply_info"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button_open_announcements" />
 
     <ImageButton
