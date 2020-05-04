@@ -123,7 +123,6 @@ class SearchActivity : BottomSheetActivity(), HasAndroidInjector {
     override fun androidInjector() = androidInjector
 
     companion object {
-        @JvmStatic
         fun getIntent(context: Context) = Intent(context, SearchActivity::class.java)
     }
 }

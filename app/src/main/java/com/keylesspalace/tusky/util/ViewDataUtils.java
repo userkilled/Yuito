@@ -81,8 +81,7 @@ public final class ViewDataUtils {
                         notification.getStatus(),
                         alwaysShowSensitiveData,
                         alwaysOpenSpoiler
-                ),
-                false
+                )
         );
     }
 }

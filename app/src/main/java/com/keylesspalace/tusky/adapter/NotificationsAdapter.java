@@ -56,7 +56,6 @@ import com.keylesspalace.tusky.util.StatusDisplayOptions;
 import com.keylesspalace.tusky.util.TimestampUtils;
 import com.keylesspalace.tusky.viewdata.NotificationViewData;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
-import com.mikepenz.iconics.utils.Utils;
 
 import net.accelf.yuito.QuoteInlineHelper;
 
@@ -64,6 +63,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import at.connyduck.sparkbutton.helpers.Utils;
 
 public class NotificationsAdapter extends RecyclerView.Adapter {
 
@@ -144,7 +145,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 view.setLayoutParams(
                         new ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
-                                Utils.convertDpToPx(parent.getContext(), 24)
+                                Utils.dpToPx(parent.getContext(), 24)
                         )
                 );
                 return new RecyclerView.ViewHolder(view) {
@@ -522,7 +523,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                     statusContent.setVisibility(statusViewData.isExpanded() ? View.GONE : View.VISIBLE);
                 });
 
-                setupContentAndSpoiler(notificationViewData, listener);
+                setupContentAndSpoiler(listener);
             }
 
         }
@@ -576,9 +577,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
         }
 
-        private void setupContentAndSpoiler(NotificationViewData.Concrete notificationViewData, final LinkListener listener) {
+        private void setupContentAndSpoiler(final LinkListener listener) {
 
-            boolean shouldShowContentIfSpoiler = notificationViewData.isExpanded();
+            boolean shouldShowContentIfSpoiler = statusViewData.isExpanded();
             boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getSpoilerText());
             if (!shouldShowContentIfSpoiler && hasSpoiler) {
                 statusContent.setVisibility(View.GONE);
@@ -589,7 +590,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             Spanned content = statusViewData.getContent();
             List<Emoji> emojis = statusViewData.getStatusEmojis();
 
-            if (statusViewData.isCollapsible() && (notificationViewData.isExpanded() || !hasSpoiler)) {
+            if (statusViewData.isCollapsible() && (statusViewData.isExpanded() || !hasSpoiler)) {
                 contentCollapseButton.setOnClickListener(view -> {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION && notificationActionListener != null) {
@@ -612,7 +613,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
 
             Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, statusContent);
             LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener,
-                    notificationViewData.getStatusViewData().getQuote() != null);
+                    statusViewData.getQuote() != null);
 
             Spanned emojifiedContentWarning =
                     CustomEmojiHelper.emojifyString(statusViewData.getSpoilerText(), statusViewData.getStatusEmojis(), contentWarningDescriptionTextView);

@@ -50,7 +50,6 @@ import com.keylesspalace.tusky.viewdata.PollOptionViewData;
 import com.keylesspalace.tusky.viewdata.PollViewData;
 import com.keylesspalace.tusky.viewdata.PollViewDataKt;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
-import com.mikepenz.iconics.utils.Utils;
 
 import net.accelf.yuito.QuoteInlineHelper;
 
@@ -62,6 +61,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import at.connyduck.sparkbutton.SparkButton;
+import at.connyduck.sparkbutton.helpers.Utils;
 import kotlin.collections.CollectionsKt;
 
 import static com.keylesspalace.tusky.viewdata.PollViewDataKt.buildDescription;
@@ -305,7 +305,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             avatarRadius = avatarRadius48dp;
 
         } else {
-            int padding = Utils.convertDpToPx(avatar.getContext(), 12);
+            int padding = Utils.dpToPx(avatar.getContext(), 12);
             avatar.setPaddingRelative(0, 0, padding, padding);
 
             avatarInset.setVisibility(View.VISIBLE);
