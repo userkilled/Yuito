@@ -110,7 +110,7 @@
 
         <SwitchPreferenceCompat
             android:defaultValue="true"
-            android:key="limitedBandwidthTimelineRoading"
+            android:key="limitedBandwidthTimelineLoading"
             android:title="@string/pref_title_limited_bandwidth_timeline"
             android:dependency="limitedBandwidthActive"
             app:singleLineTitle="false" />

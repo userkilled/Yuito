@@ -187,7 +187,7 @@ public class TimelineFragment extends SFragment implements
     private boolean initialUpdateFailed = false;
 
     private SharedPreferences preferences;
-    private boolean reduceTimelineRoading;
+    private boolean reduceTimelineLoading;
     private boolean checkMobileNetwork;
 
     private WebSocket webSocket;
@@ -980,7 +980,7 @@ public class TimelineFragment extends SFragment implements
             }
             case "limitedBandwidthActive":
             case "limitedBandwidthOnlyMobileNetwork":
-            case "limitedBandwidthTimelineRoading": {
+            case "limitedBandwidthTimelineLoading": {
                 updateLimitedBandwidthStatus();
                 break;
             }
@@ -988,7 +988,7 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void updateLimitedBandwidthStatus() {
-        reduceTimelineRoading = preferences.getBoolean("limitedBandwidthActive", false) && preferences.getBoolean("limitedBandwidthTimelineRoading", true);
+        reduceTimelineLoading = preferences.getBoolean("limitedBandwidthActive", false) && preferences.getBoolean("limitedBandwidthTimelineLoading", true);
         checkMobileNetwork = preferences.getBoolean("limitedBandwidthOnlyMobileNetwork", true);
     }
 
@@ -1465,7 +1465,7 @@ public class TimelineFragment extends SFragment implements
 
         boolean reloadTimeline = true;
 
-        if (reduceTimelineRoading) {
+        if (reduceTimelineLoading) {
             reloadTimeline = false;
             Activity activity = getActivity();
             if (checkMobileNetwork && activity != null) {
