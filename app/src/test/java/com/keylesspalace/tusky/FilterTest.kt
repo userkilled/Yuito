@@ -234,7 +234,8 @@ class FilterTest {
                             voted = false
                     )
                 } else null,
-                card = null
+                card = null,
+                quote = null
         )
     }
 
