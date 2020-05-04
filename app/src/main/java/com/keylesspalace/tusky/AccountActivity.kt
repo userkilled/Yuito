@@ -724,7 +724,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     }
 
     override fun onViewUrl(url: String, text: String) {
-        viewUrl(url, text)
+        viewUrl(url, text = text)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

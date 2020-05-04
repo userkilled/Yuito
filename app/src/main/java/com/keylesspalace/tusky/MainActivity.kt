@@ -321,7 +321,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         if (intent != null) {
             val statusUrl = intent.getStringExtra(STATUS_URL)
             if (statusUrl != null) {
-                viewUrl(statusUrl, statusUrl, PostLookupFallbackBehavior.DISPLAY_ERROR)
+                viewUrl(statusUrl, PostLookupFallbackBehavior.DISPLAY_ERROR)
             }
         }
     }

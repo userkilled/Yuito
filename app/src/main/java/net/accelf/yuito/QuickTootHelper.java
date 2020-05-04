@@ -116,7 +116,7 @@ public class QuickTootHelper {
 
             @Override
             public void onViewUrl(String url, String text) {
-                activity.viewUrl(url, text, PostLookupFallbackBehavior.OPEN_IN_BROWSER);
+                activity.viewUrl(url, PostLookupFallbackBehavior.OPEN_IN_BROWSER, text);
             }
         };
         activity.mastodonApi.listAnnouncements()

@@ -139,7 +139,7 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
     override fun onViewThread(position: Int) {
         (adapter as? SearchStatusesAdapter)?.getItem(position)?.first?.let { status ->
             val actionableStatus = status.actionableStatus
-            bottomSheetActivity?.viewUrl(actionableStatus.id, actionableStatus.id)
+            bottomSheetActivity?.viewUrl(actionableStatus.id)
         }
     }
 

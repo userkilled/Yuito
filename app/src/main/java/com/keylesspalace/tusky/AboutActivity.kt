@@ -47,7 +47,7 @@ class AboutActivity : BottomSheetActivity(), Injectable {
         aboutBugsFeaturesInfoTextView.setClickableTextWithoutUnderlines(R.string.about_bug_feature_request_site)
 
         tuskyProfileButton.setOnClickListener {
-            viewUrl(BuildConfig.SUPPORT_ACCOUNT_URL, BuildConfig.SUPPORT_ACCOUNT_URL)
+            viewUrl(BuildConfig.SUPPORT_ACCOUNT_URL)
         }
 
         aboutLicensesButton.setOnClickListener {

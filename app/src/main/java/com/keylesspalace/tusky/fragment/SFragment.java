@@ -138,7 +138,7 @@ public abstract class SFragment extends BaseFragment implements Injectable {
     }
 
     public void onViewUrl(String url, String text) {
-        bottomSheetActivity.viewUrl(url, text, PostLookupFallbackBehavior.OPEN_IN_BROWSER);
+        bottomSheetActivity.viewUrl(url, PostLookupFallbackBehavior.OPEN_IN_BROWSER, text);
     }
 
     protected void reply(Status status) {

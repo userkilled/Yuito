@@ -65,7 +65,7 @@ abstract class BottomSheetActivity : BaseActivity() {
 
     }
 
-    open fun viewUrl(url: String, text: String, lookupFallbackBehavior: PostLookupFallbackBehavior = PostLookupFallbackBehavior.OPEN_IN_BROWSER) {
+    open fun viewUrl(url: String, lookupFallbackBehavior: PostLookupFallbackBehavior = PostLookupFallbackBehavior.OPEN_IN_BROWSER, text: String = "") {
         if (forceBrowser.contains(text)) {
             openLink(url)
             return
