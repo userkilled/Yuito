@@ -98,19 +98,22 @@
             android:defaultValue="false"
             android:key="limitedBandwidthActive"
             android:title="@string/pref_title_limited_bandwidth_active"
-            android:disableDependentsState="false" />
+            android:disableDependentsState="false"
+            app:singleLineTitle="false" />
 
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="limitedBandwidthOnlyMobileNetwork"
             android:title="@string/pref_title_limited_bandwidth_mobile"
-            android:dependency="limitedBandwidthActive" />
+            android:dependency="limitedBandwidthActive"
+            app:singleLineTitle="false" />
 
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="limitedBandwidthTimelineRoading"
             android:title="@string/pref_title_limited_bandwidth_timeline"
-            android:dependency="limitedBandwidthActive" />
+            android:dependency="limitedBandwidthActive"
+            app:singleLineTitle="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_title_browser_settings">
@@ -139,15 +142,17 @@
 
     <PreferenceCategory android:title="@string/pref_title_experimental">
 
-        <CheckBoxPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="viewPagerOffScreenLimit"
-            android:title="@string/pref_title_experimental_viewpager_offscreen" />
+            android:title="@string/pref_title_experimental_viewpager_offscreen"
+            app:singleLineTitle="false" />
 
-        <CheckBoxPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="useHTLStream"
-            android:title="@string/pref_title_experimental_htl_streaming" />
+            android:title="@string/pref_title_experimental_htl_streaming"
+            app:singleLineTitle="false" />
     </PreferenceCategory>
 
     <PreferenceCategory
