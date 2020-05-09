@@ -23,18 +23,21 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.InsetDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.PopupWindow
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -187,11 +190,51 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             viewPager.offscreenPageLimit = 9
         }
 
-        val popupWindow = PopupWindow(this)
-        @SuppressLint("InflateParams") val popupView = layoutInflater.inflate(R.layout.view_tab_action, null)
-        popupWindow.contentView = popupView
-        popupWindow.isOutsideTouchable = true
-        popupWindow.isFocusable = true
+        val popups = ArrayList<PopupMenu>()
+        for (i in 0 until tabLayout.tabCount) {
+            val tab = tabLayout.getTabAt(i)!!
+            val popup = PopupMenu(this, tab.view)
+            popup.menuInflater.inflate(R.menu.view_tab_action, popup.menu)
+
+            @SuppressLint("RestrictedApi")
+            if (popup.menu is MenuBuilder) {
+                val menuBuilder = popup.menu as MenuBuilder
+                menuBuilder.setOptionalIconsVisible(true)
+                menuBuilder.visibleItems.forEach { item ->
+                    val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, resources.displayMetrics).toInt()
+
+                    if (item.icon != null) {
+                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+                            item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
+                        } else {
+                            item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
+                                override fun getIntrinsicWidth(): Int {
+                                    return intrinsicHeight + iconMarginPx + iconMarginPx
+                                }
+                            }
+                        }
+                        ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorPrimary)
+                    }
+                }
+            }
+
+            popup.setOnMenuItemClickListener { item ->
+                val fragment = adapter?.getFragment(tab.position)
+                if (fragment is ReselectableFragment) {
+                    when (item.itemId) {
+                        R.id.tabJumpToTop -> {
+                            (fragment as ReselectableFragment).onReselect()
+                        }
+                        R.id.tabReset -> {
+                            (fragment as ReselectableFragment).onReset()
+                        }
+                    }
+                }
+                false
+            }
+
+            popups.add(popup)
+        }
 
         tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -203,23 +246,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             override fun onTabUnselected(tab: TabLayout.Tab) {}
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                popupView.findViewById<ImageButton>(R.id.tabJumpToTop).setOnClickListener {
-                    val fragment = adapter?.getFragment(tab.position)
-                    if (fragment is ReselectableFragment) {
-                        (fragment as ReselectableFragment).onReselect()
-                    }
-
-                    popupWindow.dismiss()
-                }
-                popupView.findViewById<ImageButton>(R.id.tabReset).setOnClickListener {
-                    val fragment = adapter?.getFragment(tab.position)
-                    if (fragment is ReselectableFragment) {
-                        (fragment as ReselectableFragment).onReset()
-                    }
-
-                    popupWindow.dismiss()
-                }
-                popupWindow.showAsDropDown(tab.view)
+                popups[tab.position].show()
             }
         })
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/tabJumpToTop"
+        android:icon="@drawable/ic_arrow_upward"
+        android:title="@string/action_tab_jump_to_top" />
+
+    <item android:id="@+id/tabReset"
+        android:icon="@drawable/ic_reject_24dp"
+        android:title="@string/action_tab_reset" />
+
+</menu>
