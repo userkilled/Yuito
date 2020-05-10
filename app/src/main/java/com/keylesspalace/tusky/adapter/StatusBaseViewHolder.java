@@ -702,7 +702,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
         avatar.setOnClickListener(v -> {
             if (isNotestock) {
-                listener.onViewUrl(acct, acct);
+                listener.onViewUrl(accountId, accountId);
             } else {
                 listener.onViewAccount(accountId);
             }
