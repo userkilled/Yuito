@@ -60,6 +60,7 @@ import com.keylesspalace.tusky.components.scheduled.ScheduledTootActivity
 import com.keylesspalace.tusky.components.search.SearchActivity
 import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.entity.Account
+import com.keylesspalace.tusky.fragment.NotificationsFragment
 import com.keylesspalace.tusky.fragment.SFragment
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
@@ -199,6 +200,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             @SuppressLint("RestrictedApi")
             if (popup.menu is MenuBuilder) {
                 val menuBuilder = popup.menu as MenuBuilder
+                if (tab.position == notificationTabPosition) {
+                    menuBuilder.findItem(R.id.tabToggleNotificationsFilter).isVisible = true
+                }
                 menuBuilder.setOptionalIconsVisible(true)
                 menuBuilder.visibleItems.forEach { item ->
                     val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, resources.displayMetrics).toInt()
@@ -220,13 +224,24 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
             popup.setOnMenuItemClickListener { item ->
                 val fragment = adapter?.getFragment(tab.position)
-                if (fragment is ReselectableFragment) {
-                    when (item.itemId) {
-                        R.id.tabJumpToTop -> {
+                when (item.itemId) {
+                    R.id.tabJumpToTop -> {
+                        if (fragment is ReselectableFragment) {
                             (fragment as ReselectableFragment).onReselect()
                         }
-                        R.id.tabReset -> {
+                    }
+                    R.id.tabReset -> {
+                        if (fragment is ReselectableFragment) {
                             (fragment as ReselectableFragment).onReset()
+                        }
+                    }
+                    R.id.tabToggleNotificationsFilter -> {
+                        if (fragment is NotificationsFragment) {
+                            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+                            prefs.edit().putBoolean("showNotificationsFilter",
+                                    !prefs.getBoolean("showNotificationsFilter", true))
+                                    .apply()
+                            eventHub.dispatch(PreferenceChangedEvent("showNotificationsFilter"))
                         }
                     }
                 }
