@@ -1110,7 +1110,7 @@ class ComposeActivity : BaseActivity(),
         const val MAXIMUM_URL_LENGTH = 23
 
         @JvmField
-        val CAN_USE_UNLEAKABLE = arrayOf("itabashi.0j0.jp", "n-sr.org", "odakyu.app")
+        val CAN_USE_UNLEAKABLE = arrayOf("itabashi.0j0.jp", "odakyu.app")
 
         const val PREF_DEFAULT_TAG = "default_tag"
         const val PREF_USE_DEFAULT_TAG = "use_default_tag"
