@@ -55,7 +55,7 @@ public class QuoteInlineHelper {
     }
 
     private void setDisplayName(String name, List<Emoji> customEmojis) {
-        CharSequence emojifiedName = CustomEmojiHelper.emojifyString(name, customEmojis, quoteDisplayName);
+        CharSequence emojifiedName = CustomEmojiHelper.emojify(name, customEmojis, quoteDisplayName);
         quoteDisplayName.setText(emojifiedName);
     }
 
@@ -69,7 +69,7 @@ public class QuoteInlineHelper {
     private void setContent(Spanned content, Status.Mention[] mentions, List<Emoji> emojis,
                             LinkListener listener) {
         Spanned singleLineText = SpannedTextHelper.replaceSpanned(content);
-        Spanned emojifiedText = CustomEmojiHelper.emojifyText(singleLineText, emojis, quoteContent);
+        CharSequence emojifiedText = CustomEmojiHelper.emojify(singleLineText, emojis, quoteContent);
         LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener, false);
     }
 
@@ -79,7 +79,7 @@ public class QuoteInlineHelper {
 
     private void setSpoilerText(String spoilerText, List<Emoji> emojis) {
         CharSequence emojiSpoiler =
-                CustomEmojiHelper.emojifyString(spoilerText, emojis, quoteContentWarningDescription);
+                CustomEmojiHelper.emojify(spoilerText, emojis, quoteContentWarningDescription);
         quoteContentWarningDescription.setText(emojiSpoiler);
         quoteContentWarningDescription.setVisibility(View.VISIBLE);
         quoteContentWarningButton.setVisibility(View.VISIBLE);
