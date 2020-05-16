@@ -51,6 +51,7 @@ import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
+import com.keylesspalace.tusky.components.compose.ComposeViewModelKt;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Filter;
 import com.keylesspalace.tusky.entity.Poll;
@@ -68,6 +69,7 @@ import com.keylesspalace.tusky.view.ConversationLineItemDecoration;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -136,7 +138,8 @@ public final class ViewThreadFragment extends SFragment implements
                 preferences.getBoolean("showCardsInTimelines", false) ?
                         CardViewMode.INDENTED :
                         CardViewMode.NONE,
-                preferences.getBoolean("confirmReblogs", true)
+                preferences.getBoolean("confirmReblogs", true),
+                Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
         );
         adapter = new ThreadAdapter(statusDisplayOptions, this);
     }

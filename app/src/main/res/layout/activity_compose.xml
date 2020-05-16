@@ -92,13 +92,31 @@
                 android:id="@+id/composeQuoteView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
+                android:layout_marginBottom="6dp"
                 android:drawablePadding="6dp"
                 android:textSize="?attr/status_text_small"
                 android:textStyle="bold"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:text="Quote @username"
+                tools:visibility="visible" />
+
+            <androidx.emoji.widget.EmojiTextView
+                android:id="@+id/composeQuoteContentView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/colorBackgroundAccent"
+                android:lineSpacingMultiplier="1.1"
+                android:paddingLeft="16dp"
+                android:paddingTop="4dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="4dp"
+                android:textSize="?attr/status_text_small"
+                android:visibility="gone"
+                tools:text="Post content which may be preeettyy long, so please, make sure there's enough room for everything, okay? Not kidding. I wish Eugen answered me more often, sigh."
+                tools:visibility="visible" />
 
             <LinearLayout
                 android:id="@+id/composeContentWarningBar"

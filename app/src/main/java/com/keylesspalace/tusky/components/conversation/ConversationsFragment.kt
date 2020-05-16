@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.keylesspalace.tusky.AccountActivity
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.ViewTagActivity
+import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.db.AppDatabase
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.di.ViewModelFactory
@@ -67,7 +68,8 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable, Res
                 showBotOverlay = preferences.getBoolean("showBotOverlay", true),
                 useBlurhash = preferences.getBoolean("useBlurhash", true),
                 cardViewMode = CardViewMode.NONE,
-                confirmReblogs = preferences.getBoolean("confirmReblogs", true)
+                confirmReblogs = preferences.getBoolean("confirmReblogs", true),
+                quoteEnabled = accountManager.activeAccount?.domain in CAN_USE_QUOTE_ID
         )
 
         adapter = ConversationAdapter(statusDisplayOptions, this, ::onTopLoaded, viewModel::retry)

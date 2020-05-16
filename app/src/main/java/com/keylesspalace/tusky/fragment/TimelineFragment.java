@@ -65,6 +65,7 @@ import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
 import com.keylesspalace.tusky.appstore.StreamUpdateEvent;
 import com.keylesspalace.tusky.appstore.UnfollowEvent;
+import com.keylesspalace.tusky.components.compose.ComposeViewModelKt;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
@@ -101,7 +102,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -251,7 +251,8 @@ public class TimelineFragment extends SFragment implements
                 preferences.getBoolean("showCardsInTimelines", false) ?
                         CardViewMode.INDENTED :
                         CardViewMode.NONE,
-                preferences.getBoolean("confirmReblogs", true)
+                preferences.getBoolean("confirmReblogs", true),
+                Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
         );
         adapter = new TimelineAdapter(dataSource, statusDisplayOptions, this);
 

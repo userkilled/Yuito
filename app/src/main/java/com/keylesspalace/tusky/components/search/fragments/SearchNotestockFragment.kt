@@ -68,7 +68,8 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
                 showBotOverlay = preferences.getBoolean("showBotOverlay", true),
                 useBlurhash = preferences.getBoolean("useBlurhash", true),
                 cardViewMode = CardViewMode.NONE,
-                confirmReblogs = preferences.getBoolean("confirmReblogs", false)
+                confirmReblogs = preferences.getBoolean("confirmReblogs", false),
+                quoteEnabled = viewModel.quoteEnabled
         )
 
         searchRecyclerView.addItemDecoration(DividerItemDecoration(searchRecyclerView.context, DividerItemDecoration.VERTICAL))
@@ -214,7 +215,8 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
 
         val intent = ComposeActivity.startIntent(requireContext(), ComposeOptions(
                 quoteId = status.actionableId,
-                quoteUrl = actionableStatus.url,
+                quoteStatusAuthor = actionableStatus.account.localUsername,
+                quoteStatusContent = actionableStatus.content.toString(),
                 replyVisibility = actionableStatus.visibility,
                 contentWarning = actionableStatus.spoilerText,
                 mentionedUsernames = mentionedUsernames

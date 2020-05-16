@@ -160,7 +160,7 @@ class ComposeActivity : BaseActivity(),
             this.composeOptions = intent.getParcelableExtra<ComposeOptions?>(COMPOSE_OPTIONS_EXTRA)
             viewModel.setup(composeOptions)
             setupReplyViews(composeOptions?.replyingStatusAuthor)
-            setupQuoteView(composeOptions?.quoteUrl)
+            setupQuoteView(composeOptions?.quoteStatusAuthor)
             val tootText = composeOptions?.tootText
             if (!tootText.isNullOrEmpty()) {
                 composeEditField.setText(tootText)
@@ -301,11 +301,31 @@ class ComposeActivity : BaseActivity(),
         composeOptions?.replyingStatusContent?.let { composeReplyContentView.text = it }
     }
 
-    private fun setupQuoteView(quoteUrl: String?) {
-        if (quoteUrl != null) {
+    private fun setupQuoteView(quoteStatusAuthor: String?) {
+        if (quoteStatusAuthor != null) {
             composeQuoteView.show()
-            composeQuoteView.text = getString(R.string.quote_to, quoteUrl)
+            composeQuoteView.text = getString(R.string.quote_to, quoteStatusAuthor)
+            val arrowDownIcon = IconicsDrawable(this, GoogleMaterial.Icon.gmd_arrow_drop_down).apply { sizeDp = 12 }
+
+            ThemeUtils.setDrawableTint(this, arrowDownIcon, android.R.attr.textColorTertiary)
+            composeQuoteView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowDownIcon, null)
+
+            composeQuoteView.setOnClickListener {
+                TransitionManager.beginDelayedTransition(composeQuoteContentView.parent as ViewGroup)
+
+                if (composeQuoteContentView.isVisible) {
+                    composeQuoteContentView.hide()
+                    composeQuoteView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowDownIcon, null)
+                } else {
+                    composeQuoteContentView.show()
+                    val arrowUpIcon = IconicsDrawable(this, GoogleMaterial.Icon.gmd_arrow_drop_up).apply { sizeDp = 12 }
+
+                    ThemeUtils.setDrawableTint(this, arrowUpIcon, android.R.attr.textColorTertiary)
+                    composeReplyView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowUpIcon, null)
+                }
+            }
         }
+        composeOptions?.quoteStatusContent?.let { composeQuoteContentView.text = it }
     }
 
     private fun setupContentWarningField(startingContentWarning: String?) {
@@ -1083,7 +1103,8 @@ class ComposeActivity : BaseActivity(),
             var mentionedUsernames: Set<String>? = null,
             var inReplyToId: String? = null,
             var quoteId: String? = null,
-            var quoteUrl: String? = null,
+            var quoteStatusAuthor: String? = null,
+            var quoteStatusContent: String? = null,
             var replyVisibility: Status.Visibility? = null,
             var visibility: Status.Visibility? = null,
             var contentWarning: String? = null,

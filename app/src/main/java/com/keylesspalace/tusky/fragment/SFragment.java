@@ -174,7 +174,6 @@ public abstract class SFragment extends BaseFragment implements Injectable {
         String id = status.getActionableId();
         Status actionableStatus = status.getActionableStatus();
         Status.Visibility visibility = actionableStatus.getVisibility();
-        String url = actionableStatus.getUrl();
         Status.Mention[] mentions = actionableStatus.getMentions();
         Set<String> mentionedUsernames = new LinkedHashSet<>();
         mentionedUsernames.add(actionableStatus.getAccount().getUsername());
@@ -187,12 +186,10 @@ public abstract class SFragment extends BaseFragment implements Injectable {
             mentionedUsernames.add(mention.getUsername());
         }
         mentionedUsernames.remove(loggedInUsername);
-        if (status.getReblog() != null) {
-            url = status.getReblog().getUrl();
-        }
         ComposeOptions composeOptions = new ComposeOptions();
         composeOptions.setQuoteId(id);
-        composeOptions.setQuoteUrl(url);
+        composeOptions.setQuoteStatusAuthor(actionableStatus.getAccount().getLocalUsername());
+        composeOptions.setQuoteStatusContent(actionableStatus.getContent().toString());
         composeOptions.setReplyVisibility(visibility);
         composeOptions.setMentionedUsernames(mentionedUsernames);
 

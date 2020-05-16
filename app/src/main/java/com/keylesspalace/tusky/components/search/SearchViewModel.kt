@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagedList
+import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.components.search.adapter.SearchNotestockRepository
 import com.keylesspalace.tusky.components.search.adapter.SearchRepository
 import com.keylesspalace.tusky.db.AccountEntity
@@ -37,6 +38,7 @@ class SearchViewModel @Inject constructor(
     val mediaPreviewEnabled = activeAccount?.mediaPreviewEnabled ?: false
     val alwaysShowSensitiveMedia = activeAccount?.alwaysShowSensitiveMedia ?: false
     val alwaysOpenSpoiler = activeAccount?.alwaysOpenSpoiler ?: false
+    val quoteEnabled = activeAccount?.domain in CAN_USE_QUOTE_ID
 
     private val statusesRepository = SearchRepository<Pair<Status, StatusViewData.Concrete>>(mastodonApi)
     private val accountsRepository = SearchRepository<Account>(mastodonApi)

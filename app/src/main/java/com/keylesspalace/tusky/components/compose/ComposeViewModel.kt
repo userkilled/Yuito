@@ -61,7 +61,8 @@ class ComposeViewModel
     private var startingContentWarning: String = ""
     private var inReplyToId: String? = null
     private var quoteId: String? = null
-    private var quoteUrl: String? = null
+    private var quoteStatusAuthor: String? = null
+    private var quoteStatusContent: String? = null
     private var startingVisibility: Status.Visibility = Status.Visibility.UNKNOWN
 
     private var contentWarningStateChanged: Boolean = false
@@ -268,14 +269,8 @@ class ComposeViewModel
                         mediaDescriptions.add(item.description ?: "")
                     }
 
-                    var text = content
-                    if (domain !in CAN_USE_QUOTE_ID && quoteId != null) {
-                        text += "\n~~~~~~~~~~\n[$quoteUrl]"
-                        quoteId = null
-                    }
-
                     val tootToSend = TootToSend(
-                            text,
+                            content,
                             spoilerText,
                             statusVisibility.value!!.serverString(),
                             mediaUris.isNotEmpty() && (markMediaAsSensitive.value!! || showContentWarning.value!!),
@@ -394,7 +389,8 @@ class ComposeViewModel
         inReplyToId = composeOptions?.inReplyToId
 
         quoteId = composeOptions?.quoteId
-        quoteUrl = composeOptions?.quoteUrl
+        quoteStatusAuthor = composeOptions?.quoteStatusAuthor
+        quoteStatusContent = composeOptions?.quoteStatusContent
 
         val contentWarning = composeOptions?.contentWarning
         if (contentWarning != null) {
@@ -485,7 +481,7 @@ const val DEFAULT_CHARACTER_LIMIT = 500
 private const val DEFAULT_MAX_OPTION_COUNT = 4
 private const val DEFAULT_MAX_OPTION_LENGTH = 25
 
-private val CAN_USE_QUOTE_ID = arrayOf("odakyu.app", "itabashi.0j0.jp", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com",
+val CAN_USE_QUOTE_ID = arrayOf("odakyu.app", "itabashi.0j0.jp", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com",
         "comm.cx", "fedibird.com", "qoto.org", "kurage.cc", "m.eula.dev", "otogamer.me", "sgp.hostdon.ne.jp",
         "pomdon.work", "obapom.work")
 

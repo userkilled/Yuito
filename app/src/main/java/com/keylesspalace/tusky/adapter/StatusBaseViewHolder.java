@@ -754,6 +754,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         favouriteButton.setClickable(!isNotestock);
 
         if (quoteButton != null) {
+            if (!statusDisplayOptions.quoteEnabled()) {
+                quoteButton.setVisibility(View.GONE);
+            }
+
             quoteButton.setOnClickListener(view -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {

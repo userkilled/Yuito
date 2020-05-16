@@ -60,6 +60,7 @@ import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
+import com.keylesspalace.tusky.components.compose.ComposeViewModelKt;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
@@ -88,6 +89,7 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -251,7 +253,8 @@ public class NotificationsFragment extends SFragment implements
                 preferences.getBoolean("showBotOverlay", true),
                 preferences.getBoolean("useBlurhash", true),
                 CardViewMode.NONE,
-                preferences.getBoolean("confirmReblogs", true)
+                preferences.getBoolean("confirmReblogs", true),
+                Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
         );
 
         adapter = new NotificationsAdapter(accountManager.getActiveAccount().getAccountId(),
