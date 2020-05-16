@@ -485,7 +485,7 @@ const val DEFAULT_CHARACTER_LIMIT = 500
 private const val DEFAULT_MAX_OPTION_COUNT = 4
 private const val DEFAULT_MAX_OPTION_LENGTH = 25
 
-private val CAN_USE_QUOTE_ID = arrayOf("odakyu.app", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com",
+private val CAN_USE_QUOTE_ID = arrayOf("odakyu.app", "itabashi.0j0.jp", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com",
         "comm.cx", "fedibird.com", "qoto.org", "kurage.cc", "m.eula.dev", "otogamer.me", "sgp.hostdon.ne.jp",
         "pomdon.work", "obapom.work")
 
