@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.net.Uri
@@ -63,6 +64,7 @@ import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.fragment.NotificationsFragment
 import com.keylesspalace.tusky.fragment.SFragment
+import com.keylesspalace.tusky.fragment.TimelineFragment
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
 import com.keylesspalace.tusky.interfaces.ReselectableFragment
@@ -74,10 +76,14 @@ import com.mikepenz.materialdrawer.model.*
 import com.mikepenz.materialdrawer.model.interfaces.*
 import com.mikepenz.materialdrawer.util.*
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.android.lifecycle.autoDispose
+import com.uber.autodispose.autoDispose
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import net.accelf.yuito.FooterDrawerItem
 import net.accelf.yuito.QuickTootHelper
@@ -99,6 +105,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     private lateinit var header: AccountHeaderView
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
+    private var streamingTabsCount = 0
     private var notificationTabPosition = 0
 
     private var adapter: MainPagerAdapter? = null
@@ -179,7 +186,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
          * drawer, though, because its callback touches the header in the drawer. */
         fetchUserInfo()
 
-        setupTabs(showNotificationTab)
+        val popups = setupTabs(showNotificationTab)
 
         val pageMargin = resources.getDimensionPixelSize(R.dimen.tab_page_margin)
         viewPager.setPageTransformer(MarginPageTransformer(pageMargin))
@@ -190,66 +197,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
             viewPager.offscreenPageLimit = 9
-        }
-
-        val popups = ArrayList<PopupMenu>()
-        for (i in 0 until tabLayout.tabCount) {
-            val tab = tabLayout.getTabAt(i)!!
-            val popup = PopupMenu(this, tab.view)
-            popup.menuInflater.inflate(R.menu.view_tab_action, popup.menu)
-
-            @SuppressLint("RestrictedApi")
-            if (popup.menu is MenuBuilder) {
-                val menuBuilder = popup.menu as MenuBuilder
-                if (tab.position == notificationTabPosition) {
-                    menuBuilder.findItem(R.id.tabToggleNotificationsFilter).isVisible = true
-                }
-                menuBuilder.setOptionalIconsVisible(true)
-                menuBuilder.visibleItems.forEach { item ->
-                    val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, resources.displayMetrics).toInt()
-
-                    if (item.icon != null) {
-                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                            item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
-                        } else {
-                            item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
-                                override fun getIntrinsicWidth(): Int {
-                                    return intrinsicHeight + iconMarginPx + iconMarginPx
-                                }
-                            }
-                        }
-                        ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorPrimary)
-                    }
-                }
-            }
-
-            popup.setOnMenuItemClickListener { item ->
-                val fragment = adapter?.getFragment(tab.position)
-                when (item.itemId) {
-                    R.id.tabJumpToTop -> {
-                        if (fragment is ReselectableFragment) {
-                            (fragment as ReselectableFragment).onReselect()
-                        }
-                    }
-                    R.id.tabReset -> {
-                        if (fragment is ReselectableFragment) {
-                            (fragment as ReselectableFragment).onReset()
-                        }
-                    }
-                    R.id.tabToggleNotificationsFilter -> {
-                        if (fragment is NotificationsFragment) {
-                            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-                            prefs.edit().putBoolean("showNotificationsFilter",
-                                    !prefs.getBoolean("showNotificationsFilter", true))
-                                    .apply()
-                            eventHub.dispatch(PreferenceChangedEvent("showNotificationsFilter"))
-                        }
-                    }
-                }
-                false
-            }
-
-            popups.add(popup)
         }
 
         tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
@@ -294,21 +241,19 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     override fun onStart() {
         super.onStart()
-        startStreaming()
+        keepScreenOn()
     }
 
-    private fun startStreaming() {
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useHTLStream", false)) {
+    private fun keepScreenOn() {
+        if (streamingTabsCount > 0) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
     override fun onStop() {
         super.onStop()
-        stopStreaming()
-    }
-
-    private fun stopStreaming() {
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
@@ -575,12 +520,22 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         super.onSaveInstanceState(mainDrawer.saveInstanceState(outState))
     }
 
-    private fun setupTabs(selectNotificationTab: Boolean) {
-        val tabs = accountManager.activeAccount!!.tabPreferences
+    private fun tintCheckIcon(item: MenuItem) {
+        if (item.isChecked) {
+            @Suppress("DEPRECATION")
+            item.icon.setColorFilter(ContextCompat.getColor(this, R.color.tusky_green_light), PorterDuff.Mode.SRC_IN)
+        } else {
+            ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorTertiary)
+        }
+    }
+
+    private fun setupTabs(selectNotificationTab: Boolean): ArrayList<PopupMenu> {
+        val tabs = accountManager.activeAccount!!.tabPreferences.toMutableList()
         adapter = MainPagerAdapter(tabs, this)
         viewPager.adapter = adapter
         TabLayoutMediator(tabLayout, viewPager, TabConfigurationStrategy { _: TabLayout.Tab?, _: Int -> }).attach()
         tabLayout.removeAllTabs()
+        val popups = ArrayList<PopupMenu>()
         for (i in tabs.indices) {
             val tab = tabLayout.newTab()
                     .setIcon(tabs[i].icon)
@@ -590,13 +545,110 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 tab.setContentDescription(tabs[i].text)
             }
             tabLayout.addTab(tab)
+
+            val popup = PopupMenu(this, tab.view)
+            popup.menuInflater.inflate(R.menu.view_tab_action, popup.menu)
+
+            @SuppressLint("RestrictedApi")
+            if (popup.menu is MenuBuilder) {
+                val menuBuilder = popup.menu as MenuBuilder
+
+                if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED)) {
+                    menuBuilder.findItem(R.id.tabToggleStreaming).apply {
+                        isVisible = true
+                        isChecked = tabs[i].enableStreaming
+                    }
+                }
+                if (tabs[i].id == NOTIFICATIONS) {
+                    menuBuilder.findItem(R.id.tabToggleNotificationsFilter).isVisible = true
+                }
+
+                menuBuilder.setOptionalIconsVisible(true)
+                menuBuilder.visibleItems.forEach { item ->
+                    val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, resources.displayMetrics).toInt()
+
+                    if (item.icon != null) {
+                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+                            item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
+                        } else {
+                            item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
+                                override fun getIntrinsicWidth(): Int {
+                                    return intrinsicHeight + iconMarginPx + iconMarginPx
+                                }
+                            }
+                        }
+                        ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorPrimary)
+                    }
+                }
+                tintCheckIcon(menuBuilder.findItem(R.id.tabToggleStreaming))
+            }
+
+            popup.setOnMenuItemClickListener { item ->
+                val fragment = adapter?.getFragment(tab.position)
+                when (item.itemId) {
+                    R.id.tabJumpToTop -> {
+                        if (fragment is ReselectableFragment) {
+                            (fragment as ReselectableFragment).onReselect()
+                        }
+                    }
+                    R.id.tabReset -> {
+                        if (fragment is ReselectableFragment) {
+                            (fragment as ReselectableFragment).onReset()
+                        }
+                    }
+                    R.id.tabToggleStreaming -> {
+                        if (fragment is TimelineFragment) {
+                            fragment.streamingEnabled = !fragment.streamingEnabled
+                            item.isChecked = fragment.streamingEnabled
+                            tintCheckIcon(item)
+
+                            if (fragment.streamingEnabled) {
+                                streamingTabsCount++
+                            } else {
+                                streamingTabsCount--
+                            }
+                            keepScreenOn()
+
+                            tabs[i] = tabs[i].copy(enableStreaming = fragment.streamingEnabled)
+                            accountManager.activeAccount?.let {
+                                Single.fromCallable {
+                                    it.tabPreferences = tabs
+                                    accountManager.saveAccount(it)
+                                }
+                                        .subscribeOn(Schedulers.io())
+                                        .autoDispose(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY))
+                                        .subscribe()
+                            }
+                        }
+                    }
+                    R.id.tabToggleNotificationsFilter -> {
+                        if (fragment is NotificationsFragment) {
+                            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+                            prefs.edit().putBoolean("showNotificationsFilter",
+                                    !prefs.getBoolean("showNotificationsFilter", true))
+                                    .apply()
+                            eventHub.dispatch(PreferenceChangedEvent("showNotificationsFilter"))
+                        }
+                    }
+                }
+                false
+            }
+
+            popups.add(popup)
+
             if (tabs[i].id == NOTIFICATIONS) {
                 notificationTabPosition = i
                 if (selectNotificationTab) {
                     tab.select()
                 }
             }
+
+            if (tabs[i].enableStreaming) {
+                streamingTabsCount++
+            }
         }
+        keepScreenOn()
+        return popups
     }
 
     private fun handleProfileClick(profile: IProfile, current: Boolean): Boolean {
@@ -622,7 +674,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         cacheUpdater.stop()
         SFragment.flushFilters()
         accountManager.setActiveAccount(newSelectedId)
-        stopStreaming()
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         if (forward != null) {

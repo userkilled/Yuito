@@ -148,11 +148,6 @@
             android:title="@string/pref_title_experimental_viewpager_offscreen"
             app:singleLineTitle="false" />
 
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="useHTLStream"
-            android:title="@string/pref_title_experimental_htl_streaming"
-            app:singleLineTitle="false" />
     </PreferenceCategory>
 
     <PreferenceCategory

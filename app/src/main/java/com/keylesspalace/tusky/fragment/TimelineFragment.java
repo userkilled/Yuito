@@ -133,6 +133,7 @@ public class TimelineFragment extends SFragment implements
     private static final String ID_ARG = "id";
     private static final String HASHTAGS_ARG = "hastags";
     private static final String ARG_ENABLE_SWIPE_TO_REFRESH = "arg.enable.swipe.to.refresh";
+    private static final String ARG_ENABLE_STREAMING = "arg.enable.stream";
 
     private static final int LOAD_AT_ONCE = 30;
     private boolean isSwipeToRefreshEnabled = true;
@@ -193,6 +194,7 @@ public class TimelineFragment extends SFragment implements
     private boolean reduceTimelineLoading;
     private boolean checkMobileNetwork;
 
+    private boolean streamingEnabled;
     private WebSocket webSocket;
 
     private PairedList<Either<Placeholder, Status>, StatusViewData> statuses =
@@ -217,16 +219,25 @@ public class TimelineFragment extends SFragment implements
         return newInstance(kind, null);
     }
 
+    public static TimelineFragment newInstance(Kind kind, boolean enableStreaming) {
+        return newInstance(kind, null, true, enableStreaming);
+    }
+
     public static TimelineFragment newInstance(Kind kind, @Nullable String hashtagOrId) {
         return newInstance(kind, hashtagOrId, true);
     }
 
     public static TimelineFragment newInstance(Kind kind, @Nullable String hashtagOrId, boolean enableSwipeToRefresh) {
+        return newInstance(kind, hashtagOrId, enableSwipeToRefresh, false);
+    }
+
+    public static TimelineFragment newInstance(Kind kind, @Nullable String hashtagOrId, boolean enableSwipeToRefresh, boolean enableStreaming) {
         TimelineFragment fragment = new TimelineFragment();
         Bundle arguments = new Bundle(3);
         arguments.putString(KIND_ARG, kind.name());
         arguments.putString(ID_ARG, hashtagOrId);
         arguments.putBoolean(ARG_ENABLE_SWIPE_TO_REFRESH, enableSwipeToRefresh);
+        arguments.putBoolean(ARG_ENABLE_STREAMING, enableStreaming);
         fragment.setArguments(arguments);
         return fragment;
     }
@@ -272,6 +283,8 @@ public class TimelineFragment extends SFragment implements
         adapter = new TimelineAdapter(dataSource, statusDisplayOptions, this);
 
         isSwipeToRefreshEnabled = arguments.getBoolean(ARG_ENABLE_SWIPE_TO_REFRESH, true);
+
+        streamingEnabled = arguments.getBoolean(ARG_ENABLE_STREAMING, false);
     }
 
     @Override
@@ -306,7 +319,9 @@ public class TimelineFragment extends SFragment implements
     @Override
     public void onStart() {
         super.onStart();
-        startStreaming();
+        if (streamingEnabled) {
+            startStreaming();
+        }
     }
 
     @Override
@@ -316,33 +331,39 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void startStreaming() {
-        if (preferences.getBoolean("useHTLStream", false) && kind == Kind.HOME) {
-            connectWebsocket(buildStreamingUrl());
-        }
-    }
-
-    private String buildStreamingUrl() {
         AccountEntity activeAccount = accountManager.getActiveAccount();
         if (activeAccount != null) {
-            return "wss://" + activeAccount.getDomain() + "/api/v1/streaming/?" + "stream=user" + "&" + "access_token" + "=" + activeAccount.getAccessToken();
-        } else {
-            return null;
+            String endpoint = "wss://" + activeAccount.getDomain() + "/api/v1/streaming/"+ "?"
+                    + "access_token" + "=" + activeAccount.getAccessToken() + "&"
+                    + "stream" + "=";
+            switch (kind) {
+                case HOME: {
+                    endpoint += "user";
+                    break;
+                }
+                case PUBLIC_FEDERATED: {
+                    endpoint += "public";
+                    break;
+                }
+                case PUBLIC_LOCAL: {
+                    endpoint += "public:local";
+                    break;
+                }
+                default: {
+                    return;
+                }
+            }
+
+            if (webSocket != null) {
+                stopStreaming();
+            }
+
+            Request request = new Request.Builder().url(endpoint).build();
+
+            OkHttpClient client = new OkHttpClient.Builder().build();
+
+            webSocket = client.newWebSocket(request, new TimelineStreamingListener(eventHub, kind));
         }
-    }
-
-    private void connectWebsocket(String endpoint) {
-        if (webSocket != null) {
-            stopStreaming();
-        }
-
-        Request request = new Request.Builder()
-                .url(endpoint)
-                .build();
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .build();
-
-        webSocket = client.newWebSocket(request, new TimelineStreamingListener(eventHub));
     }
 
     private void stopStreaming() {
@@ -351,6 +372,19 @@ public class TimelineFragment extends SFragment implements
         }
         webSocket.close(1000, null);
         webSocket = null;
+    }
+
+    public boolean getStreamingEnabled() {
+        return streamingEnabled;
+    }
+
+    public void setStreamingEnabled(boolean streamingEnabled) {
+        this.streamingEnabled = streamingEnabled;
+        if (streamingEnabled) {
+            startStreaming();
+        } else {
+            stopStreaming();
+        }
     }
 
     private void sendInitialRequest() {
@@ -628,7 +662,7 @@ public class TimelineFragment extends SFragment implements
                         } else if (event instanceof PreferenceChangedEvent) {
                             onPreferenceChanged(((PreferenceChangedEvent) event).getPreferenceKey());
                         } else if (event instanceof StreamUpdateEvent) {
-                            if (kind == Kind.HOME) {
+                            if (streamingEnabled) {
                                 handleStreamUpdateEvent((StreamUpdateEvent) event);
                             }
                         }
@@ -1360,7 +1394,9 @@ public class TimelineFragment extends SFragment implements
                 if (findStatusOrReblogPositionById(status.getId()) < 0) {
                     statuses.add(0, item);
                     updateAdapter();
-                    timelineRepo.addSingleStatusToDb(status);
+                    if (kind == Kind.HOME) {
+                        timelineRepo.addSingleStatusToDb(status);
+                    }
                 }
             }
         } else {
@@ -1464,11 +1500,12 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void handleStatusComposeEvent(@NonNull Status status) {
+        if (streamingEnabled) {
+            return;
+        }
+
         switch (kind) {
             case HOME:
-                if (preferences.getBoolean("useHTLStream", false)){
-                    return;
-                }
             case PUBLIC_FEDERATED:
             case PUBLIC_LOCAL:
                 break;
@@ -1505,6 +1542,10 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void handleStreamUpdateEvent(StreamUpdateEvent event) {
+        if (event.getTargetKind() != kind) {
+            return;
+        }
+
         Status status = event.getStatus();
         if (event.getFirst() && statuses.get(0).isRight()) {
             Placeholder placeholder = new Placeholder(statuses.get(0).asRight().getId() + 1);

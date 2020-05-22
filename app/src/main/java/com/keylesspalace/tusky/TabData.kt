@@ -32,18 +32,22 @@ const val DIRECT = "Direct"
 const val HASHTAG = "Hashtag"
 const val LIST = "List"
 
+const val STREAMING = "STR"
+
 data class TabData(val id: String,
                    @StringRes val text: Int,
                    @DrawableRes val icon: Int,
                    val fragment: (List<String>) -> Fragment,
-                   val arguments: List<String> = emptyList())
+                   val arguments: List<String> = emptyList(),
+                   val enableStreaming: Boolean = false)
 
 fun createTabDataFromId(id: String, arguments: List<String> = emptyList()): TabData {
-    return when (id) {
-        HOME -> TabData(HOME, R.string.title_home, R.drawable.ic_home_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.HOME) })
+    val enableStreaming = id.endsWith(STREAMING)
+    return when (if (enableStreaming) id.slice(IntRange(0, id.length - 4)) else id) {
+        HOME -> TabData(HOME, R.string.title_home, R.drawable.ic_home_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.HOME, enableStreaming) }, enableStreaming = enableStreaming)
         NOTIFICATIONS -> TabData(NOTIFICATIONS, R.string.title_notifications, R.drawable.ic_notifications_24dp, { NotificationsFragment.newInstance() })
-        LOCAL -> TabData(LOCAL, R.string.title_public_local, R.drawable.ic_local_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL) })
-        FEDERATED -> TabData(FEDERATED, R.string.title_public_federated, R.drawable.ic_public_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED) })
+        LOCAL -> TabData(LOCAL, R.string.title_public_local, R.drawable.ic_local_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL, enableStreaming) }, enableStreaming = enableStreaming)
+        FEDERATED -> TabData(FEDERATED, R.string.title_public_federated, R.drawable.ic_public_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED, enableStreaming) }, enableStreaming = enableStreaming)
         DIRECT -> TabData(DIRECT, R.string.title_direct_messages, R.drawable.ic_reblog_direct_24dp, { ConversationsFragment.newInstance() })
         HASHTAG -> TabData(HASHTAG, R.string.hashtags, R.drawable.ic_hashtag, { args -> TimelineFragment.newHashtagInstance(args) }, arguments)
         LIST -> TabData(LIST, R.string.list, R.drawable.ic_list, { args -> TimelineFragment.newInstance(TimelineFragment.Kind.LIST, args.getOrNull(0).orEmpty()) }, arguments)

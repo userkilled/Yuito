@@ -21,6 +21,7 @@ import androidx.core.text.toHtml
 import androidx.room.TypeConverter
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.keylesspalace.tusky.STREAMING
 import com.keylesspalace.tusky.TabData
 import com.keylesspalace.tusky.components.conversation.ConversationAccountEntity
 import com.keylesspalace.tusky.createTabDataFromId
@@ -72,7 +73,10 @@ class Converters {
     @TypeConverter
     fun tabDataToString(tabData: List<TabData>?): String? {
         // List name may include ":"
-        return tabData?.joinToString(";") { it.id + ":" + it.arguments.joinToString(":") { s -> URLEncoder.encode(s, "UTF-8") } }
+        return tabData?.joinToString(";") {
+            (if (it.enableStreaming) { it.id + STREAMING } else { it.id }) + ":" +
+                    it.arguments.joinToString(":") { s -> URLEncoder.encode(s, "UTF-8") }
+        }
     }
 
     @TypeConverter

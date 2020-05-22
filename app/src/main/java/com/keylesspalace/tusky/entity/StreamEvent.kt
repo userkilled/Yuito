@@ -7,14 +7,16 @@ data class StreamEvent(
         var payload: String
 ) {
 
-    enum class EventType(val num: Int) {
-        UNKNOWN(0),
+    enum class EventType {
+        UNKNOWN,
         @SerializedName("update")
-        UPDATE(1),
+        UPDATE,
         @SerializedName("notification")
-        NOTIFICATION(2),
+        NOTIFICATION,
         @SerializedName("delete")
-        DELETE(3);
+        DELETE,
+        @SerializedName("filters_changed")
+        FILTERS_CHANGED;
     }
 
 }

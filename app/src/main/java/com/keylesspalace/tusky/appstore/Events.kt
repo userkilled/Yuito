@@ -4,6 +4,7 @@ import com.keylesspalace.tusky.TabData
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
+import com.keylesspalace.tusky.fragment.TimelineFragment
 
 data class FavoriteEvent(val statusId: String, val favourite: Boolean) : Dispatchable
 data class ReblogEvent(val statusId: String, val reblog: Boolean) : Dispatchable
@@ -21,5 +22,5 @@ data class MainTabsChangedEvent(val newTabs: List<TabData>) : Dispatchable
 data class PollVoteEvent(val statusId: String, val poll: Poll) : Dispatchable
 data class DomainMuteEvent(val instance: String): Dispatchable
 data class QuickReplyEvent(val status: Status) : Dispatchable
-data class StreamUpdateEvent(val status: Status, val first: Boolean) : Dispatchable
+data class StreamUpdateEvent(val status: Status, val targetKind: TimelineFragment.Kind, val first: Boolean) : Dispatchable
 data class DrawerFooterClickedEvent(val placeholder: Boolean) : Dispatchable
