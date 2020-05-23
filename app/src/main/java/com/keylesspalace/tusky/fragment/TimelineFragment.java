@@ -349,6 +349,10 @@ public class TimelineFragment extends SFragment implements
                     endpoint += "public:local";
                     break;
                 }
+                case LIST: {
+                    endpoint += ("list" + "&" + "list" + "=" + id);
+                    break;
+                }
                 default: {
                     return;
                 }
@@ -362,7 +366,7 @@ public class TimelineFragment extends SFragment implements
 
             OkHttpClient client = new OkHttpClient.Builder().build();
 
-            webSocket = client.newWebSocket(request, new TimelineStreamingListener(eventHub, kind));
+            webSocket = client.newWebSocket(request, new TimelineStreamingListener(eventHub, kind, id));
         }
     }
 
@@ -1542,7 +1546,7 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void handleStreamUpdateEvent(StreamUpdateEvent event) {
-        if (event.getTargetKind() != kind) {
+        if (event.getTargetKind() != kind || (event.getTargetIdentifier() != null && !event.getTargetIdentifier().equals(id))) {
             return;
         }
 

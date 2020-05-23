@@ -18,13 +18,15 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 class TimelineStreamingListener(private val eventHub: EventHub,
-                                private val kind: TimelineFragment.Kind) : WebSocketListener() {
+                                private val kind: TimelineFragment.Kind,
+                                private val identifier: String? = null) : WebSocketListener() {
 
     private val gson = buildGson()
+    private val target = if (identifier == null) { kind.name } else { kind.name + ":" + identifier }
     private var isFirstStatus = true
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
-        Log.d(TAG, "Stream connected to: " + kind.name)
+        Log.d(TAG, "Stream connected to: $target")
     }
 
     override fun onMessage(webSocket: WebSocket, text: String) {
@@ -33,7 +35,7 @@ class TimelineStreamingListener(private val eventHub: EventHub,
         when (event.event) {
             StreamEvent.EventType.UPDATE -> {
                 val status = gson.fromJson(payload, Status::class.java)
-                eventHub.dispatch(StreamUpdateEvent(status, kind, isFirstStatus))
+                eventHub.dispatch(StreamUpdateEvent(status, kind, identifier, isFirstStatus))
                 if (isFirstStatus) {
                     isFirstStatus = false
                 }
@@ -45,7 +47,7 @@ class TimelineStreamingListener(private val eventHub: EventHub,
     }
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-        Log.d(TAG, "Stream closed for: " + kind.name)
+        Log.d(TAG, "Stream closed for: $target")
     }
 
     companion object {

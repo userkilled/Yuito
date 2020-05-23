@@ -553,7 +553,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             if (popup.menu is MenuBuilder) {
                 val menuBuilder = popup.menu as MenuBuilder
 
-                if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED)) {
+                if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED, LIST)) {
                     menuBuilder.findItem(R.id.tabToggleStreaming).apply {
                         isVisible = true
                         isChecked = tabs[i].enableStreaming
