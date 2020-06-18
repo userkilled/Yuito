@@ -193,5 +193,5 @@ dependencies {
 
     debugImplementation "im.dino:dbinspector:4.0.0@aar"
 
-    implementation 'net.accelf:easter:1.0.1'
+    implementation 'net.accelf:easter:1.0.2'
 }
