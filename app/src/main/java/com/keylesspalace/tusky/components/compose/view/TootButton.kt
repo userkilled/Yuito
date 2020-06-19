@@ -59,6 +59,7 @@ class TootButton
                     null
                 }
                 Status.Visibility.PRIVATE,
+                Status.Visibility.UNLEAKABLE,
                 Status.Visibility.DIRECT -> {
                     setText(R.string.action_send)
                     IconicsDrawable(context, GoogleMaterial.Icon.gmd_lock).apply { sizeDp = 18; colorInt = Color.WHITE }
