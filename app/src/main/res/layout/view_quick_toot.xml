@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
@@ -103,13 +102,13 @@
         android:id="@+id/toot_edit_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:autofillHints=""
         android:hint="@string/hint_toot_area"
         android:inputType="textMultiLine"
         android:minHeight="48dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/toot_button"
-        app:layout_constraintStart_toEndOf="@id/visibility_button"
-        tools:ignore="Autofill" />
+        app:layout_constraintStart_toEndOf="@id/visibility_button" />
 
     <Button
         android:id="@+id/toot_button"
