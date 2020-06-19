@@ -110,12 +110,12 @@
         app:layout_constraintEnd_toStartOf="@id/toot_button"
         app:layout_constraintStart_toEndOf="@id/visibility_button" />
 
-    <Button
+    <com.keylesspalace.tusky.components.compose.view.TootButton
         android:id="@+id/toot_button"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:text="@string/action_send_public"
-        android:textColor="@android:color/white"
+        style="@style/TuskyButton"
+        android:layout_width="@dimen/toot_button_width"
+        android:layout_height="wrap_content"
+        android:textSize="?attr/status_text_medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

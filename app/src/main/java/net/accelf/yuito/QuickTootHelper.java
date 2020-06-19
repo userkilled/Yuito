@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,6 +25,7 @@ import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.components.compose.ComposeActivity;
+import com.keylesspalace.tusky.components.compose.view.TootButton;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.entity.Announcement;
@@ -61,6 +61,7 @@ public class QuickTootHelper {
     private ImageButton prevButton;
     private ImageButton nextButton;
     private TextView announcementsCountText;
+    private TootButton quickTootButton;
 
     private SharedPreferences defPrefs;
     private String domain;
@@ -86,7 +87,7 @@ public class QuickTootHelper {
         prevButton = root.findViewById(R.id.button_prev_announcements);
         nextButton = root.findViewById(R.id.button_next_announcements);
         announcementsCountText = root.findViewById(R.id.text_view_announcements_count);
-        Button quickTootButton = root.findViewById(R.id.toot_button);
+        quickTootButton = root.findViewById(R.id.toot_button);
 
         context = root.getContext();
         this.defPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -256,6 +257,7 @@ public class QuickTootHelper {
 
     private void updateVisibilityButton() {
         Status.Visibility visibility = getCurrentVisibility();
+        quickTootButton.setStatusVisibility(visibility);
         switch (visibility) {
             case PUBLIC:
                 visibilityButton.setImageResource(R.drawable.ic_public_24dp);
