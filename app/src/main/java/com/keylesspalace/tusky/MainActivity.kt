@@ -490,7 +490,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 secondaryDrawerItem {
                     nameText = "Yuito (by kyori19)"
                     isEnabled = false
-                    textColor = ColorStateList.valueOf(Color.YELLOW)
+                    textColor = ColorStateList.valueOf(ThemeUtils.getColor(this@MainActivity, R.attr.colorInfo))
                 }
         )
 
