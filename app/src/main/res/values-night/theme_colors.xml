@@ -23,4 +23,6 @@
 
     <bool name="lightNavigationBar">false</bool>
 
+    <color name="colorInfo">@color/tusky_orange_light</color>
+
 </resources>

@@ -2,6 +2,7 @@
 <resources>
     <color name="tusky_blue">#2b90d9</color>
     <color name="tusky_blue_light">#56a7e1</color>
+    <color name="tusky_orange_dark">#ef6c00</color>
     <color name="tusky_orange">#ca8f04</color>
     <color name="tusky_orange_light">#fab207</color>
     <color name="tusky_green">#19a341</color>

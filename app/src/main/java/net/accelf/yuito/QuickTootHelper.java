@@ -232,14 +232,10 @@ public class QuickTootHelper {
         String defaultText = defPrefs.getString(PREF_DEFAULT_TAG, "");
         if (useDefaultTag) {
             defaultTagInfo.setText(String.format("%s : %s", context.getString(R.string.hint_default_text), defaultText));
-            if (ThemeUtils.THEME_DAY.equals(defPrefs.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT))) {
-                defaultTagInfo.setTextColor(Color.RED);
-            } else {
-                defaultTagInfo.setTextColor(Color.YELLOW);
-            }
+            defaultTagInfo.setTextColor(ThemeUtils.getColor(context, R.attr.colorInfo));
         } else {
             defaultTagInfo.setText(String.format("%s inactive", context.getString(R.string.hint_default_text)));
-            defaultTagInfo.setTextColor(Color.GRAY);
+            defaultTagInfo.setTextColor(ThemeUtils.getColor(context, android.R.attr.textColorTertiary));
         }
     }
 

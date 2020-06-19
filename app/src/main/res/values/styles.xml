@@ -77,6 +77,7 @@
         <item name="minTouchTargetSize">32dp</item> <!-- this affects RadioButton size -->
         <item name="elevationOverlayEnabled">false</item> <!-- disable the automatic tinting of surfaces with elevation in dark mode -->
 
+        <item name="colorInfo">@color/colorInfo</item>
     </style>
 
     <style name="ViewMediaActivity.AppBarLayout" parent="ThemeOverlay.AppCompat">
@@ -136,6 +137,8 @@
         <item name="colorBackgroundAccent">@color/tusky_grey_20</item>
 
         <item name="dividerColor">@color/tusky_grey_10</item>
+
+        <item name="colorInfo">@color/tusky_orange_light</item>
     </style>
 
     <style name="TuskyBlackTheme" parent="TuskyBlackThemeBase" />
