@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Lifecycle;
 
 import com.keylesspalace.tusky.AccountActivity;
@@ -321,7 +322,7 @@ public class QuickTootHelper {
                 nextButton.setVisibility(View.GONE);
             }
 
-            openAnnouncementsButton.setImageDrawable(context.getDrawable(open ? R.drawable.ic_arrow_drop_down : R.drawable.ic_arrow_drop_up));
+            openAnnouncementsButton.setImageDrawable(ContextCompat.getDrawable(context, open ? R.drawable.ic_arrow_drop_down : R.drawable.ic_arrow_drop_up));
             announcementsText.setSingleLine(!open);
             announcementsCountText.setText(String.format(Locale.getDefault(), "(%d/%d)", index + 1, announcements.size()));
             Announcement announcement = announcements.get(index);
