@@ -129,7 +129,7 @@ class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreference
 
             }
             "statusTextSize", "absoluteTimeView", "showBotOverlay", "animateGifAvatars",
-            "useBlurhash", "showCardsInTimelines", "confirmReblogs", "enableSwipeForTabs", "viewPagerOffScreenLimit" -> {
+            "useBlurhash", "showCardsInTimelines", "confirmReblogs", "enableSwipeForTabs", "mainNavPosition", "viewPagerOffScreenLimit" -> {
                 restartActivitiesOnExit = true
             }
             "language" -> {

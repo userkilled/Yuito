@@ -184,7 +184,7 @@
     <string name="post_privacy_unlisted">Liste dışı</string>
     <string name="post_privacy_followers_only">Sadece takipçiler</string>
     <string name="pref_status_text_size">Durum metin boyutu</string>
-    <string name="status_text_size_smallest">En küçük</string>
+    <string name="status_text_size_smallest">Çok küçük</string>
     <string name="status_text_size_small">Küçük</string>
     <string name="status_text_size_medium">Orta</string>
     <string name="status_text_size_large">Büyük</string>
@@ -392,7 +392,7 @@
     <string name="hint_additional_info">Ek Yorumlar</string>
     <string name="report_remote_instance">%s adresine ilet</string>
     <string name="failed_fetch_statuses">Durumlar getirilemedi</string>
-    <string name="report_description_1">"Bildirim sunucu yöneticinize gönderilecektir.  Bu hesabı neden bildirdiğinle ilgili açıklama yapabilirsin:"</string>
+    <string name="report_description_1">"Bildirim sunucu yöneticinize gönderilecektir.  Bu hesabı neden bildirdiğinizle ilgili açıklama yapabilirsiniz:"</string>
     <string name="report_description_remote_instance">Hesap başka bir sunucudan. Raporun anonim bir kopyasını da oraya gönderilsin mi\?</string>
     <string name="pref_title_show_notifications_filter">Bildirim filtresini göster</string>
     <string name="action_mentions">Bahsedenler</string>
@@ -433,7 +433,6 @@
     <string name="profile_badge_bot_text">Alt Metin</string>
     <string name="confirmation_domain_unmuted">%s gizleme</string>
     <string name="mute_domain_warning_dialog_ok">Alan adından herşeyi gizle</string>
-    <string name="gradient_for_media">Gizli medya için renkli degradeleri göster</string>
     <string name="pref_title_alway_open_spoiler">Hassas içerikleri göster</string>
     <string name="poll_info_time_absolute">bitiş %s</string>
     <string name="failed_report">Bildirilemedi</string>

@@ -40,6 +40,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.emoji.text.EmojiCompat
@@ -70,7 +71,10 @@ import com.keylesspalace.tusky.interfaces.ActionButtonActivity
 import com.keylesspalace.tusky.interfaces.ReselectableFragment
 import com.keylesspalace.tusky.pager.MainPagerAdapter
 import com.keylesspalace.tusky.util.*
+import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
+import com.mikepenz.iconics.utils.colorInt
+import com.mikepenz.iconics.utils.sizeDp
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
 import com.mikepenz.materialdrawer.model.*
 import com.mikepenz.materialdrawer.model.interfaces.*
@@ -107,8 +111,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     private var streamingTabsCount = 0
     private var notificationTabPosition = 0
-
-    private var adapter: MainPagerAdapter? = null
+    private var onTabSelectedListener: OnTabSelectedListener? = null
 
     private val emojiInitCallback = object : InitCallback() {
         override fun onInitialized() {
@@ -178,7 +181,18 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         composeButton.setOnClickListener {
             quickTootHelper.composeButton()
         }
-        tabLayout.requestFocus()
+
+        mainToolbar.menu.add(R.string.action_search).apply {
+            setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+            icon = IconicsDrawable(this@MainActivity, GoogleMaterial.Icon.gmd_search).apply {
+                sizeDp = 20
+                colorInt = ThemeUtils.getColor(this@MainActivity, android.R.attr.textColorPrimary)
+            }
+            setOnMenuItemClickListener {
+                startActivity(SearchActivity.getIntent(this@MainActivity))
+                true
+            }
+        }
 
         setupDrawer(savedInstanceState)
 
@@ -186,7 +200,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
          * drawer, though, because its callback touches the header in the drawer. */
         fetchUserInfo()
 
-        val popups = setupTabs(showNotificationTab)
+        setupTabs(showNotificationTab)
 
         val pageMargin = resources.getDimensionPixelSize(R.dimen.tab_page_margin)
         viewPager.setPageTransformer(MarginPageTransformer(pageMargin))
@@ -198,20 +212,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
             viewPager.offscreenPageLimit = 9
         }
-
-        tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                if (tab.position == notificationTabPosition) {
-                    NotificationHelper.clearNotificationsForActiveAccount(this@MainActivity, accountManager)
-                }
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-                popups[tab.position].show()
-            }
-        })
 
         // Setup push notifications
         if (NotificationHelper.areNotificationsEnabled(this, accountManager)) {
@@ -418,13 +418,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                         }
                     },
                     primaryDrawerItem {
-                        nameRes = R.string.action_search
-                        iconicsIcon = GoogleMaterial.Icon.gmd_search
-                        onClick = {
-                            startActivityWithSlideInAnimation(SearchActivity.getIntent(context))
-                        }
-                    },
-                    primaryDrawerItem {
                         nameRes = R.string.action_access_saved_toot
                         iconRes = R.drawable.ic_notebook
                         onClick = {
@@ -530,21 +523,37 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     private fun setupTabs(selectNotificationTab: Boolean): ArrayList<PopupMenu> {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+
+        val activeTabLayout = if(preferences.getString("mainNavPosition", "top") == "bottom") {
+            val actionBarSize = ThemeUtils.getDimension(this, R.attr.actionBarSize)
+            val fabMargin = resources.getDimensionPixelSize(R.dimen.fabMargin)
+            (composeButton.layoutParams as CoordinatorLayout.LayoutParams).bottomMargin = actionBarSize + fabMargin
+            tabLayout.hide()
+            bottomTabLayout
+        } else {
+            bottomNav.hide()
+            (viewPager.layoutParams as CoordinatorLayout.LayoutParams).bottomMargin = 0
+            (composeButton.layoutParams as CoordinatorLayout.LayoutParams).anchorId = R.id.viewPager
+            tabLayout
+        }
+
         val tabs = accountManager.activeAccount!!.tabPreferences.toMutableList()
-        adapter = MainPagerAdapter(tabs, this)
+
+        val adapter = MainPagerAdapter(tabs, this)
         viewPager.adapter = adapter
-        TabLayoutMediator(tabLayout, viewPager, TabConfigurationStrategy { _: TabLayout.Tab?, _: Int -> }).attach()
-        tabLayout.removeAllTabs()
+        TabLayoutMediator(activeTabLayout, viewPager, TabConfigurationStrategy { _: TabLayout.Tab?, _: Int -> }).attach()
+        activeTabLayout.removeAllTabs()
         val popups = ArrayList<PopupMenu>()
         for (i in tabs.indices) {
-            val tab = tabLayout.newTab()
+            val tab = activeTabLayout.newTab()
                     .setIcon(tabs[i].icon)
             if (tabs[i].id == LIST) {
                 tab.contentDescription = tabs[i].arguments[1]
             } else {
                 tab.setContentDescription(tabs[i].text)
             }
-            tabLayout.addTab(tab)
+            activeTabLayout.addTab(tab)
 
             val popup = PopupMenu(this, tab.view)
             popup.menuInflater.inflate(R.menu.view_tab_action, popup.menu)
@@ -584,7 +593,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             }
 
             popup.setOnMenuItemClickListener { item ->
-                val fragment = adapter?.getFragment(tab.position)
+                val fragment = adapter.getFragment(tab.position)
                 when (item.itemId) {
                     R.id.tabJumpToTop -> {
                         if (fragment is ReselectableFragment) {
@@ -647,6 +656,37 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 streamingTabsCount++
             }
         }
+
+        val pageMargin = resources.getDimensionPixelSize(R.dimen.tab_page_margin)
+        viewPager.setPageTransformer(MarginPageTransformer(pageMargin))
+
+        val uswSwipeForTabs = preferences.getBoolean("enableSwipeForTabs", true)
+        viewPager.isUserInputEnabled = uswSwipeForTabs
+
+        onTabSelectedListener?.let {
+            activeTabLayout.removeOnTabSelectedListener(it)
+        }
+
+        onTabSelectedListener = object : OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                if (tab.position == notificationTabPosition) {
+                    NotificationHelper.clearNotificationsForActiveAccount(this@MainActivity, accountManager)
+                }
+
+                mainToolbar.title = tabs[tab.position].title(this@MainActivity)
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                popups[tab.position].show()
+            }
+        }.also {
+            activeTabLayout.addOnTabSelectedListener(it)
+        }
+
+        mainToolbar.title = tabs[0].title(this@MainActivity)
+
         keepScreenOn()
         return popups
     }

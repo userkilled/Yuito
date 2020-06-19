@@ -15,6 +15,7 @@
 
 package com.keylesspalace.tusky
 
+import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
@@ -39,18 +40,62 @@ data class TabData(val id: String,
                    @DrawableRes val icon: Int,
                    val fragment: (List<String>) -> Fragment,
                    val arguments: List<String> = emptyList(),
+                   val title: (Context) -> String = { context -> context.getString(text)},
                    val enableStreaming: Boolean = false)
 
 fun createTabDataFromId(id: String, arguments: List<String> = emptyList()): TabData {
     val enableStreaming = id.endsWith(STREAMING)
     return when (if (enableStreaming) id.slice(IntRange(0, id.length - 4)) else id) {
-        HOME -> TabData(HOME, R.string.title_home, R.drawable.ic_home_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.HOME, enableStreaming) }, enableStreaming = enableStreaming)
-        NOTIFICATIONS -> TabData(NOTIFICATIONS, R.string.title_notifications, R.drawable.ic_notifications_24dp, { NotificationsFragment.newInstance() })
-        LOCAL -> TabData(LOCAL, R.string.title_public_local, R.drawable.ic_local_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL, enableStreaming) }, enableStreaming = enableStreaming)
-        FEDERATED -> TabData(FEDERATED, R.string.title_public_federated, R.drawable.ic_public_24dp, { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED, enableStreaming) }, enableStreaming = enableStreaming)
-        DIRECT -> TabData(DIRECT, R.string.title_direct_messages, R.drawable.ic_reblog_direct_24dp, { ConversationsFragment.newInstance() })
-        HASHTAG -> TabData(HASHTAG, R.string.hashtags, R.drawable.ic_hashtag, { args -> TimelineFragment.newHashtagInstance(args) }, arguments)
-        LIST -> TabData(LIST, R.string.list, R.drawable.ic_list, { args -> TimelineFragment.newInstance(TimelineFragment.Kind.LIST, args.getOrNull(0).orEmpty(), true, enableStreaming) }, arguments, enableStreaming)
+        HOME -> TabData(
+                HOME,
+                R.string.title_home,
+                R.drawable.ic_home_24dp,
+                { TimelineFragment.newInstance(TimelineFragment.Kind.HOME, enableStreaming) },
+                enableStreaming = enableStreaming
+        )
+        NOTIFICATIONS -> TabData(
+                NOTIFICATIONS,
+                R.string.title_notifications,
+                R.drawable.ic_notifications_24dp,
+                { NotificationsFragment.newInstance() }
+        )
+        LOCAL -> TabData(
+                LOCAL,
+                R.string.title_public_local,
+                R.drawable.ic_local_24dp,
+                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL, enableStreaming) },
+                enableStreaming = enableStreaming
+        )
+        FEDERATED -> TabData(
+                FEDERATED,
+                R.string.title_public_federated,
+                R.drawable.ic_public_24dp,
+                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED, enableStreaming) },
+                enableStreaming = enableStreaming
+        )
+        DIRECT -> TabData(
+                DIRECT,
+                R.string.title_direct_messages,
+                R.drawable.ic_reblog_direct_24dp,
+                { ConversationsFragment.newInstance() }
+        )
+        HASHTAG -> TabData(
+                HASHTAG,
+                R.string.hashtags,
+                R.drawable.ic_hashtag,
+                { args -> TimelineFragment.newHashtagInstance(args) },
+                arguments,
+                { context -> arguments.joinToString(separator = " ") { context.getString(R.string.title_tag, it) }}
+        )
+        LIST -> TabData(
+                LIST,
+                R.string.list,
+                R.drawable.ic_list,
+                { args -> TimelineFragment.newInstance(TimelineFragment.Kind.LIST, args.getOrNull(0).orEmpty(), true, enableStreaming) },
+                arguments,
+                { arguments.getOrNull(1).orEmpty() },
+                enableStreaming
+        )
         else -> throw IllegalArgumentException("unknown tab type")
     }
 }
