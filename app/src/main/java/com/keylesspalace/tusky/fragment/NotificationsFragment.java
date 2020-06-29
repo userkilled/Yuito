@@ -59,6 +59,7 @@ import com.keylesspalace.tusky.appstore.BookmarkEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
+import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.components.compose.ComposeViewModelKt;
 import com.keylesspalace.tusky.db.AccountEntity;
@@ -416,7 +417,7 @@ public class NotificationsFragment extends SFragment implements
 
     @Override
     public void onReply(int position) {
-        super.reply(notifications.get(position).asRight().getStatus());
+        eventHub.dispatch(new QuickReplyEvent(notifications.get(position).asRight().getStatus()));
     }
 
     @Override
