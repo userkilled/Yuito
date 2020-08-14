@@ -34,7 +34,7 @@
     <string name="title_favourites">Oblíbené</string>
     <string name="title_mutes">Skrytí uživatelé</string>
     <string name="title_blocks">Blokovaní uživatelé</string>
-    <string name="title_follow_requests">Požadavky o sledování</string>
+    <string name="title_follow_requests">Žádosti o sledování</string>
     <string name="title_edit_profile">Upravit váš profil</string>
     <string name="title_saved_toot">Koncepty</string>
     <string name="title_licenses">Licence</string>
@@ -70,7 +70,7 @@
     <string name="action_block">Blokovat</string>
     <string name="action_unblock">Odblokovat</string>
     <string name="action_hide_reblogs">Skrýt boosty</string>
-    <string name="action_show_reblogs">Zobrazit boosty</string>
+    <string name="action_show_reblogs">Zobrazi boosty</string>
     <string name="action_report">Nahlásit</string>
     <string name="action_delete">Smazat</string>
     <string name="action_send">TOOTNOUT</string>
@@ -79,11 +79,11 @@
     <string name="action_close">Zavřít</string>
     <string name="action_view_profile">Profil</string>
     <string name="action_view_preferences">Předvolby</string>
-    <string name="action_view_account_preferences">Předvolby účtu</string>
-    <string name="action_view_favourites">Oblíbené</string>
+    <string name="action_view_account_preferences">Nastavení účtu</string>
+    <string name="action_view_favourites">Oblíbení</string>
     <string name="action_view_mutes">Skrytí uživatelé</string>
     <string name="action_view_blocks">Blokovaní uživatelé</string>
-    <string name="action_view_follow_requests">Požadavky o sledování</string>
+    <string name="action_view_follow_requests">Žádosti o sledování</string>
     <string name="action_view_media">Média</string>
     <string name="action_open_in_web">Otevřít v prohlížeči</string>
     <string name="action_add_media">Přidat média</string>
@@ -110,7 +110,7 @@
     <string name="action_mentions">Zmínky</string>
     <string name="action_hashtags">Hashtagy</string>
     <string name="action_open_reblogger">Otevřít autora boostu</string>
-    <string name="action_open_reblogged_by">Zobrazit boosty</string>
+    <string name="action_open_reblogged_by">Zobrazi boosty</string>
     <string name="action_open_faved_by">Zobrazit oblíbené</string>
     <string name="title_hashtags_dialog">Hashtagy</string>
     <string name="title_mentions_dialog">Zmínky</string>
@@ -330,9 +330,9 @@
     <string name="unpin_action">Odepnout</string>
     <string name="pin_action">Připnout</string>
     <plurals name="favs">
-        <item quantity="one">&lt;b&gt;%1$s&lt;/b&gt; oblíbení</item>
-        <item quantity="few">&lt;b&gt;%1$s&lt;/b&gt; oblíbení</item>
-        <item quantity="other">&lt;b&gt;%1$s&lt;/b&gt; oblíbení</item>
+        <item quantity="one"><b>%1$s</b> oblíbení</item>
+        <item quantity="few"><b>%1$s</b> oblíbení</item>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="reblogs">
         <item quantity="one"><b>%s</b> boost</item>
@@ -356,8 +356,8 @@
     <string name="description_status_favourited">        Oblíbený
     </string>
     <string name="description_visiblity_public">Veřejný</string>
-    <string name="description_visiblity_unlisted">Neuvedené</string>
-    <string name="description_visiblity_private">Sledující</string>
+    <string name="description_visiblity_unlisted">Neuvedený</string>
+    <string name="description_visiblity_private">Pro sledující</string>
     <string name="description_visiblity_direct">        Přímý
     </string>
     <string name="hint_list_name">Název seznamu</string>
@@ -371,7 +371,7 @@
     <string name="notification_clear_text">Jste si jistý/á, že chcete trvale vymazat všechna vaše oznámení\?</string>
     <string name="action_delete_and_redraft">Smazat a přepsat</string>
     <string name="dialog_redraft_toot_warning">Smazat a přepsat tento toot\?</string>
-    <string name="poll_info_format"> <!-- 15 votes • 1 hour left --> %1$s • %2$s</string>
+    <string name="poll_info_format"> <!-- 15 hlasů • 1 hodin do konce --> %1$s • %2$s</string>
     <plurals name="poll_info_votes">
         <item quantity="one">%s hlas</item>
         <item quantity="few">%s hlasy</item>
@@ -451,4 +451,41 @@
     <string name="title_accounts">Účty</string>
     <string name="failed_search">Hledání selhalo</string>
     <string name="post_lookup_error_format">Chyba při hledání příspěvku %s</string>
+    <string name="notification_follow_request_description">Upozornění na žádosti o sledování</string>
+    <string name="notification_follow_request_name">Žádosti o sledování</string>
+    <string name="pref_main_nav_position_option_bottom">Dole</string>
+    <string name="pref_title_gradient_for_media">Zobrazení barevných prechodů pro skrytí citlivého obsahu</string>
+    <string name="dialog_mute_hide_notifications">Skrýt notifikace</string>
+    <string name="action_unmute_conversation">Zrušit ztlumení konverzace</string>
+    <string name="action_mute_conversation">Ztlumit konverzaci</string>
+    <string name="action_view_bookmarks">Záložky</string>
+    <string name="action_bookmark">Záložka</string>
+    <string name="title_bookmarks">Záložky</string>
+    <string name="error_audio_upload_size">Audio soubory musí být menší než 40MB.</string>
+    <string name="pref_title_show_cards_in_timelines">Ukazovat náhledy k odkazům</string>
+    <string name="warning_scheduling_interval">Mastodon neumožňuje pracovat s intervalem menším než 5 minut.</string>
+    <string name="no_scheduled_status">Zatím zde nemáte žádné naplánované statusy.</string>
+    <string name="no_saved_status">Zatím zde nejsou žádné koncepty.</string>
+    <string name="pref_title_enable_swipe_for_tabs">Možnost přetahování prstem pro přechod mezi kartami</string>
+    <string name="list">Seznam</string>
+    <string name="add_hashtag_title">Přidat hashtag</string>
+    <string name="description_status_bookmarked">Uloženo do Záložek</string>
+    <string name="select_list_title">Vybrat seznam</string>
+    <string name="pref_main_nav_position">Umístění hlavní navigační lišty</string>
+    <string name="hashtags">Hashtagy</string>
+    <string name="about_powered_by_tusky">Powered by Tusky</string>
+    <string name="dialog_block_warning">Zablokovat @%s\?</string>
+    <string name="pref_main_nav_position_option_top">Nahoře</string>
+    <string name="action_unmute_domain">Odkrýt %s</string>
+    <string name="action_mute_notifications_desc">Skrýt oznámení od %s</string>
+    <string name="action_unmute_notifications_desc">Odkrýt oznámení od %s</string>
+    <string name="action_unmute_desc">Odkrýt %s</string>
+    <string name="dialog_mute_warning">Ztišit @%s\?</string>
+    <plurals name="poll_info_people">
+        <item quantity="one">%s osoba</item>
+        <item quantity="few">%s osoby</item>
+        <item quantity="other">%s osob</item>
+    </plurals>
+    <string name="notification_follow_request_format">%s požádal/a aby vás mohl/a sledovat</string>
+    <string name="pref_title_confirm_reblogs">Zobrazit dialogové okno s potvrzením při boostování</string>
 </resources>

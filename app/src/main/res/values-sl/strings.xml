@@ -303,7 +303,6 @@
     <string name="label_remote_account">Spodnje informacije lahko nepopolno odražajo profil uporabnika. Pritisnite, da odprete polni profil v brskalniku.</string>
     <string name="unpin_action">Odpni</string>
     <string name="pin_action">Pripni</string>
-
     <plurals name="reblogs">
         <item quantity="one">&lt;b&gt;%s&lt;/b&gt; Spodbuda</item>
         <item quantity="two">&lt;b&gt;%s&lt;/b&gt; Spodbudi</item>
@@ -435,4 +434,5 @@
     <string name="action_schedule_toot">Napovej tut</string>
     <string name="post_lookup_error_format">Napaka pri iskanju objave %s</string>
     <string name="about_powered_by_tusky">Poganja ga Tusky</string>
+    <string name="status_boosted_format">% spodbudil</string>
 </resources>

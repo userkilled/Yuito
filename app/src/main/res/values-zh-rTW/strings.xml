@@ -104,7 +104,7 @@
     <string name="action_search">搜尋</string>
     <string name="action_access_saved_toot">草稿</string>
     <string name="action_toggle_visibility">設定嘟文可見範圍</string>
-    <string name="action_content_warning">敏感內容警告</string>
+    <string name="action_content_warning">設定敏感內容警告</string>
     <string name="action_emoji_keyboard">插入表情符號</string>
     <string name="action_add_tab">新增標籤頁</string>
     <string name="action_links">連結</string>
@@ -156,7 +156,7 @@
     <string name="visibility_private">僅關注者：只有經過你確認後關注你的使用者可見</string>
     <string name="visibility_direct">私信：只有被提及的使用者可見</string>
     <string name="pref_title_edit_notification_settings">通知設定</string>
-    <string name="pref_title_notifications_enabled">通知</string>
+    <string name="pref_title_notifications_enabled">通知設定</string>
     <string name="pref_title_notification_alerts">提醒</string>
     <string name="pref_title_notification_alert_sound">通知鈴聲</string>
     <string name="pref_title_notification_alert_vibrate">振動</string>
@@ -423,4 +423,6 @@
     <string name="report_description_1">該報告將發送給您的伺服器管理員。 您可以在下面提供有關回報此帳戶的原因的說明：</string>
     <string name="report_description_remote_instance">該帳戶來自其他伺服器。向那裡發送一份匿名的報告副本？</string>
     <string name="pref_title_show_notifications_filter">顯示通知過濾器</string>
+    <string name="hashtags">話題</string>
+    <string name="notification_follow_request_name">關注請求</string>
 </resources>
