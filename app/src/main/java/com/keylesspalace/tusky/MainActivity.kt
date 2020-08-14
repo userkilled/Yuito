@@ -562,6 +562,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             if (popup.menu is MenuBuilder) {
                 val menuBuilder = popup.menu as MenuBuilder
 
+                if (tabs[i].id == LIST) {
+                    menuBuilder.findItem(R.id.tabEditList).isVisible = true
+                }
                 if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED, LIST)) {
                     menuBuilder.findItem(R.id.tabToggleStreaming).apply {
                         isVisible = true
@@ -604,6 +607,12 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                         if (fragment is ReselectableFragment) {
                             (fragment as ReselectableFragment).onReset()
                         }
+                    }
+                    R.id.tabEditList -> {
+                        AccountsInListFragment.newInstance(
+                                tabs[i].arguments.getOrNull(0).orEmpty(),
+                                tabs[i].arguments.getOrNull(1).orEmpty()
+                        ).show(supportFragmentManager, null)
                     }
                     R.id.tabToggleStreaming -> {
                         if (fragment is TimelineFragment) {

@@ -9,6 +9,11 @@
         android:icon="@drawable/ic_reject_24dp"
         android:title="@string/action_tab_reset" />
 
+    <item android:id="@+id/tabEditList"
+        android:icon="@drawable/ic_list"
+        android:title="@string/action_tab_edit_list"
+        android:visible="false" />
+
     <item android:id="@+id/tabToggleStreaming"
         android:icon="@drawable/ic_check_24dp"
         android:title="@string/action_tab_toggle_streaming"
