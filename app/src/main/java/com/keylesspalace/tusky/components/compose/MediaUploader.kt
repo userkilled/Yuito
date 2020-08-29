@@ -175,6 +175,12 @@ class MediaUploaderImpl(
 
             val uploadDisposable = mastodonApi.uploadMedia(body)
                     .subscribe({ attachment ->
+                        if (media.uri.scheme == "file") {
+                            media.uri.path?.let {
+                                File(it).delete()
+                            }
+                        }
+
                         emitter.onNext(UploadEvent.FinishedEvent(attachment))
                         emitter.onComplete()
                     }, { e ->
