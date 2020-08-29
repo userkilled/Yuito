@@ -20,7 +20,7 @@
     <string name="error_media_upload_sending">媒體檔案上傳失敗</string>
     <string name="error_sender_account_gone">嘟文發送時出錯</string>
     <string name="title_home">主頁</string>
-    <string name="title_notifications">通知設定</string>
+    <string name="title_notifications">通知</string>
     <string name="title_public_local">本站時間軸</string>
     <string name="title_public_federated">跨站公開時間軸</string>
     <string name="title_direct_messages">私信</string>
@@ -61,7 +61,7 @@
     <string name="action_favourite">收藏</string>
     <string name="action_unfavourite">取消收藏</string>
     <string name="action_more">更多</string>
-    <string name="action_compose">新嘟文</string>
+    <string name="action_compose">撰寫嘟文</string>
     <string name="action_login">登入 Mastodon 帳號</string>
     <string name="action_logout">登出</string>
     <string name="action_logout_confirm">確定要登出 %1$s 嗎？</string>
@@ -104,7 +104,7 @@
     <string name="action_search">搜尋</string>
     <string name="action_access_saved_toot">草稿</string>
     <string name="action_toggle_visibility">設定嘟文可見範圍</string>
-    <string name="action_content_warning">設定敏感內容警告</string>
+    <string name="action_content_warning">敏感內容警告</string>
     <string name="action_emoji_keyboard">插入表情符號</string>
     <string name="action_add_tab">新增標籤頁</string>
     <string name="action_links">連結</string>
@@ -126,10 +126,10 @@
     <string name="send_status_link_to">分享連結到…</string>
     <string name="send_status_content_to">分享嘟文到…</string>
     <string name="send_media_to">分享媒體到…</string>
-    <string name="confirmation_reported">已檢舉！</string>
+    <string name="confirmation_reported">已發送！</string>
     <string name="confirmation_unblocked">已解除封鎖</string>
     <string name="confirmation_unmuted">已解除靜音</string>
-    <string name="status_sent">已檢舉！</string>
+    <string name="status_sent">已發送！</string>
     <string name="status_sent_long">成功送出回覆</string>
     <string name="hint_domain">域名</string>
     <string name="hint_compose">有什麼新鮮事？</string>
@@ -292,7 +292,7 @@
     <string name="send_toot_notification_channel_name">嘟文發送中</string>
     <string name="send_toot_notification_cancel_title">發送已被取消</string>
     <string name="send_toot_notification_saved_content">嘟文已儲存為草稿</string>
-    <string name="action_compose_shortcut">新嘟文</string>
+    <string name="action_compose_shortcut">撰寫嘟文</string>
     <string name="error_no_custom_emojis">當前站點 %s 沒有自訂表情符號</string>
     <string name="copy_to_clipboard_success">已複製到剪貼簿</string>
     <string name="emoji_style">表情符號風格</string>
@@ -407,7 +407,7 @@
     <string name="mute_domain_warning_dialog_ok">隱藏整個域名</string>
     <string name="pref_title_animate_gif_avatars">GIF 動畫大頭貼</string>
     <string name="about_tusky_version">Tusky %s</string>
-    <string name="filter_dialog_whole_word">整個單詞</string>
+    <string name="filter_dialog_whole_word">整個文字</string>
     <string name="filter_dialog_whole_word_description">如果關鍵字或短語僅為字母或數字，則只有在匹配整個單詞時才會應用</string>
     <string name="caption_notoemoji">Google 正在使用的 Emoji 符號集</string>
     <string name="description_poll">使用以下選項創建投票：%1$s, %2$s, %3$s, %4$s; %5$s</string>
@@ -425,4 +425,5 @@
     <string name="pref_title_show_notifications_filter">顯示通知過濾器</string>
     <string name="hashtags">話題</string>
     <string name="notification_follow_request_name">關注請求</string>
+    <string name="edit_poll">編輯</string>
 </resources>

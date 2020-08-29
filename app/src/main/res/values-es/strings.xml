@@ -16,16 +16,16 @@
     <string name="error_media_upload_opening">No pudo abrirse el fichero.</string>
     <string name="error_media_upload_permission">Se requiere permiso para acceder al almacenamiento.</string>
     <string name="error_media_download_permission">Se requiere permiso para descargar al almacenamiento.</string>
-    <string name="error_media_upload_image_or_video">No se pueden adjuntar imágenes y vídeos en el mismo estado.</string>
+    <string name="error_media_upload_image_or_video">No se pueden adjuntar imágenes y vídeos en el mismo estado</string>
     <string name="error_media_upload_sending">La subida falló.</string>
-    <string name="error_sender_account_gone">Error al enviar estado.</string>
+    <string name="error_sender_account_gone">Error al publicar.</string>
     <string name="title_home">Inicio</string>
     <string name="title_notifications">Notificaciones</string>
     <string name="title_public_local">Local</string>
     <string name="title_public_federated">Federada</string>
     <string name="title_direct_messages">Mensajes Directos</string>
     <string name="title_tab_preferences">Pestañas</string>
-    <string name="title_view_thread">Estado</string>
+    <string name="title_view_thread">Publicación</string>
     <string name="title_statuses">Estados</string>
     <string name="title_statuses_with_replies">Con respuestas</string>
     <string name="title_statuses_pinned">Fijado</string>
@@ -49,7 +49,7 @@
     <string name="status_content_show_less">Ocultar</string>
     <string name="message_empty">Nada aquí.</string>
     <string name="footer_empty">Nada por aquí. ¡Arrastra hacia abajo para recargar!</string>
-    <string name="notification_reblog_format">%s compartió tu toot</string>
+    <string name="notification_reblog_format">%s impulsó tu toot</string>
     <string name="notification_favourite_format">%s marcó favorito</string>
     <string name="notification_follow_format">%s te siguió</string>
     <string name="report_username_format">Reportar @%s</string>
@@ -68,11 +68,11 @@
     <string name="action_block">Bloquear</string>
     <string name="action_unblock">Desbloquear</string>
     <string name="action_hide_reblogs">Ocultar impulsos</string>
-    <string name="action_show_reblogs">Mostrar compartidos</string>
+    <string name="action_show_reblogs">Mostrar impulsos</string>
     <string name="action_report">Reportar</string>
     <string name="action_delete">Borrar</string>
     <string name="action_send">Enviar</string>
-    <string name="action_send_public">PUBLICAR!</string>
+    <string name="action_send_public">Publicar</string>
     <string name="action_retry">Reintentar</string>
     <string name="action_close">Cerrar</string>
     <string name="action_view_profile">Perfil</string>
@@ -114,9 +114,9 @@
     <string name="confirmation_reported">¡Enviado!</string>
     <string name="confirmation_unblocked">El usuario ya no está bloqueado</string>
     <string name="confirmation_unmuted">El usuario ya no está silenciado</string>
-    <string name="status_sent">¡Enviada!</string>
+    <string name="status_sent">¡Enviado!</string>
     <string name="status_sent_long">Respuesta enviada correctamente.</string>
-    <string name="hint_domain">¿Qué instancia\?</string>
+    <string name="hint_domain">Indique la instancia</string>
     <string name="hint_compose">¿En qué estás pensando?</string>
     <string name="hint_content_warning">Aviso de contenido</string>
     <string name="hint_display_name">Nombre</string>
@@ -147,7 +147,7 @@
     <string name="visibility_unlisted">Oculto: No mostrar en historias públicas</string>
     <string name="visibility_private">Privado: Sólo visible para seguidores</string>
     <string name="visibility_direct">Directo: Sólo visible para cuentas mencionadas</string>
-    <string name="pref_title_edit_notification_settings">Editar notificaciones</string>
+    <string name="pref_title_edit_notification_settings">Notificaciones</string>
     <string name="pref_title_notifications_enabled">Editar notificaciones</string>
     <string name="pref_title_notification_alerts">Alertas</string>
     <string name="pref_title_notification_alert_sound">Notificar con sonido</string>
@@ -156,7 +156,7 @@
     <string name="pref_title_notification_filters">Notificar cuando</string>
     <string name="pref_title_notification_filter_mentions">me mencionan</string>
     <string name="pref_title_notification_filter_follows">me siguen</string>
-    <string name="pref_title_notification_filter_reblogs">me comparten</string>
+    <string name="pref_title_notification_filter_reblogs">mis posts son impulsados</string>
     <string name="pref_title_notification_filter_favourites">me dan favorito</string>
     <string name="pref_title_appearance_settings">Apariencia</string>
     <string name="pref_title_app_theme">Tema</string>
@@ -170,7 +170,7 @@
     <string name="pref_title_hide_follow_button">Ocultar botón de redacción al bajar</string>
     <string name="pref_title_status_filter">Filtros de cronología</string>
     <string name="pref_title_status_tabs">Pestañas</string>
-    <string name="pref_title_show_boosts">Mostrar compartidos</string>
+    <string name="pref_title_show_boosts">Mostrar impulsos</string>
     <string name="pref_title_show_replies">Mostrar respuestas</string>
     <string name="pref_title_show_media_preview">Previsualizar multimedia</string>
     <string name="pref_title_proxy_settings">Proxy</string>
@@ -258,7 +258,7 @@
     <string name="lock_account_label_description">Tendrá que admitir los seguidores manualmente</string>
     <string name="compose_save_draft">¿Guardar borrador?</string>
     <string name="send_toot_notification_title">Enviando estado…</string>
-    <string name="send_toot_notification_error_title">Error enviando estado</string>
+    <string name="send_toot_notification_error_title">Error al enviar el estado</string>
     <string name="send_toot_notification_channel_name">Enviando estado</string>
     <string name="send_toot_notification_cancel_title">Envío cancelado</string>
     <string name="send_toot_notification_saved_content">Una copia del estado se ha guardado en borradores</string>
@@ -281,8 +281,8 @@
     <string name="download_failed">Descarga fallida</string>
     <string name="profile_badge_bot_text">Bot</string>
     <string name="account_moved_description">%1$s se trasladó a:</string>
-    <string name="reblog_private">Impulsar a la audiencia original</string>
-    <string name="unreblog_private">Dejar de impulsar</string>
+    <string name="reblog_private">Volver a compartir</string>
+    <string name="unreblog_private">Dejar de compartir</string>
     <string name="license_description">Yuito contiene código y recursos de los siguientes proyectos:</string>
     <string name="license_apache_2">Licenciado bajo Apache License (texto bajo la lista)</string>
     <string name="license_cc_by_4">CC BY 4.0</string>
@@ -315,7 +315,7 @@
     <string name="download_media">Descargar multimedia</string>
     <string name="app_theme_system">Usar tema del sistema</string>
     <string name="pref_title_language">Idioma</string>
-    <string name="action_unreblog">Eliminar compartido</string>
+    <string name="action_unreblog">Dejar de impulsar</string>
     <string name="action_unfavourite">Eliminar favorito</string>
     <string name="pref_title_timeline_filters">Filtros</string>
     <string name="notification_poll_name">Encuestas</string>
@@ -324,18 +324,18 @@
     <string name="action_rename_list">Renombrar la lista</string>
     <string name="action_add_to_list">Añadir cuenta a la lista</string>
     <string name="action_remove_from_list">Eliminar cuenta de la lista</string>
-    <string name="description_status_favourited">Favoritos</string>
+    <string name="description_status_favourited">1Favoritos</string>
     <string name="description_visiblity_private">Seguidores</string>
     <string name="filter_apply">Aplicar</string>
     <string name="pref_title_bot_overlay">Mostrar indicador de bots</string>
     <string name="poll_vote">Votar</string>
     <plurals name="poll_timespan_days">
-        <item quantity="one">%d día</item>
-        <item quantity="other">%d dias</item>
+        <item quantity="one"/>
+        <item quantity="other"/>
     </plurals>
     <plurals name="poll_timespan_hours">
-        <item quantity="one">%d hora</item>
-        <item quantity="other">%d horas</item>
+        <item quantity="one"/>
+        <item quantity="other"/>
     </plurals>
     <plurals name="poll_timespan_minutes">
         <item quantity="one">%d minuto</item>
@@ -358,8 +358,8 @@
     <string name="title_links_dialog">Enlaces</string>
     <string name="action_open_media_n">Abrir contenido #%d</string>
     <string name="downloading_media">Descargando contenido</string>
-    <string name="dialog_redraft_toot_warning">¿Borrar y devolver a borradores este toot\?</string>
-    <string name="pref_title_notification_filter_poll">encuestas que han terminado</string>
+    <string name="dialog_redraft_toot_warning">¿Eliminar y devolver a borradores este toot\?</string>
+    <string name="pref_title_notification_filter_poll">encuestas han terminado</string>
     <string name="notification_poll_description">Notificaciones sobre encuestas que han terminado</string>
     <string name="pref_title_public_filter_keywords">Cronologías públicas</string>
     <string name="pref_title_thread_filter_keywords">Conversaciones</string>
@@ -378,7 +378,7 @@
     <string name="description_status_media_no_description_placeholder">Sin descripción</string>
     <string name="description_status_reblogged">Compartido</string>
     <string name="description_visiblity_public">Público</string>
-    <string name="description_visiblity_unlisted">Oculto</string>
+    <string name="description_visiblity_unlisted">Sin listar</string>
     <string name="description_visiblity_direct">Directo</string>
     <string name="hint_list_name">Nombre de la lista</string>
     <string name="edit_hashtag_hint">Etiqueta sin #</string>
@@ -387,7 +387,7 @@
     <string name="compose_shortcut_long_label">Componer toot</string>
     <string name="compose_shortcut_short_label">Redactar</string>
     <string name="notification_clear_text">¿Estás seguro de que quieres eliminar permanentemente todas tus notificaciones\?</string>
-    <string name="compose_preview_image_description">Acciones para imagen %s</string>
+    <string name="compose_preview_image_description">Acciones para la imagen %s</string>
     <string name="poll_info_time_relative">%s restante</string>
     <string name="poll_info_time_absolute">termina en %s</string>
     <string name="poll_ended_voted">Una encuesta en la que has votado ha terminado</string>
@@ -416,7 +416,7 @@
     <string name="report_description_1">El reporte será enviado a un moderador de tu servidor. Puedes añadir una explicación de por qué estás reportando esta cuenta a continuación:</string>
     <string name="report_description_remote_instance">La cuenta es de otro servidor. ¿Enviar una copia anónima del reporte\?</string>
     <string name="pref_title_show_notifications_filter">Mostrar filtro de notificaciones</string>
-    <string name="pref_title_alway_open_spoiler">Mostrar siempre estados marcados con avisos de contenido</string>
+    <string name="pref_title_alway_open_spoiler">Mostrar siempre toots marcados con avisos de contenido</string>
     <string name="title_accounts">Cuentas</string>
     <string name="failed_search">Error al buscar</string>
     <string name="action_add_poll">Añadir encuesta</string>
@@ -439,7 +439,7 @@
     <string name="action_reset_schedule">Reiniciar</string>
     <string name="post_lookup_error_format">Error al buscar el post %s</string>
     <string name="about_powered_by_tusky">Potenciado por Tusky</string>
-    <string name="title_bookmarks">Favoritos</string>
+    <string name="title_bookmarks">Marcadores</string>
     <string name="action_bookmark">Marcador</string>
     <string name="action_view_bookmarks">Marcadores</string>
     <string name="description_status_bookmarked">Marcado como favorito</string>
@@ -470,7 +470,7 @@
     <string name="pref_main_nav_position_option_top">Arriba</string>
     <string name="pref_main_nav_position">Posición de navegación principal</string>
     <string name="pref_title_gradient_for_media">Mostrar degradados colorido para los medios ocultos</string>
-    <string name="action_unmute_domain">Dejar de silenciar %s</string>
+    <string name="action_unmute_domain">Dejar de silenciar a %s</string>
     <string name="action_unmute_desc">Dejar de silenciar a %s</string>
     <string name="dialog_mute_hide_notifications">Ocultar notificaciones</string>
     <string name="action_mute_notifications_desc">Silenciar notificaciones desde %s</string>
