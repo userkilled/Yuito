@@ -289,7 +289,7 @@
     <string name="action_view_domain_mutes">Ukryte domeny</string>
     <string name="action_add_poll">Dodaj głosowanie</string>
     <string name="action_mute_domain">Wycisz %s</string>
-    <string name="action_add_tab">Dodaj zakłądkę</string>
+    <string name="action_add_tab">Dodaj zakładkę</string>
     <string name="action_open_reblogger">Otwórz konto osoby podbijającej</string>
     <string name="action_open_reblogged_by">Pokaż podbicia</string>
     <string name="action_open_media_n">Otwórz media #%d</string>
@@ -395,9 +395,9 @@
     <string name="poll_ended_created">Ankieta, którą stworzyłeś(aś), zakończyła się</string>
     <plurals name="poll_timespan_days">
         <item quantity="one">%d dzień</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dni</item>
+        <item quantity="other">%d dni</item>
     </plurals>
     <plurals name="poll_timespan_hours">
         <item quantity="one">%d godzina</item>
@@ -407,9 +407,9 @@
     </plurals>
     <plurals name="poll_timespan_minutes">
         <item quantity="one">%d minuta</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="few">%d minuty</item>
+        <item quantity="many">%d minut</item>
+        <item quantity="other">%d minut</item>
     </plurals>
     <plurals name="poll_timespan_seconds">
         <item quantity="one">%d sekunda</item>

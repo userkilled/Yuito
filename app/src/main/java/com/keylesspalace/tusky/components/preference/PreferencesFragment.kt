@@ -13,14 +13,14 @@
  * You should have received a copy of the GNU General Public License along with Tusky; if not,
  * see <http://www.gnu.org/licenses>. */
 
-package com.keylesspalace.tusky.fragment.preference
+package com.keylesspalace.tusky.components.preference
 
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
-import com.keylesspalace.tusky.PreferencesActivity
 import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
 import com.keylesspalace.tusky.settings.*
@@ -30,8 +30,13 @@ import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizePx
+import okhttp3.OkHttpClient
+import javax.inject.Inject
 
-class PreferencesFragment : PreferenceFragmentCompat() {
+class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
+
+    @Inject
+    lateinit var okhttpclient: OkHttpClient
 
     private val iconSize by lazy { resources.getDimensionPixelSize(R.dimen.preference_icon_size) }
     private var httpProxyPref: Preference? = null
@@ -53,7 +58,7 @@ class PreferencesFragment : PreferenceFragmentCompat() {
                     icon = makeIcon(GoogleMaterial.Icon.gmd_palette)
                 }
 
-                emojiPreference {
+                emojiPreference(okhttpclient) {
                     setDefaultValue("system_default")
                     setIcon(R.drawable.ic_emoji_24dp)
                     key = PrefKeys.EMOJI

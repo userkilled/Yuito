@@ -19,6 +19,9 @@ package com.keylesspalace.tusky.di
 import com.keylesspalace.tusky.AccountsInListFragment
 import com.keylesspalace.tusky.components.conversation.ConversationsFragment
 import com.keylesspalace.tusky.components.instancemute.fragment.InstanceListFragment
+import com.keylesspalace.tusky.components.preference.AccountPreferencesFragment
+import com.keylesspalace.tusky.components.preference.NotificationPreferencesFragment
+import com.keylesspalace.tusky.components.preference.PreferencesFragment
 import com.keylesspalace.tusky.components.report.fragments.ReportDoneFragment
 import com.keylesspalace.tusky.components.report.fragments.ReportNoteFragment
 import com.keylesspalace.tusky.components.report.fragments.ReportStatusesFragment
@@ -27,8 +30,6 @@ import com.keylesspalace.tusky.components.search.fragments.SearchHashtagsFragmen
 import com.keylesspalace.tusky.components.search.fragments.SearchNotestockFragment
 import com.keylesspalace.tusky.components.search.fragments.SearchStatusesFragment
 import com.keylesspalace.tusky.fragment.*
-import com.keylesspalace.tusky.fragment.preference.AccountPreferencesFragment
-import com.keylesspalace.tusky.fragment.preference.NotificationPreferencesFragment
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -85,6 +86,9 @@ abstract class FragmentBuildersModule {
 
     @ContributesAndroidInjector
     abstract fun searchHashtagsFragment(): SearchHashtagsFragment
+
+    @ContributesAndroidInjector
+    abstract fun preferencesFragment(): PreferencesFragment
 
     @ContributesAndroidInjector
     abstract fun searchNotestockFragment(): SearchNotestockFragment

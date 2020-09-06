@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
@@ -35,7 +34,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
@@ -49,6 +47,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.MarginPageTransformer
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.target.FixedSizeDrawable
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
@@ -59,6 +61,7 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.canHandleMimeType
 import com.keylesspalace.tusky.components.conversation.ConversationsRepository
 import com.keylesspalace.tusky.components.notifications.NotificationHelper
+import com.keylesspalace.tusky.components.preference.PreferencesActivity
 import com.keylesspalace.tusky.components.scheduled.ScheduledTootActivity
 import com.keylesspalace.tusky.components.search.SearchActivity
 import com.keylesspalace.tusky.db.AccountEntity
@@ -108,7 +111,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     lateinit var conversationRepository: ConversationsRepository
 
     private lateinit var header: AccountHeaderView
-    private lateinit var drawerToggle: ActionBarDrawerToggle
 
     private var streamingTabsCount = 0
     private var notificationTabPosition = 0
@@ -187,6 +189,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         val hideTopToolbar = preferences.getBoolean(PrefKeys.HIDE_TOP_TOOLBAR, false)
         mainToolbar.visible(!hideTopToolbar)
+
+        val navIconSize = resources.getDimensionPixelSize(R.dimen.avatar_toolbar_nav_icon_size)
+        mainToolbar.navigationIcon = FixedSizeDrawable(getDrawable(R.drawable.avatar_default), navIconSize, navIconSize)
 
         mainToolbar.menu.add(R.string.action_search).apply {
             setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
@@ -310,8 +315,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     public override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
-        drawerToggle.syncState()
-
         if (intent != null) {
             val statusUrl = intent.getStringExtra(STATUS_URL)
             if (statusUrl != null) {
@@ -337,7 +340,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     private fun setupDrawer(savedInstanceState: Bundle?, addSearchButton: Boolean) {
 
-        drawerToggle = ActionBarDrawerToggle(this, mainDrawerLayout, mainToolbar, com.mikepenz.materialdrawer.R.string.material_drawer_open, com.mikepenz.materialdrawer.R.string.material_drawer_close)
+        mainToolbar.setNavigationOnClickListener {
+            mainDrawerLayout.open()
+        }
 
         header = AccountHeaderView(this).apply {
             headerBackgroundScaleType = ImageView.ScaleType.CENTER_CROP
@@ -512,18 +517,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         )
 
         EmojiCompat.get().registerInitCallback(emojiInitCallback)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        drawerToggle.onConfigurationChanged(newConfig)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -799,6 +792,24 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 .asBitmap()
                 .load(me.header)
                 .into(header.accountHeaderBackground)
+
+        val navIconSize = resources.getDimensionPixelSize(R.dimen.avatar_toolbar_nav_icon_size)
+
+        Glide.with(this)
+                .asDrawable()
+                .override(navIconSize)
+                .load(me.avatar)
+                .transform(
+                        RoundedCorners(resources.getDimensionPixelSize(R.dimen.avatar_radius_36dp))
+                )
+                .into(object : CustomTarget<Drawable>(){
+                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        mainToolbar.navigationIcon = resource
+                    }
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        mainToolbar.navigationIcon = placeholder
+                    }
+                })
 
         accountManager.updateActiveAccount(me)
         NotificationHelper.createNotificationChannelsForAccount(accountManager.activeAccount!!, this)
