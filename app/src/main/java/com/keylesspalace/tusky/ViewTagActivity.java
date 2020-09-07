@@ -23,15 +23,16 @@ import android.view.MenuItem;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 
 import com.keylesspalace.tusky.appstore.EventHub;
+import com.keylesspalace.tusky.di.ViewModelFactory;
 import com.keylesspalace.tusky.fragment.TimelineFragment;
 
-import net.accelf.yuito.QuickTootHelper;
+import net.accelf.yuito.QuickTootView;
+import net.accelf.yuito.QuickTootViewModel;
 
 import java.util.Collections;
 
@@ -53,6 +54,8 @@ public class ViewTagActivity extends BottomSheetActivity implements HasAndroidIn
     public DispatchingAndroidInjector<Object> dispatchingAndroidInjector;
     @Inject
     public EventHub eventHub;
+    @Inject
+    public ViewModelFactory viewModelFactory;
 
     public static Intent getIntent(Context context, String tag){
         Intent intent = new Intent(context,ViewTagActivity.class);
@@ -82,13 +85,14 @@ public class ViewTagActivity extends BottomSheetActivity implements HasAndroidIn
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.commit();
 
-        ConstraintLayout quickTootContainer = findViewById(R.id.quick_toot_container);
-        QuickTootHelper quickTootHelper = new QuickTootHelper(this, quickTootContainer, accountManager, eventHub);
+        QuickTootViewModel quickTootViewModel = viewModelFactory.create(QuickTootViewModel.class);
+        QuickTootView quickTootView = findViewById(R.id.viewQuickToot);
+        quickTootView.attachViewModel(quickTootViewModel, this);
 
         eventHub.getEvents()
                 .observeOn(AndroidSchedulers.mainThread())
                 .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
-                .subscribe(quickTootHelper::handleEvent);
+                .subscribe(quickTootView::handleEvent);
     }
 
     @Override

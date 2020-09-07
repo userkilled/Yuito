@@ -17,6 +17,7 @@ import dagger.Binds
 import dagger.MapKey
 import dagger.Module
 import dagger.multibindings.IntoMap
+import net.accelf.yuito.QuickTootViewModel
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -84,6 +85,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ScheduledTootViewModel::class)
     internal abstract fun scheduledTootViewModel(viewModel: ScheduledTootViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(QuickTootViewModel::class)
+    internal abstract fun quickTootViewModel(viewModel: QuickTootViewModel): ViewModel
 
     //Add more ViewModels here
 }

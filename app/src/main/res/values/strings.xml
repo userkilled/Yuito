@@ -224,6 +224,7 @@
     <string name="visibility_private">Followers-Only: Post to followers only</string>
     <string name="visibility_unleakable">Unleakable: Post to followed user by you only.</string>
     <string name="visibility_direct">Direct: Post to mentioned users only</string>
+    <string name="visibility_unknown">Unknown visibility</string>
 
     <string name="pref_title_edit_notification_settings">Notifications</string>
     <string name="pref_title_notifications_enabled">Notifications</string>

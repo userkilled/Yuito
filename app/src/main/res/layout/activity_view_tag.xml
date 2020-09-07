@@ -25,9 +25,8 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <include
-        android:id="@+id/quick_toot_container"
-        layout="@layout/view_quick_toot"
+    <net.accelf.yuito.QuickTootView
+        android:id="@+id/viewQuickToot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0" />

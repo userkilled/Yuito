@@ -34,10 +34,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -65,6 +65,7 @@ import com.keylesspalace.tusky.components.preference.PreferencesActivity
 import com.keylesspalace.tusky.components.scheduled.ScheduledTootActivity
 import com.keylesspalace.tusky.components.search.SearchActivity
 import com.keylesspalace.tusky.db.AccountEntity
+import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.fragment.NotificationsFragment
 import com.keylesspalace.tusky.fragment.SFragment
@@ -94,7 +95,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import net.accelf.yuito.FooterDrawerItem
-import net.accelf.yuito.QuickTootHelper
+import net.accelf.yuito.QuickTootViewModel
 import javax.inject.Inject
 
 class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInjector {
@@ -109,6 +110,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     @Inject
     lateinit var conversationRepository: ConversationsRepository
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val quickTootViewModel: QuickTootViewModel by viewModels { viewModelFactory }
 
     private lateinit var header: AccountHeaderView
 
@@ -182,10 +188,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         window.statusBarColor = Color.TRANSPARENT // don't draw a status bar, the DrawerLayout and the MaterialDrawerLayout have their own
         setContentView(R.layout.activity_main)
 
-        val quickTootHelper = QuickTootHelper(this, quickTootContainer as ConstraintLayout?, accountManager, eventHub)
-        composeButton.setOnClickListener {
-            quickTootHelper.composeButton()
-        }
+        viewQuickToot.attachViewModel(quickTootViewModel, this)
+        composeButton.setOnClickListener(viewQuickToot::onFABClicked)
 
         val hideTopToolbar = preferences.getBoolean(PrefKeys.HIDE_TOP_TOOLBAR, false)
         mainToolbar.visible(!hideTopToolbar)
@@ -238,7 +242,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                         is ProfileEditedEvent -> onFetchUserInfoSuccess(event.newProfileData)
                         is MainTabsChangedEvent -> setupTabs(false)
                     }
-                    quickTootHelper.handleEvent(event)
+                    viewQuickToot.handleEvent(event)
                 }
 
         // Flush old media that was cached for sharing
@@ -475,7 +479,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             )
             addStickyDrawerItems(
                     FooterDrawerItem().apply {
-                        eventHub = this@MainActivity.eventHub
                         setSubscribeProxy(
                                 mastodonApi.getInstance()
                                         .observeOn(AndroidSchedulers.mainThread())

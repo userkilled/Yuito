@@ -19,11 +19,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.activity.viewModels
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.keylesspalace.tusky.appstore.EventHub
+import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.fragment.TimelineFragment
 import com.keylesspalace.tusky.fragment.TimelineFragment.Kind
 import com.uber.autodispose.AutoDispose
@@ -33,8 +33,9 @@ import dagger.android.HasAndroidInjector
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.extensions.CacheImplementation
 import kotlinx.android.extensions.ContainerOptions
+import kotlinx.android.synthetic.main.activity_statuslist.*
 import kotlinx.android.synthetic.main.toolbar_basic.*
-import net.accelf.yuito.QuickTootHelper
+import net.accelf.yuito.QuickTootViewModel
 import javax.inject.Inject
 
 class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
@@ -43,6 +44,10 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
     @Inject
     lateinit var eventHub: EventHub
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val quickTootViewModel: QuickTootViewModel by viewModels{ viewModelFactory }
 
     private val kind: Kind
         get() = Kind.valueOf(intent.getStringExtra(EXTRA_KIND)!!)
@@ -71,16 +76,13 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
             replace(R.id.fragment_container, fragment)
         }
 
-        val quickTootContainer = findViewById<ConstraintLayout>(R.id.quick_toot_container)
-        val composeButton = findViewById<FloatingActionButton>(R.id.floating_btn)
-        val quickTootHelper = QuickTootHelper(this, quickTootContainer, accountManager, eventHub)
+        viewQuickToot.attachViewModel(quickTootViewModel, this)
 
         eventHub.events
                 .observeOn(AndroidSchedulers.mainThread())
                 .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)))
-                .subscribe(quickTootHelper::handleEvent)
-        composeButton.setOnClickListener { quickTootHelper.composeButton() }
-
+                .subscribe(viewQuickToot::handleEvent)
+        floating_btn.setOnClickListener(viewQuickToot::onFABClicked)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

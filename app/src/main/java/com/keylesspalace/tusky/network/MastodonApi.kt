@@ -505,9 +505,6 @@ interface MastodonApi {
             @Field("choices[]") choices: List<Int>
     ): Single<Poll>
 
-    @GET("api/v1/announcements")
-    fun listAnnouncements(): Single<List<Announcement>>
-
     @POST("api/v1/accounts/{id}/block")
     fun blockAccountObservable(
             @Path("id") accountId: String
