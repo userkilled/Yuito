@@ -9,6 +9,7 @@
         android:id="@+id/textQuickReply"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
         app:layout_constraintBottom_toTopOf="@id/editTextContent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -16,6 +17,7 @@
         android:id="@+id/textDefaultTag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
         app:layout_constraintBottom_toTopOf="@id/editTextContent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -46,6 +48,7 @@
         style="@style/TuskyButton"
         android:layout_width="@dimen/toot_button_width"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
         android:textSize="?attr/status_text_medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
