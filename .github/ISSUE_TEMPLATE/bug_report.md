@@ -1,7 +1,16 @@
-[Issue text goes here].
+---
+name: Bug report
+about: Create a report about the bug
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+< Issue text goes here. >
 
 * * * *
-- Tusky Version:
+- Yuito Version:
 - Android Version:
 - Android Device:
 - Mastodon instance (if applicable):
