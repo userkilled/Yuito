@@ -371,23 +371,22 @@
     <string name="compose_shortcut_long_label">ایجاد بوق</string>
     <string name="compose_shortcut_short_label">ایجاد</string>
     <string name="notification_clear_text">مطمئنید می‌خواهید تمام آگاهی‌هایتان را برای همیشه پاک کنید؟</string>
-    <string name="poll_info_time_relative">%s باقی مانده</string>
     <string name="poll_info_time_absolute">پایان در %s</string>
     <string name="poll_info_closed">بسته</string>
     <string name="poll_vote">رأی</string>
     <string name="poll_ended_voted">یک نظرسنجی که در آن رأی دادید، تمام شد</string>
     <string name="poll_ended_created">یک نظرسنجی که ساختید، تمام شد</string>
     <plurals name="poll_timespan_days">
-        <item quantity="one">%d روز</item>
-        <item quantity="other">%d روز</item>
+        <item quantity="one">%d روز مانده</item>
+        <item quantity="other">%d روز مانده</item>
     </plurals>
     <plurals name="poll_timespan_hours">
-        <item quantity="one">%d ساعت</item>
-        <item quantity="other">%d ساعت</item>
+        <item quantity="one">%d ساعت مانده</item>
+        <item quantity="other">%d ساعت مانده</item>
     </plurals>
     <plurals name="poll_timespan_minutes">
-        <item quantity="one">%d دقیقه</item>
-        <item quantity="other">%d دقیقه</item>
+        <item quantity="one">%d دقیقه مانده</item>
+        <item quantity="other">%d دقیقه مانده</item>
     </plurals>
     <string name="button_continue">ادامه</string>
     <string name="button_back">بازگشت</string>
@@ -453,8 +452,8 @@
     <string name="action_mute_conversation">خموشی گفت‌وگو</string>
     <string name="notification_follow_request_format">%s می‌خواهد پی‌گیرتان شود</string>
     <plurals name="poll_timespan_seconds">
-        <item quantity="one">%d ثانیه</item>
-        <item quantity="other">%d ثانیه</item>
+        <item quantity="one">%d ثانیه مانده</item>
+        <item quantity="other">%d ثانیه مانده</item>
     </plurals>
     <string name="pref_main_nav_position_option_bottom">پایین</string>
     <string name="pref_main_nav_position_option_top">بالا</string>

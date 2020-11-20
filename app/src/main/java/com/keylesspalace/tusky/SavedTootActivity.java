@@ -164,6 +164,7 @@ public final class SavedTootActivity extends BaseActivity implements SavedTootAd
         List<String> descriptions = gson.fromJson(item.getDescriptions(), stringListType);
 
         ComposeOptions composeOptions = new ComposeOptions(
+                /*scheduledTootUid*/null,
                 item.getUid(),
                 item.getText(),
                 jsonUrls,
@@ -182,6 +183,7 @@ public final class SavedTootActivity extends BaseActivity implements SavedTootAd
                 /*scheduledAt*/null,
                 /*sensitive*/null,
                 /*poll*/null,
+                /* modifiedInitialState */ true,
                 false
         );
         Intent intent = ComposeActivity.startIntent(this, composeOptions);

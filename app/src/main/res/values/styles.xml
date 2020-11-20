@@ -79,6 +79,8 @@
 
         <item name="swipeRefreshLayoutProgressSpinnerBackgroundColor">?attr/colorSurface</item>
 
+        <item name="chipStyle">@style/Widget.MaterialComponents.Chip.Choice</item>
+
         <item name="colorInfo">@color/colorInfo</item>
     </style>
 

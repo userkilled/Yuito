@@ -55,8 +55,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.android.material.tabs.TabLayoutMediator.TabConfigurationStrategy
 import com.keylesspalace.tusky.appstore.*
+import com.keylesspalace.tusky.components.announcements.AnnouncementsActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.canHandleMimeType
 import com.keylesspalace.tusky.components.conversation.ConversationsRepository
@@ -80,6 +80,9 @@ import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
+import com.mikepenz.materialdrawer.holder.BadgeStyle
+import com.mikepenz.materialdrawer.holder.ColorHolder
+import com.mikepenz.materialdrawer.holder.StringHolder
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
 import com.mikepenz.materialdrawer.model.*
 import com.mikepenz.materialdrawer.model.interfaces.*
@@ -121,6 +124,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     private var streamingTabsCount = 0
     private var notificationTabPosition = 0
     private var onTabSelectedListener: OnTabSelectedListener? = null
+
+    private var unreadAnnouncementsCount = 0
 
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
@@ -215,6 +220,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
          * drawer, though, because its callback touches the header in the drawer. */
         fetchUserInfo()
 
+        fetchAnnouncements()
+
         setupTabs(showNotificationTab)
 
         val pageMargin = resources.getDimensionPixelSize(R.dimen.tab_page_margin)
@@ -241,6 +248,10 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     when (event) {
                         is ProfileEditedEvent -> onFetchUserInfoSuccess(event.newProfileData)
                         is MainTabsChangedEvent -> setupTabs(false)
+                        is AnnouncementReadEvent -> {
+                            unreadAnnouncementsCount--
+                            updateAnnouncementsBadge()
+                        }
                     }
                     viewQuickToot.handleEvent(event)
                 }
@@ -446,6 +457,18 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                             startActivityWithSlideInAnimation(ScheduledTootActivity.newIntent(context))
                         }
                     },
+                    primaryDrawerItem {
+                        identifier = DRAWER_ITEM_ANNOUNCEMENTS
+                        nameRes = R.string.title_announcements
+                        iconRes = R.drawable.ic_bullhorn_24dp
+                        onClick = {
+                            startActivityWithSlideInAnimation(AnnouncementsActivity.newIntent(context))
+                        }
+                        badgeStyle = BadgeStyle().apply {
+                            textColor = ColorHolder.fromColor(ThemeUtils.getColor(this@MainActivity, R.attr.colorOnPrimary))
+                            color = ColorHolder.fromColor(ThemeUtils.getColor(this@MainActivity, R.attr.colorPrimary))
+                        }
+                    },
                     DividerDrawerItem(),
                     secondaryDrawerItem {
                         nameRes = R.string.action_view_account_preferences
@@ -487,7 +510,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     }
             )
 
-            if(addSearchButton) {
+            if (addSearchButton) {
                 mainDrawer.addItemsAtPosition(4,
                         primaryDrawerItem {
                             nameRes = R.string.action_search
@@ -537,7 +560,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     private fun setupTabs(selectNotificationTab: Boolean): ArrayList<PopupMenu> {
 
-        val activeTabLayout = if(preferences.getString("mainNavPosition", "top") == "bottom") {
+        val activeTabLayout = if (preferences.getString("mainNavPosition", "top") == "bottom") {
             val actionBarSize = ThemeUtils.getDimension(this, R.attr.actionBarSize)
             val fabMargin = resources.getDimensionPixelSize(R.dimen.fabMargin)
             (composeButton.layoutParams as CoordinatorLayout.LayoutParams).bottomMargin = actionBarSize + fabMargin
@@ -554,7 +577,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         val adapter = MainPagerAdapter(tabs, this)
         viewPager.adapter = adapter
-        TabLayoutMediator(activeTabLayout, viewPager, TabConfigurationStrategy { _: TabLayout.Tab?, _: Int -> }).attach()
+        TabLayoutMediator(activeTabLayout, viewPager) { _: TabLayout.Tab?, _: Int -> }.attach()
         activeTabLayout.removeAllTabs()
         val popups = ArrayList<PopupMenu>()
         for (i in tabs.indices) {
@@ -805,10 +828,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 .transform(
                         RoundedCorners(resources.getDimensionPixelSize(R.dimen.avatar_radius_36dp))
                 )
-                .into(object : CustomTarget<Drawable>(){
+                .into(object : CustomTarget<Drawable>() {
                     override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                         mainToolbar.navigationIcon = resource
                     }
+
                     override fun onLoadCleared(placeholder: Drawable?) {
                         mainToolbar.navigationIcon = placeholder
                     }
@@ -835,6 +859,25 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
         updateProfiles()
         updateShortcut(this, accountManager.activeAccount!!)
+    }
+
+    private fun fetchAnnouncements() {
+        mastodonApi.listAnnouncements(false)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this, Lifecycle.Event.ON_DESTROY)
+                .subscribe(
+                        { announcements ->
+                            unreadAnnouncementsCount = announcements.count { !it.read }
+                            updateAnnouncementsBadge()
+                        },
+                        {
+                            Log.w(TAG, "Failed to fetch announcements.", it)
+                        }
+                )
+    }
+
+    private fun updateAnnouncementsBadge() {
+        mainDrawer.updateBadge(DRAWER_ITEM_ANNOUNCEMENTS, StringHolder(if (unreadAnnouncementsCount == 0) null else unreadAnnouncementsCount.toString()))
     }
 
     private fun updateProfiles() {
@@ -871,6 +914,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         private const val TAG = "MainActivity" // logging tag
         private const val DRAWER_ITEM_ADD_ACCOUNT: Long = -13
         private const val DRAWER_ITEM_FOLLOW_REQUESTS: Long = 10
+        private const val DRAWER_ITEM_ANNOUNCEMENTS: Long = 14
         const val STATUS_URL = "statusUrl"
     }
 }

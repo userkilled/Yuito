@@ -36,7 +36,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
-import androidx.core.text.BidiFormatter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.keylesspalace.tusky.R;
@@ -53,6 +52,7 @@ import com.keylesspalace.tusky.util.ImageLoadingHelper;
 import com.keylesspalace.tusky.util.LinkHelper;
 import com.keylesspalace.tusky.util.SmartLengthInputFilter;
 import com.keylesspalace.tusky.util.StatusDisplayOptions;
+import com.keylesspalace.tusky.util.StringUtils;
 import com.keylesspalace.tusky.util.TimestampUtils;
 import com.keylesspalace.tusky.viewdata.NotificationViewData;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
@@ -90,7 +90,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
     private StatusActionListener statusListener;
     private NotificationActionListener notificationActionListener;
     private AccountActionListener accountActionListener;
-    private BidiFormatter bidiFormatter;
     private AdapterDataSource<NotificationViewData> dataSource;
 
     public NotificationsAdapter(String accountId,
@@ -106,7 +105,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         this.statusListener = statusListener;
         this.notificationActionListener = notificationActionListener;
         this.accountActionListener = accountActionListener;
-        bidiFormatter = BidiFormatter.getInstance();
     }
 
     @NonNull
@@ -208,7 +206,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                                     concreteNotificaton.getAccount().getAvatar());
                         }
 
-                        holder.setMessage(concreteNotificaton, statusListener, bidiFormatter);
+                        holder.setMessage(concreteNotificaton, statusListener);
                         holder.setupButtons(notificationActionListener,
                                 concreteNotificaton.getAccount().getId(),
                                 concreteNotificaton.getId());
@@ -225,7 +223,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 case VIEW_TYPE_FOLLOW: {
                     if (payloadForHolder == null) {
                         FollowViewHolder holder = (FollowViewHolder) viewHolder;
-                        holder.setMessage(concreteNotificaton.getAccount(), bidiFormatter);
+                        holder.setMessage(concreteNotificaton.getAccount());
                         holder.setupButtons(notificationActionListener, concreteNotificaton.getAccount().getId());
                     }
                     break;
@@ -233,7 +231,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 case VIEW_TYPE_FOLLOW_REQUEST: {
                     if (payloadForHolder == null) {
                         FollowRequestViewHolder holder = (FollowRequestViewHolder) viewHolder;
-                        holder.setupWithAccount(concreteNotificaton.getAccount(), bidiFormatter);
+                        holder.setupWithAccount(concreteNotificaton.getAccount());
                         holder.setupActionListener(accountActionListener);
                     }
                 }
@@ -330,11 +328,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             this.statusDisplayOptions = statusDisplayOptions;
         }
 
-        void setMessage(Account account, BidiFormatter bidiFormatter) {
+        void setMessage(Account account) {
             Context context = message.getContext();
 
             String format = context.getString(R.string.notification_follow_format);
-            String wrappedDisplayName = bidiFormatter.unicodeWrap(account.getName());
+            String wrappedDisplayName = StringUtils.unicodeWrap(account.getName());
             String wholeMessage = String.format(format, wrappedDisplayName);
             CharSequence emojifiedMessage = CustomEmojiHelper.emojify(wholeMessage, account.getEmojis(), message);
             message.setText(emojifiedMessage);
@@ -467,10 +465,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
         }
 
-        void setMessage(NotificationViewData.Concrete notificationViewData, LinkListener listener, BidiFormatter bidiFormatter) {
+        void setMessage(NotificationViewData.Concrete notificationViewData, LinkListener listener) {
             this.statusViewData = notificationViewData.getStatusViewData();
 
-            String displayName = bidiFormatter.unicodeWrap(notificationViewData.getAccount().getName());
+            String displayName = StringUtils.unicodeWrap(notificationViewData.getAccount().getName());
             Notification.Type type = notificationViewData.getType();
 
             Context context = message.getContext();
