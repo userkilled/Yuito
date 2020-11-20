@@ -1,7 +1,9 @@
 [![Translate - with Weblate](https://img.shields.io/badge/translate%20with-Weblate-green.svg?style=flat)](https://weblate.tusky.app/) [![test](https://github.com/accelforce/Yuito/workflows/test/badge.svg?branch=master&event=push)](https://github.com/accelforce/Yuito/actions?query=workflow%3Atest+event%3Apush+branch%3Amaster)
 # Yuito
 
-![](/app/src/blue/ic_launcher-web.png)
+<img src="/app/src/blue/ic_launcher-web.png" height="160" />
+
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80" />](https://play.google.com/store/apps/details?id=net.accelf.yuito)
 
 Yuito is fork of [Tusky](https://github.com/tuskyapp/Tusky).
 
