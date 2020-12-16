@@ -25,7 +25,7 @@ import com.keylesspalace.tusky.json.SpannedTypeAdapter
 import com.keylesspalace.tusky.network.InstanceSwitchAuthInterceptor
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.NotestockApi
-import com.keylesspalace.tusky.util.OkHttpUtils
+import com.keylesspalace.tusky.util.okhttpClient
 import dagger.Module
 import dagger.Provides
 import net.accelf.yuito.HttpToastInterceptor
@@ -34,6 +34,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import javax.inject.Singleton
 
 /**
@@ -57,7 +58,7 @@ class NetworkModule {
             accountManager: AccountManager,
             context: Context
     ): OkHttpClient {
-        return OkHttpUtils.getCompatibleClientBuilder(context)
+        return okhttpClient(context)
                 .apply {
                     addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
                     if (BuildConfig.DEBUG) {
@@ -84,13 +85,13 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun providesApi(retrofit: Retrofit): MastodonApi = retrofit.create(MastodonApi::class.java)
+    fun providesApi(retrofit: Retrofit): MastodonApi = retrofit.create()
 
     @Provides
     @Singleton
     fun providesNotestockApi(context: Context,
                              gson: Gson): NotestockApi {
-        val httpClient = OkHttpUtils.getCompatibleClientBuilder(context)
+        val httpClient = okhttpClient(context)
                 .apply {
                     if (BuildConfig.DEBUG) {
                         addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })

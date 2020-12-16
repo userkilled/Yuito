@@ -25,7 +25,9 @@ import androidx.work.WorkManager
 import com.keylesspalace.tusky.components.notifications.NotificationWorkerFactory
 import com.keylesspalace.tusky.di.AppInjector
 import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.util.*
+import com.keylesspalace.tusky.util.EmojiCompatFont
+import com.keylesspalace.tusky.util.LocaleManager
+import com.keylesspalace.tusky.util.ThemeUtils
 import com.uber.autodispose.AutoDisposePlugins
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -38,11 +40,21 @@ class TuskyApplication : Application(), HasAndroidInjector {
 
     @Inject
     lateinit var androidInjector: DispatchingAndroidInjector<Any>
+
     @Inject
     lateinit var notificationWorkerFactory: NotificationWorkerFactory
 
     override fun onCreate() {
-
+        // Uncomment me to get StrictMode violation logs
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder()
+//                    .detectDiskReads()
+//                    .detectDiskWrites()
+//                    .detectNetwork()
+//                    .detectUnbufferedIo()
+//                    .penaltyLog()
+//                    .build())
+//        }
         super.onCreate()
 
         Security.insertProviderAt(Conscrypt.newProvider(), 1)
@@ -64,16 +76,16 @@ class TuskyApplication : Application(), HasAndroidInjector {
         val theme = preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT)
         ThemeUtils.setAppNightMode(theme)
 
+        RxJavaPlugins.setErrorHandler {
+            Log.w("RxJava", "undeliverable exception", it)
+        }
+
         WorkManager.initialize(
                 this,
                 androidx.work.Configuration.Builder()
                         .setWorkerFactory(notificationWorkerFactory)
                         .build()
         )
-
-        RxJavaPlugins.setErrorHandler {
-            Log.w("RxJava", "undeliverable exception", it)
-        }
     }
 
     override fun attachBaseContext(base: Context) {

@@ -42,7 +42,6 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
     private var httpProxyPref: Preference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        val context = requireContext()
         makePreferenceScreen {
             lateinit var limitedBandwidthMobilePref: SwitchPreference
             lateinit var limitedBandwidthTimelinePref: SwitchPreference
@@ -121,11 +120,8 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                     key = PrefKeys.SHOW_BOT_OVERLAY
                     setTitle(R.string.pref_title_bot_overlay)
                     isSingleLineTitle = false
-                    icon = ThemeUtils.getTintedDrawable(
-                            context,
-                            R.drawable.ic_bot_24dp,
-                            R.attr.iconColor
-                    )
+                    setIcon(R.drawable.ic_bot_24dp)
+
                 }
 
                 switchPreference {

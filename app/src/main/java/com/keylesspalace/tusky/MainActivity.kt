@@ -47,6 +47,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.MarginPageTransformer
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.FixedSizeDrawable
@@ -129,6 +130,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
+    private lateinit var glide: RequestManager
+
     private val emojiInitCallback = object : InitCallback() {
         override fun onInitialized() {
             if (!isDestroyed) {
@@ -139,7 +142,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (accountManager.activeAccount == null) {
+
+        val activeAccount = accountManager.activeAccount
+        if (activeAccount == null) {
             // will be redirected to LoginActivity by BaseActivity
             return
         }
@@ -157,11 +162,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 }
             }
             val accountRequested = accountId != -1L
-            if (accountRequested) {
-                val account = accountManager.activeAccount
-                if (account == null || accountId != account.id) {
-                    accountManager.setActiveAccount(accountId)
-                }
+            if (accountRequested && accountId != activeAccount.id) {
+                accountManager.setActiveAccount(accountId)
             }
             if (canHandleMimeType(intent.type)) {
                 // Sharing to Tusky from an external app
@@ -173,8 +175,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     showAccountChooserDialog(getString(R.string.action_share_as), true, object : AccountSelectionListener {
                         override fun onAccountSelected(account: AccountEntity) {
                             val requestedId = account.id
-                            val activeAccount = accountManager.activeAccount
-                            if (activeAccount != null && requestedId == activeAccount.id) {
+                            if (requestedId == activeAccount.id) {
                                 // The correct account is already active
                                 forwardShare(intent)
                             } else {
@@ -193,14 +194,15 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         window.statusBarColor = Color.TRANSPARENT // don't draw a status bar, the DrawerLayout and the MaterialDrawerLayout have their own
         setContentView(R.layout.activity_main)
 
+        glide = Glide.with(this)
+
         viewQuickToot.attachViewModel(quickTootViewModel, this)
         composeButton.setOnClickListener(viewQuickToot::onFABClicked)
 
         val hideTopToolbar = preferences.getBoolean(PrefKeys.HIDE_TOP_TOOLBAR, false)
         mainToolbar.visible(!hideTopToolbar)
 
-        val navIconSize = resources.getDimensionPixelSize(R.dimen.avatar_toolbar_nav_icon_size)
-        mainToolbar.navigationIcon = FixedSizeDrawable(getDrawable(R.drawable.avatar_default), navIconSize, navIconSize)
+        loadDrawerAvatar(activeAccount.profilePictureUrl, true)
 
         mainToolbar.menu.add(R.string.action_search).apply {
             setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
@@ -256,8 +258,10 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     viewQuickToot.handleEvent(event)
                 }
 
-        // Flush old media that was cached for sharing
-        deleteStaleCachedMedia(applicationContext.getExternalFilesDir("Tusky"))
+        Schedulers.io().scheduleDirect {
+            // Flush old media that was cached for sharing
+            deleteStaleCachedMedia(applicationContext.getExternalFilesDir("Tusky"))
+        }
     }
 
     override fun onResume() {
@@ -381,13 +385,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         DrawerImageLoader.init(object : AbstractDrawerImageLoader() {
             override fun set(imageView: ImageView, uri: Uri, placeholder: Drawable, tag: String?) {
                 if (animateAvatars) {
-                    Glide.with(imageView.context)
-                            .load(uri)
+                    glide.load(uri)
                             .placeholder(placeholder)
                             .into(imageView)
                 } else {
-                    Glide.with(imageView.context)
-                            .asBitmap()
+                    glide.asBitmap()
                             .load(uri)
                             .placeholder(placeholder)
                             .into(imageView)
@@ -395,7 +397,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             }
 
             override fun cancel(imageView: ImageView) {
-                Glide.with(imageView.context).clear(imageView)
+                glide.clear(imageView)
             }
 
             override fun placeholder(ctx: Context, tag: String?): Drawable {
@@ -814,29 +816,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     private fun onFetchUserInfoSuccess(me: Account) {
-        Glide.with(this)
-                .asBitmap()
+        glide.asBitmap()
                 .load(me.header)
                 .into(header.accountHeaderBackground)
 
-        val navIconSize = resources.getDimensionPixelSize(R.dimen.avatar_toolbar_nav_icon_size)
-
-        Glide.with(this)
-                .asDrawable()
-                .override(navIconSize)
-                .load(me.avatar)
-                .transform(
-                        RoundedCorners(resources.getDimensionPixelSize(R.dimen.avatar_radius_36dp))
-                )
-                .into(object : CustomTarget<Drawable>() {
-                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                        mainToolbar.navigationIcon = resource
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                        mainToolbar.navigationIcon = placeholder
-                    }
-                })
+        loadDrawerAvatar(me.avatar, false)
 
         accountManager.updateActiveAccount(me)
         NotificationHelper.createNotificationChannelsForAccount(accountManager.activeAccount!!, this)
@@ -861,6 +845,36 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         updateShortcut(this, accountManager.activeAccount!!)
     }
 
+    private fun loadDrawerAvatar(avatarUrl: String, showPlaceholder: Boolean) {
+        val navIconSize = resources.getDimensionPixelSize(R.dimen.avatar_toolbar_nav_icon_size)
+
+        glide.asDrawable()
+            .load(avatarUrl)
+            .transform(
+                RoundedCorners(resources.getDimensionPixelSize(R.dimen.avatar_radius_36dp))
+            )
+            .apply {
+                if (showPlaceholder) {
+                    placeholder(R.drawable.avatar_default)
+                }
+            }
+            .into(object : CustomTarget<Drawable>(navIconSize, navIconSize) {
+
+                override fun onLoadStarted(placeholder: Drawable?) {
+                    if(placeholder != null) {
+                        mainToolbar.navigationIcon = FixedSizeDrawable(placeholder, navIconSize, navIconSize)
+                    }
+                }
+                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                    mainToolbar.navigationIcon = resource
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    mainToolbar.navigationIcon = placeholder
+                }
+            })
+    }
+
     private fun fetchAnnouncements() {
         mastodonApi.listAnnouncements(false)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -877,7 +891,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     private fun updateAnnouncementsBadge() {
-        mainDrawer.updateBadge(DRAWER_ITEM_ANNOUNCEMENTS, StringHolder(if (unreadAnnouncementsCount == 0) null else unreadAnnouncementsCount.toString()))
+        mainDrawer.updateBadge(DRAWER_ITEM_ANNOUNCEMENTS, StringHolder(if (unreadAnnouncementsCount <= 0) null else unreadAnnouncementsCount.toString()))
     }
 
     private fun updateProfiles() {
