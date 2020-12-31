@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
 import androidx.preference.PreferenceManager
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Status.Visibility

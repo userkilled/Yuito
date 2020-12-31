@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
 import androidx.preference.PreferenceManager
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.appstore.Event
