@@ -67,6 +67,7 @@
     <string name="notification_favourite_format">%s favorited your toot</string>
     <string name="notification_follow_format">%s followed you</string>
     <string name="notification_follow_request_format">%s requested to follow you</string>
+    <string name="notification_subscription_format">%s just posted</string>
 
     <string name="report_username_format">Report @%s</string>
     <string name="report_comment_hint">Additional comments?</string>
@@ -240,6 +241,7 @@
     <string name="pref_title_notification_filter_reblogs">my posts are boosted</string>
     <string name="pref_title_notification_filter_favourites">my posts are favorited</string>
     <string name="pref_title_notification_filter_poll">polls have ended</string>
+    <string name="pref_title_notification_filter_subscriptions">somebody I\'m subscribed to published a new toot</string>
     <string name="pref_title_appearance_settings">Appearance</string>
     <string name="pref_title_app_theme">App Theme</string>
     <string name="pref_title_timelines">Timelines</string>
@@ -313,7 +315,8 @@
     <string name="notification_favourite_description">Notifications when your toots get marked as favorite</string>
     <string name="notification_poll_name">Polls</string>
     <string name="notification_poll_description">Notifications about polls that have ended</string>
-
+    <string name="notification_subscription_name">New toots</string>
+    <string name="notification_subscription_description">Notifications when somebody you\'re subscribed to published a new toot</string>
 
     <string name="notification_mention_format">%s mentioned you</string>
     <string name="notification_summary_large">%1$s, %2$s, %3$s and %4$d others</string>
@@ -607,7 +610,19 @@
     <string name="pref_title_show_cards_in_timelines">Show link previews in timelines</string>
     <string name="pref_title_confirm_reblogs">Show confirmation dialog before boosting</string>
     <string name="pref_title_hide_top_toolbar">Hide the title of the top toolbar</string>
+    <string name="pref_title_wellbeing_mode">Wellbeing</string>
     <string name="account_note_hint">Your private note about this account</string>
     <string name="account_note_saved">Saved!</string>
+    <string name="wellbeing_mode_notice">Some information that might affect your mental wellbeing will be hidden. This includes:\n\n
+        - Favorite/Boost/Follow notifications\n
+        - Favorite/Boost count on toots\n
+        - Follower/Post stats on profiles\n\n
+        Push-notifications will not be affected, but you can review your notification preferences manually.
+    </string>
+    <string name="review_notifications">Review Notifications</string>
+    <string name="limit_notifications">Limit timeline notifications</string>
+    <string name="wellbeing_hide_stats_posts">Hide quantitative stats on posts</string>
+    <string name="wellbeing_hide_stats_profile">Hide quantitative stats on profiles</string>
+    <string name="error_upload_max_media_reached">You cannot upload more than %1$d media attachments.</string>
 
 </resources>

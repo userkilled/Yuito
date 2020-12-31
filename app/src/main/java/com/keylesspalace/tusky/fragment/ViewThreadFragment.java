@@ -59,11 +59,11 @@ import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.entity.StatusContext;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.network.MastodonApi;
+import com.keylesspalace.tusky.settings.PrefKeys;
 import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate;
 import com.keylesspalace.tusky.util.PairedList;
 import com.keylesspalace.tusky.util.StatusDisplayOptions;
-import com.keylesspalace.tusky.util.ThemeUtils;
 import com.keylesspalace.tusky.util.ViewDataUtils;
 import com.keylesspalace.tusky.view.ConversationLineItemDecoration;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
@@ -129,6 +129,7 @@ public final class ViewThreadFragment extends SFragment implements
         thisThreadsStatusId = getArguments().getString("id");
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(getActivity());
+
         StatusDisplayOptions statusDisplayOptions = new StatusDisplayOptions(
                 preferences.getBoolean("animateGifAvatars", false),
                 accountManager.getActiveAccount().getMediaPreviewEnabled(),
@@ -139,6 +140,7 @@ public final class ViewThreadFragment extends SFragment implements
                         CardViewMode.INDENTED :
                         CardViewMode.NONE,
                 preferences.getBoolean("confirmReblogs", true),
+                preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false),
                 Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
         );
         adapter = new ThreadAdapter(statusDisplayOptions, this);

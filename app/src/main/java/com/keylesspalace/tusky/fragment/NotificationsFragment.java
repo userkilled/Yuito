@@ -73,6 +73,7 @@ import com.keylesspalace.tusky.interfaces.AccountActionListener;
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity;
 import com.keylesspalace.tusky.interfaces.ReselectableFragment;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
+import com.keylesspalace.tusky.settings.PrefKeys;
 import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.Either;
 import com.keylesspalace.tusky.util.HttpHeaderLink;
@@ -182,7 +183,9 @@ public class NotificationsFragment extends SFragment implements
         @Override
         public NotificationViewData apply(Either<Placeholder, Notification> input) {
             if (input.isRight()) {
-                Notification notification = input.asRight();
+                Notification notification = input.asRight()
+                        .rewriteToStatusTypeIfNeeded(accountManager.getActiveAccount().getAccountId());
+
                 return ViewDataUtils.notificationToViewData(
                         notification,
                         alwaysShowSensitiveMedia,
@@ -253,6 +256,7 @@ public class NotificationsFragment extends SFragment implements
                 preferences.getBoolean("useBlurhash", true),
                 CardViewMode.NONE,
                 preferences.getBoolean("confirmReblogs", true),
+                preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false),
                 Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
         );
 
@@ -779,6 +783,8 @@ public class NotificationsFragment extends SFragment implements
                 return getString(R.string.notification_follow_request_name);
             case POLL:
                 return getString(R.string.notification_poll_name);
+            case STATUS:
+                return getString(R.string.notification_subscription_name);
             default:
                 return "Unknown";
         }
@@ -806,6 +812,7 @@ public class NotificationsFragment extends SFragment implements
     private void loadNotificationsFilter() {
         AccountEntity account = accountManager.getActiveAccount();
         if (account != null) {
+            notificationFilter.clear();
             notificationFilter.addAll(NotificationTypeConverterKt.deserialize(
                     account.getNotificationsFilter()));
         }
@@ -1282,6 +1289,12 @@ public class NotificationsFragment extends SFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        String rawAccountNotificationFilter = accountManager.getActiveAccount().getNotificationsFilter();
+        Set<Notification.Type> accountNotificationFilter = NotificationTypeConverterKt.deserialize(rawAccountNotificationFilter);
+        if (!notificationFilter.equals(accountNotificationFilter)) {
+            loadNotificationsFilter();
+            fullyRefreshWithProgressBar(true);
+        }
         startUpdateTimestamp();
     }
 
