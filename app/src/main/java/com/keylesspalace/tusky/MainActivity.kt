@@ -233,7 +233,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 .getBoolean("enableSwipeForTabs", true)
         viewPager.isUserInputEnabled = uswSwipeForTabs
 
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PrefKeys.VIEW_PAGER_OFF_SCREEN_LIMIT, false)) {
             viewPager.offscreenPageLimit = 9
         }
 

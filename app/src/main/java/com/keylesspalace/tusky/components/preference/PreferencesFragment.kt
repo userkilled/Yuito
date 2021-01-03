@@ -20,10 +20,10 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import com.keylesspalace.tusky.R
-import com.keylesspalace.tusky.db.AccountManager
-import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
+import com.keylesspalace.tusky.db.AccountManager
+import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.Notification
 import com.keylesspalace.tusky.settings.*
 import com.keylesspalace.tusky.util.ThemeUtils
@@ -128,7 +128,6 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                     setTitle(R.string.pref_title_bot_overlay)
                     isSingleLineTitle = false
                     setIcon(R.drawable.ic_bot_24dp)
-
                 }
 
                 switchPreference {
@@ -157,14 +156,6 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                     key = PrefKeys.SHOW_NOTIFICATIONS_FILTER
                     setTitle(R.string.pref_title_show_notifications_filter)
                     isSingleLineTitle = false
-                    setOnPreferenceClickListener {
-                        activity?.let { activity ->
-                            val intent = PreferencesActivity.newIntent(activity, PreferencesActivity.TAB_FILTER_PREFERENCES)
-                            activity.startActivity(intent)
-                            activity.overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
-                        }
-                        true
-                    }
                 }
 
                 switchPreference {
@@ -285,8 +276,16 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                 }
             }
 
+            preferenceCategory(R.string.pref_title_experimental) {
+                switchPreference {
+                    title = getString(R.string.pref_title_experimental_viewpager_offscreen)
+                    setDefaultValue(false)
+                    key = PrefKeys.VIEW_PAGER_OFF_SCREEN_LIMIT
+                }
+            }
+
             preferenceManager.sharedPreferences.let { prefs ->
-                prefs.getString("stack_trace", null)?.let { stackTrace ->
+                prefs.getString(PrefKeys.STACK_TRACE, null)?.let { stackTrace ->
                     preferenceCategory(R.string.pref_title_stacktrace) {
                         preference {
                             setTitle(R.string.pref_title_stacktrace_send)
@@ -298,11 +297,12 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                                     ))
                                     activity.startActivity(intent)
                                     prefs.edit()
-                                            .remove("stack_trace")
+                                            .remove(PrefKeys.STACK_TRACE)
                                             .apply()
                                 }
                                 true
                             }
+                            key = PrefKeys.SEND_CRASH_REPORT
                         }
 
                         preference {
