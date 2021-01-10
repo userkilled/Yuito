@@ -70,7 +70,7 @@ public class QuoteInlineHelper {
                             LinkListener listener) {
         Spanned singleLineText = SpannedTextHelper.replaceSpanned(content);
         CharSequence emojifiedText = CustomEmojiHelper.emojify(singleLineText, emojis, quoteContent);
-        LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener, false);
+        LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener);
     }
 
     private void setAvatar(String url, @Px int avatarRadius24dp, StatusDisplayOptions statusDisplayOptions) {

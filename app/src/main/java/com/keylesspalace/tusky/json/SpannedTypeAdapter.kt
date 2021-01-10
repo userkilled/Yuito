@@ -16,11 +16,11 @@
 package com.keylesspalace.tusky.json
 
 import android.text.Spanned
-import android.text.SpannedString
 import androidx.core.text.HtmlCompat
 import androidx.core.text.parseAsHtml
 import com.google.gson.*
 import com.keylesspalace.tusky.util.trimTrailingWhitespace
+import org.jsoup.Jsoup
 import java.lang.reflect.Type
 
 class SpannedTypeAdapter : JsonDeserializer<Spanned>, JsonSerializer<Spanned?> {
@@ -28,7 +28,11 @@ class SpannedTypeAdapter : JsonDeserializer<Spanned>, JsonSerializer<Spanned?> {
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Spanned {
         /* Html.fromHtml returns trailing whitespace if the html ends in a </p> tag, which
          * all status contents do, so it should be trimmed. */
-        return json.asString?.parseAsHtml()?.trimTrailingWhitespace() ?: SpannedString("")
+        return Jsoup.parse(json.asString ?: "")
+                .apply {
+                    select(".quote-inline").forEach { it.remove() }
+                }
+                .html().parseAsHtml().trimTrailingWhitespace()
     }
 
     override fun serialize(src: Spanned?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {

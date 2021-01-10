@@ -69,8 +69,7 @@ public class LinkHelper {
      * @param listener to notify about particular spans that are clicked
      */
     public static void setClickableText(TextView view, CharSequence content,
-                                        @Nullable Status.Mention[] mentions, final LinkListener listener,
-                                        boolean removeQuote) {
+                                        @Nullable Status.Mention[] mentions, final LinkListener listener) {
         SpannableStringBuilder builder = SpannableStringBuilder.valueOf(content);
         URLSpan[] urlSpans = builder.getSpans(0, content.length(), URLSpan.class);
         for (URLSpan span : urlSpans) {
@@ -126,13 +125,6 @@ public class LinkHelper {
             if (end >= builder.length() ||
                     builder.subSequence(end, end + 1).toString().equals("\n")){
                 builder.insert(end, "\u200B");
-            }
-
-            if (start >= 13 && end < builder.length() && removeQuote) {
-                if (builder.subSequence(start - 13, start).toString().equals("\n~~~~~~~~~~\n[")
-                        && builder.subSequence(end, end + 1).toString().equals("]")) {
-                    builder.delete(start - 13, end + 1);
-                }
             }
         }
 

@@ -212,8 +212,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                         @NonNull List<Emoji> emojis,
                                         @Nullable PollViewData poll,
                                         @NonNull StatusDisplayOptions statusDisplayOptions,
-                                        final StatusActionListener listener,
-                                        boolean removeQuote) {
+                                        final StatusActionListener listener) {
         boolean sensitive = !TextUtils.isEmpty(spoilerText);
         if (sensitive) {
             CharSequence emojiSpoiler = CustomEmojiHelper.emojify(spoilerText, emojis, contentWarningDescription);
@@ -228,13 +227,13 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 }
                 setContentWarningButtonText(!expanded);
 
-                this.setTextVisible(sensitive, !expanded, content, mentions, emojis, poll, statusDisplayOptions, listener, removeQuote);
+                this.setTextVisible(sensitive, !expanded, content, mentions, emojis, poll, statusDisplayOptions, listener);
             });
-            this.setTextVisible(sensitive, expanded, content, mentions, emojis, poll, statusDisplayOptions, listener, removeQuote);
+            this.setTextVisible(sensitive, expanded, content, mentions, emojis, poll, statusDisplayOptions, listener);
         } else {
             contentWarningDescription.setVisibility(View.GONE);
             contentWarningButton.setVisibility(View.GONE);
-            this.setTextVisible(sensitive, true, content, mentions, emojis, poll, statusDisplayOptions, listener, removeQuote);
+            this.setTextVisible(sensitive, true, content, mentions, emojis, poll, statusDisplayOptions, listener);
         }
     }
 
@@ -253,11 +252,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                 List<Emoji> emojis,
                                 @Nullable PollViewData poll,
                                 StatusDisplayOptions statusDisplayOptions,
-                                final StatusActionListener listener,
-                                boolean removeQuote) {
+                                final StatusActionListener listener) {
         if (expanded) {
             CharSequence emojifiedText = CustomEmojiHelper.emojify(content, emojis, this.content);
-            LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
+            LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener);
             for (int i = 0; i < mediaLabels.length; ++i) {
                 updateMediaLabel(i, sensitive, expanded);
             }
@@ -857,7 +855,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
             setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
 
-            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), status.getPoll(), statusDisplayOptions, listener, status.getQuote() != null);
+            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), status.getPoll(), statusDisplayOptions, listener);
 
             setDescriptionForStatus(status, statusDisplayOptions);
 

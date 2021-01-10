@@ -127,7 +127,7 @@ class StatusViewHolder(
                                removeQuote: Boolean) {
         if (expanded) {
             val emojifiedText = content.emojify(emojis, itemView.statusContent)
-            LinkHelper.setClickableText(itemView.statusContent, emojifiedText, mentions, listener, removeQuote)
+            LinkHelper.setClickableText(itemView.statusContent, emojifiedText, mentions, listener)
         } else {
             LinkHelper.setClickableMentions(itemView.statusContent, mentions, listener)
         }

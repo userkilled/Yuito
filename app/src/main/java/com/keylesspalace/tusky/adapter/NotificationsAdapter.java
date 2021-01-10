@@ -651,8 +651,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
 
             CharSequence emojifiedText = CustomEmojiHelper.emojify(content, emojis, statusContent);
-            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener,
-                    statusViewData.getQuote() != null);
+            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener);
 
             CharSequence emojifiedContentWarning =
                     CustomEmojiHelper.emojify(statusViewData.getSpoilerText(), statusViewData.getStatusEmojis(), contentWarningDescriptionTextView);

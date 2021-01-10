@@ -109,7 +109,7 @@ public class ConversationViewHolder extends StatusBaseViewHolder {
 
         setSpoilerAndContent(status.getExpanded(), status.getContent(), status.getSpoilerText(),
                 status.getMentions(), status.getEmojis(),
-                PollViewDataKt.toViewData(status.getPoll()), statusDisplayOptions, listener, false);
+                PollViewDataKt.toViewData(status.getPoll()), statusDisplayOptions, listener);
 
         setConversationName(conversation.getAccounts());
 

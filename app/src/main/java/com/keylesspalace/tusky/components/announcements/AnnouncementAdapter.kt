@@ -68,7 +68,7 @@ class AnnouncementAdapter(
         private val addReactionChip: Chip = view.addReactionChip
 
         fun bind(item: Announcement) {
-            LinkHelper.setClickableText(text, item.content, null, listener, false)
+            LinkHelper.setClickableText(text, item.content, null, listener)
 
             // If wellbeing mode is enabled, announcement badge counts should not be shown.
             if (wellbeingEnabled) {

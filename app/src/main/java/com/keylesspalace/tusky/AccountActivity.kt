@@ -378,7 +378,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         accountDisplayNameTextView.text = account.name.emojify(account.emojis, accountDisplayNameTextView)
 
         val emojifiedNote = account.note.emojify(account.emojis, accountNoteTextView)
-        LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this, false)
+        LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this)
 
        // accountFieldAdapter.fields = account.fields ?: emptyList()
         accountFieldAdapter.emojis = account.emojis ?: emptyList()

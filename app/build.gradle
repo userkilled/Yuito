@@ -194,4 +194,5 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:1.1.2"
 
     implementation 'net.accelf:easter:1.0.2'
+    implementation 'org.jsoup:jsoup:1.13.1'
 }
