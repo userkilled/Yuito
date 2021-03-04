@@ -15,12 +15,12 @@
 
 package com.keylesspalace.tusky.viewmodel
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.keylesspalace.tusky.EditProfileActivity.Companion.AVATAR_SIZE
 import com.keylesspalace.tusky.EditProfileActivity.Companion.HEADER_HEIGHT
 import com.keylesspalace.tusky.EditProfileActivity.Companion.HEADER_WIDTH
@@ -36,10 +36,10 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Call
@@ -145,7 +145,7 @@ class EditProfileViewModel  @Inject constructor(
             return
         }
 
-        val displayName = if (oldProfileData?.displayName == newDisplayName) {
+        val displayName = if (oldProfileData?.intentionallyUseDisplayName == newDisplayName) {
             null
         } else {
             newDisplayName.toRequestBody(MultipartBody.FORM)

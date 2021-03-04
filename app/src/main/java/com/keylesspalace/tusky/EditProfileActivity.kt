@@ -126,7 +126,7 @@ class EditProfileActivity : BaseActivity(), Injectable {
                     val me = profileRes.data
                     if (me != null) {
 
-                        displayNameEditText.setText(me.displayName)
+                        displayNameEditText.setText(me.intentionallyUseDisplayName)
                         noteEditText.setText(me.source?.note)
                         lockedCheckBox.isChecked = me.locked
 
