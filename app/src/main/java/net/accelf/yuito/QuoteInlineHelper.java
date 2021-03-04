@@ -115,7 +115,7 @@ public class QuoteInlineHelper {
 
     public void setupQuoteContainer() {
         Account account = quoteStatus.getAccount();
-        setDisplayName(account.getDisplayName().equals("") ? account.getLocalUsername() : account.getDisplayName(), account.getEmojis());
+        setDisplayName(account.getName(), account.getEmojis());
         setUsername(account.getUsername());
         setContent(quoteStatus.getContent(), quoteStatus.getMentions(),
                 quoteStatus.getEmojis(), listener);

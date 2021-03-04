@@ -17,13 +17,13 @@ package com.keylesspalace.tusky.entity
 
 import android.text.Spanned
 import com.google.gson.annotations.SerializedName
-import java.util.Date
+import java.util.*
 
 data class Account(
         val id: String,
         @SerializedName("username") val localUsername: String,
         @SerializedName("acct", alternate = ["subject"]) val username: String,
-        @SerializedName("display_name") val displayName: String?, // should never be null per Api definition, but some servers break the contract
+        @SerializedName("display_name") private val displayName: String?, // should never be null per Api definition, but some servers break the contract
         val note: Spanned,
         val url: String,
         val avatar: String,
@@ -45,6 +45,13 @@ data class Account(
         get() = notestockUsername ?: if (displayName.isNullOrEmpty()) {
             localUsername
         } else displayName
+
+    /**
+     * We have to use [localUsername] when [displayName] is empty.
+     * Should use [name] for displaying purposes.
+     */
+    val intentionallyUseDisplayName: String
+        get() = displayName.orEmpty()
 
     override fun hashCode(): Int {
         return id.hashCode()

@@ -168,7 +168,7 @@ fun Account.toEntity() =
         ConversationAccountEntity(
                 id,
                 username,
-                displayName.orEmpty(),
+                name,
                 avatar,
                 emojis ?: emptyList()
         )
