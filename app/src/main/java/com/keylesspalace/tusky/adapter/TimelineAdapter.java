@@ -67,6 +67,7 @@ public final class TimelineAdapter extends RecyclerView.Adapter {
                 statusDisplayOptions.cardViewMode(),
                 statusDisplayOptions.confirmReblogs(),
                 statusDisplayOptions.hideStats(),
+                statusDisplayOptions.animateEmojis(),
                 statusDisplayOptions.quoteEnabled()
         );
     }

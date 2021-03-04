@@ -18,7 +18,6 @@ package com.keylesspalace.tusky
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
@@ -83,14 +82,6 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
                 .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe(viewQuickToot::handleEvent)
         floating_btn.setOnClickListener(viewQuickToot::onFABClicked)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home){
-            onBackPressed()
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun androidInjector() = dispatchingAndroidInjector

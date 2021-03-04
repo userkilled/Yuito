@@ -113,6 +113,7 @@ class ReportStatusesFragment : Fragment(R.layout.fragment_report_statuses), Inje
                 cardViewMode = CardViewMode.NONE,
                 confirmReblogs = preferences.getBoolean("confirmReblogs", true),
                 hideStats = preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false),
+                animateEmojis = preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false),
                 quoteEnabled = accountManager.activeAccount?.domain in CAN_USE_QUOTE_ID
         )
 

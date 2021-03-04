@@ -86,6 +86,7 @@ public abstract class StatusViewData {
         private final Status.Application application;
         private final List<Emoji> statusEmojis;
         private final List<Emoji> accountEmojis;
+        private final List<Emoji> rebloggedByAccountEmojis;
         @Nullable
         private final Card card;
         private final boolean isCollapsible; /** Whether the status meets the requirement to be collapse */
@@ -103,7 +104,7 @@ public abstract class StatusViewData {
                         boolean isShowingContent, String userFullName, String nickname, String avatar,
                         Date createdAt, int reblogsCount, int favouritesCount, @Nullable String inReplyToId,
                         @Nullable Status.Mention[] mentions, String senderId, boolean rebloggingEnabled,
-                        Status.Application application, List<Emoji> statusEmojis, List<Emoji> accountEmojis, @Nullable Card card,
+                        Status.Application application, List<Emoji> statusEmojis, List<Emoji> accountEmojis, List<Emoji> rebloggedByAccountEmojis, @Nullable Card card,
                         boolean isCollapsible, boolean isCollapsed, @Nullable PollViewData poll, boolean isBot, Status quote, boolean isNotestock) {
 
             this.id = id;
@@ -140,6 +141,7 @@ public abstract class StatusViewData {
             this.application = application;
             this.statusEmojis = statusEmojis;
             this.accountEmojis = accountEmojis;
+            this.rebloggedByAccountEmojis = rebloggedByAccountEmojis;
             this.card = card;
             this.isCollapsible = isCollapsible;
             this.isCollapsed = isCollapsed;
@@ -267,6 +269,10 @@ public abstract class StatusViewData {
             return accountEmojis;
         }
 
+        public List<Emoji> getRebloggedByAccountEmojis() {
+            return rebloggedByAccountEmojis;
+        }
+
         @Nullable
         public Card getCard() {
             return card;
@@ -341,6 +347,7 @@ public abstract class StatusViewData {
                     Objects.equals(application, concrete.application) &&
                     Objects.equals(statusEmojis, concrete.statusEmojis) &&
                     Objects.equals(accountEmojis, concrete.accountEmojis) &&
+                    Objects.equals(rebloggedByAccountEmojis, concrete.rebloggedByAccountEmojis) &&
                     Objects.equals(card, concrete.card) &&
                     Objects.equals(poll, concrete.poll) &&
                     isCollapsed == concrete.isCollapsed &&
@@ -447,6 +454,7 @@ public abstract class StatusViewData {
         private Status.Application application;
         private List<Emoji> statusEmojis;
         private List<Emoji> accountEmojis;
+        private List<Emoji> rebloggedByAccountEmojis;
         private Card card;
         private boolean isCollapsible; /** Whether the status meets the requirement to be collapsed */
         private boolean isCollapsed; /** Whether the status is shown partially or fully */
@@ -639,6 +647,11 @@ public abstract class StatusViewData {
             return this;
         }
 
+        public Builder setRebloggedByEmojis(List<Emoji> emojis) {
+            this.rebloggedByAccountEmojis = emojis;
+            return this;
+        }
+
         public Builder setCard(Card card) {
             this.card = card;
             return this;
@@ -692,7 +705,7 @@ public abstract class StatusViewData {
                     visibility, attachments, rebloggedByUsername, rebloggedAvatar, isSensitive, isExpanded,
                     isShowingContent, userFullName, nickname, avatar, createdAt, reblogsCount,
                     favouritesCount, inReplyToId, mentions, senderId, rebloggingEnabled, application,
-                    statusEmojis, accountEmojis, card, isCollapsible, isCollapsed, poll, isBot, quote, isNotestock);
+                    statusEmojis, accountEmojis, rebloggedByAccountEmojis, card, isCollapsible, isCollapsed, poll, isBot, quote, isNotestock);
         }
     }
 }

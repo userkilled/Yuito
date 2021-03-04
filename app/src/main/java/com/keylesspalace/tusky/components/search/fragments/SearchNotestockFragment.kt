@@ -72,6 +72,7 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
                 cardViewMode = CardViewMode.NONE,
                 confirmReblogs = preferences.getBoolean("confirmReblogs", false),
                 hideStats = preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false),
+                animateEmojis = preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false),
                 quoteEnabled = viewModel.quoteEnabled
         )
 
@@ -383,8 +384,9 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
         showMuteAccountDialog(
                 this.requireActivity(),
                 accountUsername,
-                { notifications -> viewModel.muteAccount(accountId, notifications) }
-        )
+        ) { notifications, duration ->
+            viewModel.muteAccount(accountId, notifications, duration)
+        }
     }
 
     private fun accountIsInMentions(account: AccountEntity?, mentions: Array<Mention>): Boolean {

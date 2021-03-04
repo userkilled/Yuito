@@ -31,6 +31,7 @@ object PrefKeys {
     const val SHOW_CARDS_IN_TIMELINES = "showCardsInTimelines"
     const val CONFIRM_REBLOGS = "confirmReblogs"
     const val ENABLE_SWIPE_FOR_TABS = "enableSwipeForTabs"
+    const val ANIMATE_CUSTOM_EMOJIS = "animateCustomEmojis"
 
     const val LIMITED_BANDWIDTH_ACTIVE = "limitedBandwidthActive"
     const val LIMITED_BANDWIDTH_ONLY_MOBILE_NETWORK = "limitedBandwidthOnlyMobileNetwork"

@@ -78,7 +78,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     private val viewModel: AccountViewModel by viewModels { viewModelFactory }
 
-    private val accountFieldAdapter = AccountFieldAdapter(this)
+    private lateinit var accountFieldAdapter : AccountFieldAdapter
 
     private var followState: FollowState = FollowState.NOT_FOLLOWING
     private var blocking: Boolean = false
@@ -89,6 +89,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private var loadedAccount: Account? = null
 
     private var animateAvatar: Boolean = false
+    private var animateEmojis: Boolean = false
 
     // fields for scroll animation
     private var hideFab: Boolean = false
@@ -124,6 +125,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         animateAvatar = sharedPrefs.getBoolean("animateGifAvatars", false)
+        animateEmojis = sharedPrefs.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false)
         hideFab = sharedPrefs.getBoolean("fabHide", false)
 
         setupToolbar()
@@ -162,6 +164,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         accountFollowsYouTextView.hide()
 
         // setup the RecyclerView for the account fields
+        accountFieldAdapter = AccountFieldAdapter(this, animateEmojis)
         accountFieldList.isNestedScrollingEnabled = false
         accountFieldList.layoutManager = LinearLayoutManager(this)
         accountFieldList.adapter = accountFieldAdapter
@@ -375,9 +378,9 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
         val usernameFormatted = getString(R.string.status_username_format, account.username)
         accountUsernameTextView.text = usernameFormatted
-        accountDisplayNameTextView.text = account.name.emojify(account.emojis, accountDisplayNameTextView)
+        accountDisplayNameTextView.text = account.name.emojify(account.emojis, accountDisplayNameTextView, animateEmojis)
 
-        val emojifiedNote = account.note.emojify(account.emojis, accountNoteTextView)
+        val emojifiedNote = account.note.emojify(account.emojis, accountNoteTextView, animateEmojis)
         LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this)
 
        // accountFieldAdapter.fields = account.fields ?: emptyList()
@@ -437,7 +440,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun updateToolbar() {
         loadedAccount?.let { account ->
 
-            val emojifiedName = account.name.emojify(account.emojis, accountToolbar)
+            val emojifiedName = account.name.emojify(account.emojis, accountToolbar, animateEmojis)
 
             try {
                 supportActionBar?.title = EmojiCompat.get().process(emojifiedName)
@@ -565,11 +568,12 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 subscribing = relation.subscribing
         }
 
+        // remove the listener so it doesn't fire on non-user changes
+        accountNoteTextInputLayout.editText?.removeTextChangedListener(noteWatcher)
+
         accountNoteTextInputLayout.visible(relation.note != null)
         accountNoteTextInputLayout.editText?.setText(relation.note)
 
-        // add the listener late to avoid it firing on the first change
-        accountNoteTextInputLayout.editText?.removeTextChangedListener(noteWatcher)
         accountNoteTextInputLayout.editText?.addTextChangedListener(noteWatcher)
 
         updateButtons()
@@ -619,8 +623,10 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
         if(subscribing) {
             accountSubscribeButton.setIconResource(R.drawable.ic_notifications_active_24dp)
+            accountSubscribeButton.contentDescription = getString(R.string.action_unsubscribe_account)
         } else {
             accountSubscribeButton.setIconResource(R.drawable.ic_notifications_24dp)
+            accountSubscribeButton.contentDescription = getString(R.string.action_subscribe_account)
         }
     }
 
@@ -650,14 +656,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         menuInflater.inflate(R.menu.account_toolbar, menu)
 
         if (!viewModel.isSelf) {
-            val follow = menu.findItem(R.id.action_follow)
-            follow.title = if (followState == FollowState.NOT_FOLLOWING) {
-                getString(R.string.action_follow)
-            } else {
-                getString(R.string.action_unfollow)
-            }
-
-            follow.isVisible = followState != FollowState.REQUESTED
 
             val block = menu.findItem(R.id.action_block)
             block.title = if (blocking) {
@@ -701,8 +699,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             }
 
         } else {
-            // It shouldn't be possible to block, follow, mute or report yourself.
-            menu.removeItem(R.id.action_follow)
+            // It shouldn't be possible to block, mute or report yourself.
             menu.removeItem(R.id.action_block)
             menu.removeItem(R.id.action_mute)
             menu.removeItem(R.id.action_mute_domain)
@@ -759,8 +756,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 showMuteAccountDialog(
                         this,
                         it.username
-                ) { notifications ->
-                    viewModel.muteAccount(notifications)
+                ) { notifications, duration ->
+                    viewModel.muteAccount(notifications, duration)
                 }
             }
         } else {
@@ -794,23 +791,11 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                return true
-            }
-            R.id.action_mention -> {
-                mention()
-                return true
-            }
             R.id.action_open_in_web -> {
                 // If the account isn't loaded yet, eat the input.
                 if (loadedAccount != null) {
                     LinkHelper.openLink(loadedAccount?.url, this)
                 }
-                return true
-            }
-            R.id.action_follow -> {
-                viewModel.changeFollowState()
                 return true
             }
             R.id.action_block -> {

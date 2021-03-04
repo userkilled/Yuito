@@ -7,7 +7,6 @@ import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.URLSpan
 import android.text.util.Linkify
-import android.view.MenuItem
 import android.widget.TextView
 import androidx.annotation.StringRes
 import com.keylesspalace.tusky.di.Injectable
@@ -59,17 +58,6 @@ class AboutActivity : BottomSheetActivity(), Injectable {
     private fun onEasterEggExecute() {
         startActivityWithSlideInAnimation(Intent(this, AccessTokenLoginActivity::class.java))
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
 }
 
 private fun TextView.setClickableTextWithoutUnderlines(@StringRes textId: Int) {

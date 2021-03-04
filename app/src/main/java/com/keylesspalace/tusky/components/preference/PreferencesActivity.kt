@@ -20,8 +20,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.preference.PreferenceManager
 import com.keylesspalace.tusky.BaseActivity
 import com.keylesspalace.tusky.MainActivity
@@ -59,33 +59,36 @@ class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreference
             setDisplayShowHomeEnabled(true)
         }
 
-        val fragment: Fragment = when (intent.getIntExtra(EXTRA_PREFERENCE_TYPE, 0)) {
-            GENERAL_PREFERENCES -> {
-                setTitle(R.string.action_view_preferences)
-                PreferencesFragment.newInstance()
-            }
-            ACCOUNT_PREFERENCES -> {
-                setTitle(R.string.action_view_account_preferences)
-                AccountPreferencesFragment.newInstance()
-            }
-            NOTIFICATION_PREFERENCES -> {
-                setTitle(R.string.pref_title_edit_notification_settings)
-                NotificationPreferencesFragment.newInstance()
-            }
-            TAB_FILTER_PREFERENCES -> {
-                setTitle(R.string.pref_title_status_tabs)
-                TabFilterPreferencesFragment.newInstance()
-            }
-            PROXY_PREFERENCES -> {
-                setTitle(R.string.pref_title_http_proxy_settings)
-                ProxyPreferencesFragment.newInstance()
-            }
-            else -> throw IllegalArgumentException("preferenceType not known")
-        }
+        val fragmentTag = "preference_fragment_$EXTRA_PREFERENCE_TYPE"
 
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit()
+        val fragment: Fragment = supportFragmentManager.findFragmentByTag(fragmentTag)
+                ?: when (intent.getIntExtra(EXTRA_PREFERENCE_TYPE, 0)) {
+                    GENERAL_PREFERENCES -> {
+                        setTitle(R.string.action_view_preferences)
+                        PreferencesFragment.newInstance()
+                    }
+                    ACCOUNT_PREFERENCES -> {
+                        setTitle(R.string.action_view_account_preferences)
+                        AccountPreferencesFragment.newInstance()
+                    }
+                    NOTIFICATION_PREFERENCES -> {
+                        setTitle(R.string.pref_title_edit_notification_settings)
+                        NotificationPreferencesFragment.newInstance()
+                    }
+                    TAB_FILTER_PREFERENCES -> {
+                        setTitle(R.string.pref_title_status_tabs)
+                        TabFilterPreferencesFragment.newInstance()
+                    }
+                    PROXY_PREFERENCES -> {
+                        setTitle(R.string.pref_title_http_proxy_settings)
+                        ProxyPreferencesFragment.newInstance()
+                    }
+                    else -> throw IllegalArgumentException("preferenceType not known")
+                }
+
+        supportFragmentManager.commit {
+            replace(R.id.fragment_container, fragment, fragmentTag)
+        }
 
         restartActivitiesOnExit = intent.getBooleanExtra("restart", false)
 
@@ -99,16 +102,6 @@ class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreference
     override fun onPause() {
         super.onPause()
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun saveInstanceState(outState: Bundle) {

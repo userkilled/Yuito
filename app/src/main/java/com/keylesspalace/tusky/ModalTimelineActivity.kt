@@ -3,7 +3,6 @@ package com.keylesspalace.tusky
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -79,14 +78,6 @@ class ModalTimelineActivity : BottomSheetActivity(), ActionButtonActivity, HasAn
     }
 
     override fun getActionButton(): FloatingActionButton? = null
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            onBackPressed()
-            return true
-        }
-        return false
-    }
 
     override fun androidInjector() = dispatchingAndroidInjector
 

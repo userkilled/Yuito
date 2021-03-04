@@ -19,7 +19,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import android.widget.PopupWindow
 import androidx.activity.viewModels
@@ -83,8 +82,9 @@ class AnnouncementsActivity : BottomSheetActivity(), AnnouncementActionListener,
 
         val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val wellbeingEnabled = preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false)
+        val animateEmojis = preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false)
 
-        adapter = AnnouncementAdapter(emptyList(), this, wellbeingEnabled)
+        adapter = AnnouncementAdapter(emptyList(), this, wellbeingEnabled, animateEmojis)
 
         announcementsList.adapter = adapter
 
@@ -121,16 +121,6 @@ class AnnouncementsActivity : BottomSheetActivity(), AnnouncementActionListener,
 
         viewModel.load()
         progressBar.show()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun refreshAnnouncements() {

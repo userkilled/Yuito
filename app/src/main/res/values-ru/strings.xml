@@ -36,7 +36,7 @@
     <string name="title_blocks">Список блокировки</string>
     <string name="title_follow_requests">Запросы на подписку</string>
     <string name="title_edit_profile">Редактировать профиль</string>
-    <string name="title_saved_toot">Черновики</string>
+    <string name="title_drafts">Черновики</string>
     <string name="title_licenses">Лицензии</string>
     <string name="status_username_format">\@%s</string>
     <string name="status_boosted_format">%s продвинул(а)</string>
@@ -444,13 +444,13 @@
     <string name="title_accounts">Аккаунты</string>
     <string name="failed_search">Поиск завершился ошибкой</string>
     <string name="create_poll_title">Опрос</string>
-    <string name="poll_duration_5_min">5 минут</string>
-    <string name="poll_duration_30_min">30 минут</string>
-    <string name="poll_duration_1_hour">1 час</string>
-    <string name="poll_duration_6_hours">6 часов</string>
-    <string name="poll_duration_1_day">1 день</string>
-    <string name="poll_duration_3_days">3 дня</string>
-    <string name="poll_duration_7_days">7 дней</string>
+    <string name="duration_5_min">5 минут</string>
+    <string name="duration_30_min">30 минут</string>
+    <string name="duration_1_hour">1 час</string>
+    <string name="duration_6_hours">6 часов</string>
+    <string name="duration_1_day">1 день</string>
+    <string name="duration_3_days">3 дня</string>
+    <string name="duration_7_days">7 дней</string>
     <string name="add_poll_choice">Добавить</string>
     <string name="poll_allow_multiple_choices">Множественный выбор</string>
     <string name="poll_new_choice_hint">Вариант %d</string>
@@ -505,4 +505,16 @@
     <string name="pref_title_hide_top_toolbar">Скрыть заголовок в верхней панели</string>
     <string name="no_announcements">Объявлений нет.</string>
     <string name="title_announcements">Объявления</string>
+    <string name="wellbeing_mode_notice">"Некоторая информация, которая может повлиять на ваше психическое благополучие, будет скрыта. Это включает в себя:
+\n
+\n - Избранное/Продвижение/Уведомления подписок
+\n  - Избранное/Продвижение счета на тутах
+\n  - Статистика подписчиков/публикаций в профилях
+\n
+\n На push-уведомления это не повлияет, но вы можете просмотреть настройки уведомлений вручную."</string>
+    <string name="pref_title_wellbeing_mode">Благосостояние</string>
+    <string name="duration_indefinite">Неопределённая</string>
+    <string name="label_duration">Продолжительность</string>
+    <string name="status_media_attachments">Вложения</string>
+    <string name="status_media_audio">Аудио</string>
 </resources>

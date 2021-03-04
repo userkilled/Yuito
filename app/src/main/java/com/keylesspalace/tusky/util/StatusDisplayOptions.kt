@@ -17,6 +17,8 @@ data class StatusDisplayOptions(
         val confirmReblogs: Boolean,
         @get:JvmName("hideStats")
         val hideStats: Boolean,
+        @get:JvmName("animateEmojis")
+        val animateEmojis: Boolean,
         @get:JvmName("quoteEnabled")
         val quoteEnabled: Boolean
 )
