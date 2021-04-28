@@ -50,6 +50,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.keylesspalace.tusky.adapter.AccountFieldAdapter
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.report.ReportActivity
+import com.keylesspalace.tusky.databinding.ActivityAccountBinding
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Relationship
@@ -63,8 +64,6 @@ import com.keylesspalace.tusky.view.showMuteAccountDialog
 import com.keylesspalace.tusky.viewmodel.AccountViewModel
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import kotlinx.android.synthetic.main.activity_account.*
-import kotlinx.android.synthetic.main.view_account_moved.*
 import java.text.NumberFormat
 import javax.inject.Inject
 import kotlin.math.abs
@@ -73,12 +72,15 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
     private val viewModel: AccountViewModel by viewModels { viewModelFactory }
 
-    private lateinit var accountFieldAdapter : AccountFieldAdapter
+    private val binding: ActivityAccountBinding by viewBinding(ActivityAccountBinding::inflate)
+
+    private lateinit var accountFieldAdapter: AccountFieldAdapter
 
     private var followState: FollowState = FollowState.NOT_FOLLOWING
     private var blocking: Boolean = false
@@ -94,14 +96,18 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     // fields for scroll animation
     private var hideFab: Boolean = false
     private var oldOffset: Int = 0
+
     @ColorInt
     private var toolbarColor: Int = 0
+
     @ColorInt
     private var statusBarColorTransparent: Int = 0
+
     @ColorInt
     private var statusBarColorOpaque: Int = 0
 
     private var avatarSize: Float = 0f
+
     @Px
     private var titleVisibleHeight: Int = 0
     private lateinit var domain: String
@@ -118,7 +124,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         super.onCreate(savedInstanceState)
         loadResources()
         makeNotificationBarTransparent()
-        setContentView(R.layout.activity_account)
+        setContentView(binding.root)
 
         // Obtain information to fill out the profile.
         viewModel.setAccountInfo(intent.getStringExtra(KEY_ACCOUNT_ID)!!)
@@ -136,9 +142,9 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
         if (viewModel.isSelf) {
             updateButtons()
-            saveNoteInfo.hide()
+            binding.saveNoteInfo.hide()
         } else {
-            saveNoteInfo.visibility = View.INVISIBLE
+            binding.saveNoteInfo.visibility = View.INVISIBLE
         }
     }
 
@@ -158,16 +164,16 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
      */
     private fun setupAccountViews() {
         // Initialise the default UI states.
-        accountFloatingActionButton.hide()
-        accountFollowButton.hide()
-        accountMuteButton.hide()
-        accountFollowsYouTextView.hide()
+        binding.accountFloatingActionButton.hide()
+        binding.accountFollowButton.hide()
+        binding.accountMuteButton.hide()
+        binding.accountFollowsYouTextView.hide()
 
         // setup the RecyclerView for the account fields
         accountFieldAdapter = AccountFieldAdapter(this, animateEmojis)
-        accountFieldList.isNestedScrollingEnabled = false
-        accountFieldList.layoutManager = LinearLayoutManager(this)
-        accountFieldList.adapter = accountFieldAdapter
+        binding.accountFieldList.isNestedScrollingEnabled = false
+        binding.accountFieldList.layoutManager = LinearLayoutManager(this)
+        binding.accountFieldList.adapter = accountFieldAdapter
 
 
         val accountListClickListener = { v: View ->
@@ -179,15 +185,15 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             val accountListIntent = AccountListActivity.newIntent(this, type, viewModel.accountId)
             startActivityWithSlideInAnimation(accountListIntent)
         }
-        accountFollowers.setOnClickListener(accountListClickListener)
-        accountFollowing.setOnClickListener(accountListClickListener)
+        binding.accountFollowers.setOnClickListener(accountListClickListener)
+        binding.accountFollowing.setOnClickListener(accountListClickListener)
 
-        accountStatuses.setOnClickListener {
+        binding.accountStatuses.setOnClickListener {
             // Make nice ripple effect on tab
-            accountTabLayout.getTabAt(0)!!.select()
-            val poorTabView = (accountTabLayout.getChildAt(0) as ViewGroup).getChildAt(0)
+            binding.accountTabLayout.getTabAt(0)!!.select()
+            val poorTabView = (binding.accountTabLayout.getChildAt(0) as ViewGroup).getChildAt(0)
             poorTabView.isPressed = true
-            accountTabLayout.postDelayed({ poorTabView.isPressed = false }, 300)
+            binding.accountTabLayout.postDelayed({ poorTabView.isPressed = false }, 300)
         }
 
         // If wellbeing mode is enabled, follow stats and posts count should be hidden
@@ -195,11 +201,10 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         val wellbeingEnabled = preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_PROFILE, false)
 
         if (wellbeingEnabled) {
-            accountStatuses.hide()
-            accountFollowers.hide()
-            accountFollowing.hide()
+            binding.accountStatuses.hide()
+            binding.accountFollowers.hide()
+            binding.accountFollowing.hide()
         }
-
     }
 
     /**
@@ -209,19 +214,19 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         // Setup the tabs and timeline pager.
         adapter = AccountPagerAdapter(this, viewModel.accountId)
 
-        accountFragmentViewPager.adapter = adapter
-        accountFragmentViewPager.offscreenPageLimit = 2
+        binding.accountFragmentViewPager.adapter = adapter
+        binding.accountFragmentViewPager.offscreenPageLimit = 2
 
         val pageTitles = arrayOf(getString(R.string.title_statuses), getString(R.string.title_statuses_with_replies), getString(R.string.title_statuses_pinned), getString(R.string.title_media))
 
-        TabLayoutMediator(accountTabLayout, accountFragmentViewPager) { tab, position ->
+        TabLayoutMediator(binding.accountTabLayout, binding.accountFragmentViewPager) { tab, position ->
             tab.text = pageTitles[position]
         }.attach()
 
         val pageMargin = resources.getDimensionPixelSize(R.dimen.tab_page_margin)
-        accountFragmentViewPager.setPageTransformer(MarginPageTransformer(pageMargin))
+        binding.accountFragmentViewPager.setPageTransformer(MarginPageTransformer(pageMargin))
 
-        accountTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.accountTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 tab?.position?.let { position ->
                     (adapter.getFragment(position) as? ReselectableFragment)?.onReselect()
@@ -237,17 +242,17 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     private fun setupToolbar() {
         // set toolbar top margin according to system window insets
-        accountCoordinatorLayout.setOnApplyWindowInsetsListener { _, insets ->
+        binding.accountCoordinatorLayout.setOnApplyWindowInsetsListener { _, insets ->
             val top = insets.systemWindowInsetTop
 
-            val toolbarParams = accountToolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
+            val toolbarParams = binding.accountToolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
             toolbarParams.topMargin = top
 
             insets.consumeSystemWindowInsets()
         }
 
         // Setup the toolbar.
-        setSupportActionBar(accountToolbar)
+        setSupportActionBar(binding.accountToolbar)
         supportActionBar?.run {
             setDisplayHomeAsUpEnabled(true)
             setDisplayShowHomeEnabled(true)
@@ -258,9 +263,9 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
         val toolbarBackground = MaterialShapeDrawable.createWithElevationOverlay(this, appBarElevation)
         toolbarBackground.fillColor = ColorStateList.valueOf(Color.TRANSPARENT)
-        accountToolbar.background = toolbarBackground
+        binding.accountToolbar.background = toolbarBackground
 
-        accountHeaderInfoContainer.background = MaterialShapeDrawable.createWithElevationOverlay(this, appBarElevation)
+        binding.accountHeaderInfoContainer.background = MaterialShapeDrawable.createWithElevationOverlay(this, appBarElevation)
 
         val avatarBackground = MaterialShapeDrawable.createWithElevationOverlay(this, appBarElevation).apply {
             fillColor = ColorStateList.valueOf(toolbarColor)
@@ -269,10 +274,10 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                     .setAllCornerSizes(resources.getDimension(R.dimen.account_avatar_background_radius))
                     .build()
         }
-        accountAvatarImageView.background = avatarBackground
+        binding.accountAvatarImageView.background = avatarBackground
 
         // Add a listener to change the toolbar icon color when it enters/exits its collapsed state.
-        accountAppBarLayout.addOnOffsetChangedListener(object : AppBarLayout.OnOffsetChangedListener {
+        binding.accountAppBarLayout.addOnOffsetChangedListener(object : AppBarLayout.OnOffsetChangedListener {
 
             override fun onOffsetChanged(appBarLayout: AppBarLayout, verticalOffset: Int) {
 
@@ -289,19 +294,19 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
                 if (hideFab && !viewModel.isSelf && !blocking) {
                     if (verticalOffset > oldOffset) {
-                        accountFloatingActionButton.show()
+                        binding.accountFloatingActionButton.show()
                     }
                     if (verticalOffset < oldOffset) {
-                        accountFloatingActionButton.hide()
+                        binding.accountFloatingActionButton.hide()
                     }
                 }
 
                 val scaledAvatarSize = (avatarSize + verticalOffset) / avatarSize
 
-                accountAvatarImageView.scaleX = scaledAvatarSize
-                accountAvatarImageView.scaleY = scaledAvatarSize
+                binding.accountAvatarImageView.scaleX = scaledAvatarSize
+                binding.accountAvatarImageView.scaleY = scaledAvatarSize
 
-                accountAvatarImageView.visible(scaledAvatarSize > 0)
+                binding.accountAvatarImageView.visible(scaledAvatarSize > 0)
 
                 val transparencyPercent = (abs(verticalOffset) / titleVisibleHeight.toFloat()).coerceAtMost(1f)
 
@@ -311,7 +316,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
                 toolbarBackground.fillColor = ColorStateList.valueOf(evaluatedToolbarColor)
 
-                swipeToRefreshLayout.isEnabled = verticalOffset == 0
+                binding.swipeToRefreshLayout.isEnabled = verticalOffset == 0
             }
         })
 
@@ -331,7 +336,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             when (it) {
                 is Success -> onAccountChanged(it.data)
                 is Error -> {
-                    Snackbar.make(accountCoordinatorLayout, R.string.error_generic, Snackbar.LENGTH_LONG)
+                    Snackbar.make(binding.accountCoordinatorLayout, R.string.error_generic, Snackbar.LENGTH_LONG)
                             .setAction(R.string.action_retry) { viewModel.refresh() }
                             .show()
                 }
@@ -344,7 +349,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             }
 
             if (it is Error) {
-                Snackbar.make(accountCoordinatorLayout, R.string.error_generic, Snackbar.LENGTH_LONG)
+                Snackbar.make(binding.accountCoordinatorLayout, R.string.error_generic, Snackbar.LENGTH_LONG)
                         .setAction(R.string.action_retry) { viewModel.refresh() }
                         .show()
             }
@@ -355,7 +360,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             accountFieldAdapter.notifyDataSetChanged()
         })
         viewModel.noteSaved.observe(this) {
-            saveNoteInfo.visible(it, View.INVISIBLE)
+            binding.saveNoteInfo.visible(it, View.INVISIBLE)
         }
     }
 
@@ -363,32 +368,32 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
      * Setup swipe to refresh layout
      */
     private fun setupRefreshLayout() {
-        swipeToRefreshLayout.setOnRefreshListener {
+        binding.swipeToRefreshLayout.setOnRefreshListener {
             viewModel.refresh()
             adapter.refreshContent()
         }
         viewModel.isRefreshing.observe(this, { isRefreshing ->
-            swipeToRefreshLayout.isRefreshing = isRefreshing == true
+            binding.swipeToRefreshLayout.isRefreshing = isRefreshing == true
         })
-        swipeToRefreshLayout.setColorSchemeResources(R.color.tusky_blue)
+        binding.swipeToRefreshLayout.setColorSchemeResources(R.color.tusky_blue)
     }
 
     private fun onAccountChanged(account: Account?) {
         loadedAccount = account ?: return
 
         val usernameFormatted = getString(R.string.status_username_format, account.username)
-        accountUsernameTextView.text = usernameFormatted
-        accountDisplayNameTextView.text = account.name.emojify(account.emojis, accountDisplayNameTextView, animateEmojis)
+        binding.accountUsernameTextView.text = usernameFormatted
+        binding.accountDisplayNameTextView.text = account.name.emojify(account.emojis, binding.accountDisplayNameTextView, animateEmojis)
 
-        val emojifiedNote = account.note.emojify(account.emojis, accountNoteTextView, animateEmojis)
-        LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this)
+        val emojifiedNote = account.note.emojify(account.emojis, binding.accountNoteTextView, animateEmojis)
+        LinkHelper.setClickableText(binding.accountNoteTextView, emojifiedNote, null, this)
 
-       // accountFieldAdapter.fields = account.fields ?: emptyList()
+        // accountFieldAdapter.fields = account.fields ?: emptyList()
         accountFieldAdapter.emojis = account.emojis ?: emptyList()
         accountFieldAdapter.notifyDataSetChanged()
 
-        accountLockedImageView.visible(account.locked)
-        accountBadgeTextView.visible(account.bot)
+        binding.accountLockedImageView.visible(account.locked)
+        binding.accountBadgeTextView.visible(account.bot)
 
         updateAccountAvatar()
         updateToolbar()
@@ -397,7 +402,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         updateAccountStats()
         invalidateOptionsMenu()
 
-        accountMuteButton.setOnClickListener {
+        binding.accountMuteButton.setOnClickListener {
             viewModel.unmuteAccount()
             updateMuteButton()
         }
@@ -411,7 +416,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
             loadAvatar(
                     account.avatar,
-                    accountAvatarImageView,
+                    binding.accountAvatarImageView,
                     resources.getDimensionPixelSize(R.dimen.avatar_radius_94dp),
                     animateAvatar
             )
@@ -420,10 +425,10 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                     .asBitmap()
                     .load(account.header)
                     .centerCrop()
-                    .into(accountHeaderImageView)
+                    .into(binding.accountHeaderImageView)
 
 
-            accountAvatarImageView.setOnClickListener { avatarView ->
+            binding.accountAvatarImageView.setOnClickListener { avatarView ->
                 val intent = ViewMediaActivity.newSingleImageIntent(avatarView.context, account.avatar)
 
                 avatarView.transitionName = account.avatar
@@ -440,7 +445,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun updateToolbar() {
         loadedAccount?.let { account ->
 
-            val emojifiedName = account.name.emojify(account.emojis, accountToolbar, animateEmojis)
+            val emojifiedName = account.name.emojify(account.emojis, binding.accountToolbar, animateEmojis)
 
             try {
                 supportActionBar?.title = EmojiCompat.get().process(emojifiedName)
@@ -457,28 +462,27 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun updateMovedAccount() {
         loadedAccount?.moved?.let { movedAccount ->
 
-            accountMovedView?.show()
+            binding.accountMovedView.show()
 
-            // necessary because accountMovedView is now replaced in layout hierachy
-            findViewById<View>(R.id.accountMovedViewLayout).setOnClickListener {
+            binding.accountMovedView.setOnClickListener {
                 onViewAccount(movedAccount.id)
             }
 
-            accountMovedDisplayName.text = movedAccount.name
-            accountMovedUsername.text = getString(R.string.status_username_format, movedAccount.username)
+            binding.accountMovedDisplayName.text = movedAccount.name
+            binding.accountMovedUsername.text = getString(R.string.status_username_format, movedAccount.username)
 
             val avatarRadius = resources.getDimensionPixelSize(R.dimen.avatar_radius_48dp)
 
-            loadAvatar(movedAccount.avatar, accountMovedAvatar, avatarRadius, animateAvatar)
+            loadAvatar(movedAccount.avatar, binding.accountMovedAvatar, avatarRadius, animateAvatar)
 
-            accountMovedText.text = getString(R.string.account_moved_description, movedAccount.name)
+            binding.accountMovedText.text = getString(R.string.account_moved_description, movedAccount.name)
 
             // this is necessary because API 19 can't handle vector compound drawables
             val movedIcon = ContextCompat.getDrawable(this, R.drawable.ic_briefcase)?.mutate()
             val textColor = ThemeUtils.getColor(this, android.R.attr.textColorTertiary)
             movedIcon?.colorFilter = PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN)
 
-            accountMovedText.setCompoundDrawablesRelativeWithIntrinsicBounds(movedIcon, null, null, null)
+            binding.accountMovedText.setCompoundDrawablesRelativeWithIntrinsicBounds(movedIcon, null, null, null)
         }
 
     }
@@ -489,8 +493,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun updateRemoteAccount() {
         loadedAccount?.let { account ->
             if (account.isRemote()) {
-                accountRemoveView.show()
-                accountRemoveView.setOnClickListener {
+                binding.accountRemoveView.show()
+                binding.accountRemoveView.setOnClickListener {
                     LinkHelper.openLink(account.url, this)
                 }
             }
@@ -503,13 +507,13 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     private fun updateAccountStats() {
         loadedAccount?.let { account ->
             val numberFormat = NumberFormat.getNumberInstance()
-            accountFollowersTextView.text = numberFormat.format(account.followersCount)
-            accountFollowingTextView.text = numberFormat.format(account.followingCount)
-            accountStatusesTextView.text = numberFormat.format(account.statusesCount)
+            binding.accountFollowersTextView.text = numberFormat.format(account.followersCount)
+            binding.accountFollowingTextView.text = numberFormat.format(account.followingCount)
+            binding.accountStatusesTextView.text = numberFormat.format(account.statusesCount)
 
-            accountFloatingActionButton.setOnClickListener { mention() }
+            binding.accountFloatingActionButton.setOnClickListener { mention() }
 
-            accountFollowButton.setOnClickListener {
+            binding.accountFollowButton.setOnClickListener {
                 if (viewModel.isSelf) {
                     val intent = Intent(this@AccountActivity, EditProfileActivity::class.java)
                     startActivity(intent)
@@ -552,34 +556,34 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         val wellbeingEnabled = preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_PROFILE, false)
 
-        accountFollowsYouTextView.visible(relation.followedBy && !wellbeingEnabled)
+        binding.accountFollowsYouTextView.visible(relation.followedBy && !wellbeingEnabled)
 
         // because subscribing is Pleroma extension, enable it __only__ when we have non-null subscribing field
         // it's also now supported in Mastodon 3.3.0rc but called notifying and use different API call
-        if(!viewModel.isSelf && followState == FollowState.FOLLOWING
-            && (relation.subscribing != null || relation.notifying != null)) {
-            accountSubscribeButton.show()
-            accountSubscribeButton.setOnClickListener {
+        if (!viewModel.isSelf && followState == FollowState.FOLLOWING
+                && (relation.subscribing != null || relation.notifying != null)) {
+            binding.accountSubscribeButton.show()
+            binding.accountSubscribeButton.setOnClickListener {
                 viewModel.changeSubscribingState()
             }
-            if(relation.notifying != null)
+            if (relation.notifying != null)
                 subscribing = relation.notifying
-            else if(relation.subscribing != null)
+            else if (relation.subscribing != null)
                 subscribing = relation.subscribing
         }
 
         // remove the listener so it doesn't fire on non-user changes
-        accountNoteTextInputLayout.editText?.removeTextChangedListener(noteWatcher)
+        binding.accountNoteTextInputLayout.editText?.removeTextChangedListener(noteWatcher)
 
-        accountNoteTextInputLayout.visible(relation.note != null)
-        accountNoteTextInputLayout.editText?.setText(relation.note)
+        binding.accountNoteTextInputLayout.visible(relation.note != null)
+        binding.accountNoteTextInputLayout.editText?.setText(relation.note)
 
-        accountNoteTextInputLayout.editText?.addTextChangedListener(noteWatcher)
+        binding.accountNoteTextInputLayout.editText?.addTextChangedListener(noteWatcher)
 
         updateButtons()
     }
 
-    private val noteWatcher = object: DefaultTextWatcher() {
+    private val noteWatcher = object : DefaultTextWatcher() {
         override fun afterTextChanged(s: Editable) {
             viewModel.noteChanged(s.toString())
         }
@@ -587,22 +591,22 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     private fun updateFollowButton() {
         if (viewModel.isSelf) {
-            accountFollowButton.setText(R.string.action_edit_own_profile)
+            binding.accountFollowButton.setText(R.string.action_edit_own_profile)
             return
         }
         if (blocking) {
-            accountFollowButton.setText(R.string.action_unblock)
+            binding.accountFollowButton.setText(R.string.action_unblock)
             return
         }
         when (followState) {
             FollowState.NOT_FOLLOWING -> {
-                accountFollowButton.setText(R.string.action_follow)
+                binding.accountFollowButton.setText(R.string.action_follow)
             }
             FollowState.REQUESTED -> {
-                accountFollowButton.setText(R.string.state_follow_requested)
+                binding.accountFollowButton.setText(R.string.state_follow_requested)
             }
             FollowState.FOLLOWING -> {
-                accountFollowButton.setText(R.string.action_unfollow)
+                binding.accountFollowButton.setText(R.string.action_unfollow)
             }
         }
         updateSubscribeButton()
@@ -610,46 +614,44 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     private fun updateMuteButton() {
         if (muting) {
-            accountMuteButton.setIconResource(R.drawable.ic_unmute_24dp)
+            binding.accountMuteButton.setIconResource(R.drawable.ic_unmute_24dp)
         } else {
-            accountMuteButton.hide()
+            binding.accountMuteButton.hide()
         }
     }
 
     private fun updateSubscribeButton() {
-        if(followState != FollowState.FOLLOWING) {
-            accountSubscribeButton.hide()
+        if (followState != FollowState.FOLLOWING) {
+            binding.accountSubscribeButton.hide()
         }
 
-        if(subscribing) {
-            accountSubscribeButton.setIconResource(R.drawable.ic_notifications_active_24dp)
-            accountSubscribeButton.contentDescription = getString(R.string.action_unsubscribe_account)
+        if (subscribing) {
+            binding.accountSubscribeButton.setIconResource(R.drawable.ic_notifications_active_24dp)
+            binding.accountSubscribeButton.contentDescription = getString(R.string.action_unsubscribe_account)
         } else {
-            accountSubscribeButton.setIconResource(R.drawable.ic_notifications_24dp)
-            accountSubscribeButton.contentDescription = getString(R.string.action_subscribe_account)
+            binding.accountSubscribeButton.setIconResource(R.drawable.ic_notifications_24dp)
+            binding.accountSubscribeButton.contentDescription = getString(R.string.action_subscribe_account)
         }
     }
 
     private fun updateButtons() {
         invalidateOptionsMenu()
 
-        //if (loadedAccount?.moved == null) {
+        binding.accountFollowButton.show()
+        updateFollowButton()
 
-            accountFollowButton.show()
-            updateFollowButton()
-
-            if (blocking || viewModel.isSelf) {
-                accountFloatingActionButton.hide()
-                accountMuteButton.hide()
-                accountSubscribeButton.hide()
-            } else {
-                accountFloatingActionButton.show()
-                if (muting)
-                    accountMuteButton.show()
-                else
-                    accountMuteButton.hide()
-                updateMuteButton()
-            }
+        if (blocking || viewModel.isSelf) {
+            binding.accountFloatingActionButton.hide()
+            binding.accountMuteButton.hide()
+            binding.accountSubscribeButton.hide()
+        } else {
+            binding.accountFloatingActionButton.show()
+            if (muting)
+                binding.accountMuteButton.show()
+            else
+                binding.accountMuteButton.hide()
+            updateMuteButton()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -727,7 +729,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     }
 
     private fun toggleBlockDomain(instance: String) {
-        if(blockingDomain) {
+        if (blockingDomain) {
             viewModel.unblockDomain(instance)
         } else {
             AlertDialog.Builder(this)
@@ -826,7 +828,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
     override fun getActionButton(): FloatingActionButton? {
         return if (!viewModel.isSelf && !blocking) {
-            accountFloatingActionButton
+            binding.accountFloatingActionButton
         } else null
     }
 

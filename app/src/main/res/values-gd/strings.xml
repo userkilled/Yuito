@@ -74,21 +74,26 @@
     <string name="duration_5_min">5 mionaidean</string>
     <string name="duration_indefinite">Gun chrìoch</string>
     <string name="label_duration">Faide</string>
-    <string name="error_upload_max_media_reached">Chan urrainn dhut barrachd air %1$d ceanglacha(i)n meadhain a luchdadh suas.</string>
+    <plurals name="error_upload_max_media_reached">
+        <item quantity="one">Chan urrainn dhut barrachd air %1$d cheanglachan meadhain a luchdadh suas.</item>
+        <item quantity="two">Chan urrainn dhut barrachd air %1$d cheanglachan meadhain a luchdadh suas.</item>
+        <item quantity="few">Chan urrainn dhut barrachd air %1$d ceanglachain meadhain a luchdadh suas.</item>
+        <item quantity="other">Chan urrainn dhut barrachd air %1$d ceanglachan meadhain a luchdadh suas.</item>
+    </plurals>
     <string name="wellbeing_hide_stats_profile">Falaich an stadastaireachd àireamhail air pròifilean</string>
     <string name="wellbeing_hide_stats_posts">Falaich an stadastaireachd àireamhail air postaichean</string>
     <string name="limit_notifications">Cuingich na brathan mun loidhne-ama</string>
     <string name="review_notifications">Thoir sùil air na brathan</string>
-    <string name="wellbeing_mode_notice">Thèid cuid a dh’fhiosrachadh a dh’fhaodadh droch-bhuaidh a thoirt air d’ shlàinte-inntinn fhalach. Tha seo a’ gabhail a-staigh:
-\n
-\n - Brathan air annsachdan/brosnachaidhean/leanntainn
-\n - Cunntas nan annsachdan/brosnachaidhean air dùdaidhean
-\n - Stadastaireachd an luchd-leantainn/nam postaichean air pròifilean
-\n
+    <string name="wellbeing_mode_notice">Thèid cuid a dh’fhiosrachadh a dh’fhaodadh droch-bhuaidh a thoirt air d’ shlàinte-inntinn fhalach. Tha seo a’ gabhail a-staigh: 
+\n 
+\n - Brathan air annsachdan/brosnachaidhean/leantainn 
+\n - Cunntas nan annsachdan/brosnachaidhean air dùdan
+\n - Stadastaireachd an luchd-leantainn/nam postaichean air pròifilean 
+\n 
 \n Cha doir seo buaidh air na brathan-putaidh ach ’s urrainn dhut roghainnean nam brathan agad atharrachadh a làimh.</string>
     <string name="pref_title_wellbeing_mode">Slàinte-inntinn</string>
     <string name="notification_subscription_description">Brathan nuair a dh’fhoillsich cuideigin air a rinn mi fo-sgrìobhadh dùd ùr</string>
-    <string name="notification_subscription_name">Dùdaidhean ùra</string>
+    <string name="notification_subscription_name">Dùdan ùra</string>
     <string name="pref_title_notification_filter_subscriptions">dh’fhoillsich cuideigin air a rinn mi fo-sgrìobhadh dùd ùr</string>
     <string name="notification_subscription_format">Tha %s air rud a phostadh</string>
     <string name="no_announcements">Chan eil brath-fios ann.</string>
@@ -184,7 +189,12 @@
     <string name="description_status_media_no_description_placeholder">Gun tuairisgeul</string>
     <string name="description_status_cw">Rabhadh susbainte: %s</string>
     <string name="description_status_media">Meadhan: %s</string>
-    <string name="max_tab_number_reached">ràinig thu na tha ceadaichte dhe %1$d taba(ichean)</string>
+    <plurals name="max_tab_number_reached">
+        <item quantity="one">ràinig thu na tha ceadaichte dhe %1$d taba</item>
+        <item quantity="two">ràinig thu na tha ceadaichte dhe %1$d thaba</item>
+        <item quantity="few">ràinig thu na tha ceadaichte dhe %1$d tabaichean</item>
+        <item quantity="other">ràinig thu na tha ceadaichte dhe %1$d taba</item>
+    </plurals>
     <string name="conversation_more_recipients">%1$s, %2$s ’s %3$d eile</string>
     <string name="conversation_1_recipients">%1$s</string>
     <string name="title_favourited_by">’Na annsachd aig</string>
@@ -216,7 +226,7 @@
     <string name="unreblog_private">Na brosnaich tuilleadh</string>
     <string name="reblog_private">Brosnaich dhan èisteachd tùsail</string>
     <string name="account_moved_description">Chaidh %1$s a ghluasad gu:</string>
-    <string name="profile_badge_bot_text">Bot</string>
+    <string name="profile_badge_bot_text">Robotair</string>
     <string name="download_failed">Dh’fhàillig an luchdadh a-nuas</string>
     <string name="caption_notoemoji">Seata làithreach nan Emoji aig Google</string>
     <string name="caption_twemoji">Seata stannardach nan Emoji aig Mastodon</string>
@@ -237,14 +247,16 @@
     <string name="send_toot_notification_saved_content">Chaidh lethbhreac dhen dùd agad a shàbhaladh ’na dhreachd</string>
     <string name="send_toot_notification_cancel_title">Chaidh sgur dhen chur</string>
     <string name="send_toot_notification_channel_name">A’ cur nan dùd</string>
-    <string name="send_toot_notification_error_title">Mearachd a’ cur an dùd</string>
-    <string name="send_toot_notification_title">A’ cur an dùd…</string>
+    <string name="send_toot_notification_error_title">Mearachd a’ cur an dùid</string>
+    <string name="send_toot_notification_title">A’ cur an dùid…</string>
     <string name="compose_save_draft">A bheil thu airson a shàbhaladh ’na dhreachd\?</string>
     <string name="lock_account_label_description">Feumaidh tu gabhail ri luchd-leantainn ùr a làimh</string>
     <string name="lock_account_label">Glais an cunntas</string>
     <string name="action_set_caption">Suidhidh am fo-thiotal</string>
-    <string name="hint_describe_for_visually_impaired">Mìnich e dhan fheadhainn air a bheil cion-lèirsinn
-\n(%d caractar(an) air a char as fhaide)</string>
+    <plurals name="hint_describe_for_visually_impaired">
+        <item quantity="other">Mìnich e dhan fheadhainn air a bheil cion-lèirsinn
+\n(%d caractar(an) air a char as fhaide)</item>
+    </plurals>
     <string name="error_failed_set_caption">Cha deach leinn am fo-thiotal a shuidheachadh</string>
     <string name="compose_active_account_description">A’ postadh leis a’ chunntas %1$s</string>
     <string name="action_remove_from_list">Thoir an cunntas air falbh on liosta</string>
@@ -261,9 +273,9 @@
     <string name="add_account_name">Cuir cunntas ris</string>
     <string name="filter_add_description">An abairt ri chriathradh</string>
     <string name="filter_dialog_whole_word_description">Mur eil ach litrichean is àireamhan san fhacal-luirg, cha dèid a chur an sàs ach ma bhios e a’ maidseadh an fhacail shlàin</string>
-    <string name="pref_title_alway_open_spoiler">Leudaich dùdaidhean le rabhaidhean susbainte an-còmhnaidh</string>
+    <string name="pref_title_alway_open_spoiler">Leudaich dùdan ris a bheil rabhadh susbainte an-còmhnaidh</string>
     <string name="status_share_link">Co-roinn ceangal dhan dùd</string>
-    <string name="status_share_content">Co-roinn susbaint an dùd</string>
+    <string name="status_share_content">Co-roinn susbaint an dùid</string>
     <string name="about_tusky_license">’S e bathar-bog saor le bun-tùs fosgailte a th’ ann an Tusky. Tha e fo cheadachas GNU General Public License tionndadh 3. Chì thu an ceadachas an-seo: https://www.gnu.org/licenses/gpl-3.0.en.html</string>
     <string name="notification_favourite_description">Brathan nuair a thèid dùd agad a chomharrachadh ’na annsachd</string>
     <string name="notification_boost_description">Brathan nuair a thèid dùd agad brosnachadh</string>
@@ -277,13 +289,13 @@
 \n
 \nGheibh thu barrachd fiosrachaidh air <a href="https://joinmastodon.org">joinmastodon.org</a>. </string>
     <string name="send_status_content_to">Co-roinn an dùd le…</string>
-    <string name="send_status_link_to">Co-roinn URL an dùd le…</string>
+    <string name="send_status_link_to">Co-roinn URL an dùid le…</string>
     <string name="action_schedule_toot">Cuir dùd air an sgeideal</string>
-    <string name="action_toggle_visibility">Faicsinneachd an dùd</string>
-    <string name="action_access_scheduled_toot">Dùdaidhean air an sgeideal</string>
+    <string name="action_toggle_visibility">Faicsinneachd an dùid</string>
+    <string name="action_access_scheduled_toot">Dùdan air an sgeideal</string>
     <string name="notification_favourite_format">Chuir %s an dùd agad ris na h-annsachdan</string>
     <string name="notification_reblog_format">Bhrosnaich %s an dùd agad</string>
-    <string name="title_scheduled_toot">Dùdaidhean air an sgeideal</string>
+    <string name="title_scheduled_toot">Dùdan air an sgeideal</string>
     <string name="title_view_thread">Dùd</string>
     <string name="error_sender_account_gone">Mearachd a’ cur an dùd.</string>
     <string name="action_unmute_desc">Dì-mhùch %s</string>
@@ -325,7 +337,12 @@
     <string name="about_powered_by_tusky">Le cumhachd Tusky</string>
     <string name="about_tusky_version">Tusky %s</string>
     <string name="description_account_locked">Cunntas glaiste</string>
-    <string name="notification_title_summary">%d eadar-ghabhail(ean) ùr(a)</string>
+    <plurals name="notification_title_summary">
+        <item quantity="one">%d eadar-ghabhail ùr</item>
+        <item quantity="two">%d eadar-ghabhail ùr</item>
+        <item quantity="few">%d eadar-ghabhailean ùra</item>
+        <item quantity="other">%d eadar-ghabhail ùr</item>
+    </plurals>
     <string name="notification_summary_small">%1$s ’s %2$s</string>
     <string name="notification_summary_medium">%1$s, %2$s ’s %3$s</string>
     <string name="notification_summary_large">%1$s, %2$s, %3$s ’s %4$d eile</string>
@@ -372,7 +389,7 @@
     <string name="pref_title_custom_tabs">Cleachd tabaichean Chrome gnàthaichte</string>
     <string name="pref_title_browser_settings">Brabhsair</string>
     <string name="app_theme_system">Cleachd co-dhealbhachd an t-siostaim</string>
-    <string name="app_theme_auto">Gu fèin-obrachail aig laighe na grèine</string>
+    <string name="app_theme_auto">Gu fèin-obrachail aig beul na h-oidhche</string>
     <string name="app_theme_black">Dubh</string>
     <string name="app_theme_light">Soilleir</string>
     <string name="app_them_dark">Dorcha</string>
@@ -493,7 +510,7 @@
     <string name="title_statuses">Postaichean</string>
     <string name="title_tab_preferences">Tabaichean</string>
     <string name="title_direct_messages">Teachdaireachdan dìreach</string>
-    <string name="title_public_federated">Co-nasgaichte</string>
+    <string name="title_public_federated">Co-naisgte</string>
     <string name="title_public_local">Ionadail</string>
     <string name="title_home">Dachaigh</string>
     <string name="error_media_upload_sending">Dh’fhàillig leis an luchdadh suas.</string>

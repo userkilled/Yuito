@@ -16,31 +16,32 @@ import com.keylesspalace.tusky.appstore.QuickReplyEvent
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF_DEFAULT_TAG
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF_USE_DEFAULT_TAG
+import com.keylesspalace.tusky.databinding.ViewQuickTootBinding
 import com.keylesspalace.tusky.util.ThemeUtils
-import kotlinx.android.synthetic.main.view_quick_toot.view.*
 
-class QuickTootView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-        ConstraintLayout(context, attrs) {
+class QuickTootView @JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0,
+) : ConstraintLayout(context, attrs, defStyleAttr) {
+
+    private val binding = ViewQuickTootBinding.inflate(LayoutInflater.from(context), this, true)
 
     private val preference by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
 
     private lateinit var viewModel: QuickTootViewModel
 
-    init {
-        LayoutInflater.from(context).inflate(R.layout.view_quick_toot, this, true)
-    }
-
     fun attachViewModel(viewModel: QuickTootViewModel, owner: LifecycleOwner) {
         this.viewModel = viewModel
 
-        buttonVisibility.attachViewModel(viewModel, owner)
+        binding.buttonVisibility.attachViewModel(viewModel, owner)
 
         viewModel.content.observe(owner) {
-            if (editTextContent.text.toString() != it) {
-                editTextContent.setText(it)
+            if (binding.editTextContent.text.toString() != it) {
+                binding.editTextContent.setText(it)
             }
         }
-        editTextContent.addTextChangedListener(object : TextWatcher {
+        binding.editTextContent.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
@@ -49,21 +50,21 @@ class QuickTootView @JvmOverloads constructor(context: Context, attrs: Attribute
         })
 
         viewModel.inReplyTo.observe(owner) {
-            textQuickReply.text = it?.let { "Reply to ${it.account.username}" } ?: ""
+            binding.textQuickReply.text = it?.let { "Reply to ${it.account.username}" } ?: ""
         }
 
         viewModel.defaultTag.observe(owner) {
-            textDefaultTag.text = it?.let { "${context.getString(R.string.hint_default_text)} : $it" }
+            binding.textDefaultTag.text = it?.let { "${context.getString(R.string.hint_default_text)} : $it" }
                     ?: "${context.getString(R.string.hint_default_text)} inactive"
-            textDefaultTag.setTextColor(ThemeUtils.getColor(context, it?.let { R.attr.colorInfo }
+            binding.textDefaultTag.setTextColor(ThemeUtils.getColor(context, it?.let { R.attr.colorInfo }
                     ?: android.R.attr.textColorTertiary))
         }
         syncDefaultTag()
 
         viewModel.visibility.observe(owner) {
-            buttonToot.setStatusVisibility(it)
+            binding.buttonToot.setStatusVisibility(it)
         }
-        buttonToot.setOnClickListener {
+        binding.buttonToot.setOnClickListener {
             val intent = ComposeActivity.startIntent(it.context, viewModel.composeOptions(true))
             viewModel.reset()
             it.context.startActivity(intent)

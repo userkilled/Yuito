@@ -22,7 +22,9 @@ import androidx.activity.viewModels
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import com.keylesspalace.tusky.appstore.EventHub
+import com.keylesspalace.tusky.databinding.ActivityStatuslistBinding
 import com.keylesspalace.tusky.di.ViewModelFactory
+
 import com.keylesspalace.tusky.fragment.TimelineFragment
 import com.keylesspalace.tusky.fragment.TimelineFragment.Kind
 import com.uber.autodispose.AutoDispose
@@ -30,10 +32,6 @@ import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.extensions.CacheImplementation
-import kotlinx.android.extensions.ContainerOptions
-import kotlinx.android.synthetic.main.activity_statuslist.*
-import kotlinx.android.synthetic.main.toolbar_basic.*
 import net.accelf.yuito.QuickTootViewModel
 import javax.inject.Inject
 
@@ -51,12 +49,12 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
     private val kind: Kind
         get() = Kind.valueOf(intent.getStringExtra(EXTRA_KIND)!!)
 
-    @ContainerOptions(cache = CacheImplementation.NO_CACHE)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_statuslist)
+        val binding = ActivityStatuslistBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.includedToolbar.toolbar)
 
         val title = if(kind == Kind.FAVOURITES) {
             R.string.title_favourites
@@ -75,13 +73,13 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
             replace(R.id.fragment_container, fragment)
         }
 
-        viewQuickToot.attachViewModel(quickTootViewModel, this)
+        binding.viewQuickToot.attachViewModel(quickTootViewModel, this)
 
         eventHub.events
                 .observeOn(AndroidSchedulers.mainThread())
                 .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)))
-                .subscribe(viewQuickToot::handleEvent)
-        floating_btn.setOnClickListener(viewQuickToot::onFABClicked)
+                .subscribe(binding.viewQuickToot::handleEvent)
+        binding.floatingBtn.setOnClickListener(binding.viewQuickToot::onFABClicked)
     }
 
     override fun androidInjector() = dispatchingAndroidInjector

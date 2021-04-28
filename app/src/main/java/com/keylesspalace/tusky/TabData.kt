@@ -50,7 +50,7 @@ fun createTabDataFromId(id: String, arguments: List<String> = emptyList()): TabD
                 HOME,
                 R.string.title_home,
                 R.drawable.ic_home_24dp,
-                { TimelineFragment.newInstance(TimelineFragment.Kind.HOME, enableStreaming) },
+                { TimelineFragment.newInstance(TimelineFragment.Kind.HOME, enableStreaming = enableStreaming) },
                 enableStreaming = enableStreaming
         )
         NOTIFICATIONS -> TabData(
@@ -63,14 +63,14 @@ fun createTabDataFromId(id: String, arguments: List<String> = emptyList()): TabD
                 LOCAL,
                 R.string.title_public_local,
                 R.drawable.ic_local_24dp,
-                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL, enableStreaming) },
+                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL, enableStreaming = enableStreaming) },
                 enableStreaming = enableStreaming
         )
         FEDERATED -> TabData(
                 FEDERATED,
                 R.string.title_public_federated,
                 R.drawable.ic_public_24dp,
-                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED, enableStreaming) },
+                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED, enableStreaming = enableStreaming) },
                 enableStreaming = enableStreaming
         )
         DIRECT -> TabData(

@@ -226,8 +226,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setContentWarningButtonText(expanded);
             contentWarningButton.setOnClickListener(view -> {
                 contentWarningDescription.invalidate();
-                if (getAdapterPosition() != RecyclerView.NO_POSITION) {
-                    listener.onExpandedChange(!expanded, getAdapterPosition());
+                if (getBindingAdapterPosition() != RecyclerView.NO_POSITION) {
+                    listener.onExpandedChange(!expanded, getBindingAdapterPosition());
                 }
                 setContentWarningButtonText(!expanded);
 
@@ -593,15 +593,15 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         sensitiveMediaWarning.setVisibility(showingContent ? View.GONE : View.VISIBLE);
         sensitiveMediaShow.setVisibility(showingContent ? View.VISIBLE : View.GONE);
         sensitiveMediaShow.setOnClickListener(v -> {
-            if (getAdapterPosition() != RecyclerView.NO_POSITION) {
-                listener.onContentHiddenChange(false, getAdapterPosition());
+            if (getBindingAdapterPosition() != RecyclerView.NO_POSITION) {
+                listener.onContentHiddenChange(false, getBindingAdapterPosition());
             }
             v.setVisibility(View.GONE);
             sensitiveMediaWarning.setVisibility(View.VISIBLE);
         });
         sensitiveMediaWarning.setOnClickListener(v -> {
-            if (getAdapterPosition() != RecyclerView.NO_POSITION) {
-                listener.onContentHiddenChange(true, getAdapterPosition());
+            if (getBindingAdapterPosition() != RecyclerView.NO_POSITION) {
+                listener.onContentHiddenChange(true, getBindingAdapterPosition());
             }
             v.setVisibility(View.GONE);
             sensitiveMediaShow.setVisibility(View.VISIBLE);
@@ -662,10 +662,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private void setAttachmentClickListener(View view, StatusActionListener listener,
                                             int index, Attachment attachment, boolean animateTransition) {
         view.setOnClickListener(v -> {
-            int position = getAdapterPosition();
+            int position = getBindingAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 if (sensitiveMediaWarning.getVisibility() == View.VISIBLE) {
-                    listener.onContentHiddenChange(true, getAdapterPosition());
+                    listener.onContentHiddenChange(true, getBindingAdapterPosition());
                 } else {
                     listener.onViewMedia(position, index, animateTransition ? v : null);
                 }
@@ -713,7 +713,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         username.setOnClickListener(profileButtonClickListener);
 
         replyButton.setOnClickListener(v -> {
-            int position = getAdapterPosition();
+            int position = getBindingAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 listener.onReply(position);
             }
@@ -723,7 +723,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         if (reblogButton != null) {
             reblogButton.setEventListener((button, buttonState) -> {
                 // return true to play animaion
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     if (statusDisplayOptions.confirmReblogs()) {
                         showConfirmReblogDialog(listener, statusContent, buttonState, position);
@@ -739,7 +739,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
 
         favouriteButton.setEventListener((button, buttonState) -> {
-            int position = getAdapterPosition();
+            int position = getBindingAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 listener.onFavourite(!buttonState, position);
             }
@@ -763,7 +763,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
 
         bookmarkButton.setEventListener((button, buttonState) -> {
-            int position = getAdapterPosition();
+            int position = getBindingAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 listener.onBookmark(!buttonState, position);
             }
@@ -771,7 +771,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         });
 
         moreButton.setOnClickListener(v -> {
-            int position = getAdapterPosition();
+            int position = getBindingAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 listener.onMore(v, position);
             }
@@ -783,7 +783,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
          * just eat the clicks instead of deferring to the parent listener, but WILL respond to a
          * listener directly on the TextView, for whatever reason. */
         View.OnClickListener viewThreadListener = v -> {
-            int position = getAdapterPosition();
+            int position = getBindingAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 listener.onViewThread(position);
             }
@@ -1035,7 +1035,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         if (expired || poll.getVoted()) {
             // no voting possible
             View.OnClickListener viewThreadListener = v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     listener.onViewThread(position);
                 }
@@ -1067,7 +1067,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
             pollButton.setOnClickListener(v -> {
 
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
 
                 if (position != RecyclerView.NO_POSITION) {
 

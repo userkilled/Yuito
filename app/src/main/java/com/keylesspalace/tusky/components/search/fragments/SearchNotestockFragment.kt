@@ -47,7 +47,6 @@ import com.keylesspalace.tusky.viewdata.StatusViewData
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_search.*
 
 class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
 
@@ -62,7 +61,7 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
         get() = super.adapter as SearchStatusesAdapter
 
     override fun createAdapter(): PagedListAdapter<Pair<Status, StatusViewData.Concrete>, *> {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(searchRecyclerView.context)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(binding.searchRecyclerView.context)
         val statusDisplayOptions = StatusDisplayOptions(
                 animateAvatars = preferences.getBoolean("animateGifAvatars", false),
                 mediaPreviewEnabled = viewModel.mediaPreviewEnabled,
@@ -76,8 +75,8 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
                 quoteEnabled = viewModel.quoteEnabled
         )
 
-        searchRecyclerView.addItemDecoration(DividerItemDecoration(searchRecyclerView.context, DividerItemDecoration.VERTICAL))
-        searchRecyclerView.layoutManager = LinearLayoutManager(searchRecyclerView.context)
+        binding.searchRecyclerView.addItemDecoration(DividerItemDecoration(binding.searchRecyclerView.context, DividerItemDecoration.VERTICAL))
+        binding.searchRecyclerView.layoutManager = LinearLayoutManager(binding.searchRecyclerView.context)
         return SearchStatusesAdapter(statusDisplayOptions, this)
     }
 

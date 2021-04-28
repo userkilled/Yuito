@@ -17,19 +17,20 @@ package com.keylesspalace.tusky.components.compose.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioGroup
 import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.databinding.ViewComposeOptionsBinding
 import com.keylesspalace.tusky.entity.Status
-import kotlinx.android.synthetic.main.view_compose_options.view.*
 
 class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : RadioGroup(context, attrs) {
+
+    val binding = ViewComposeOptionsBinding.inflate(LayoutInflater.from(context), this)
 
     var listener: ComposeOptionsListener? = null
 
     init {
-        inflate(context, R.layout.view_compose_options, this)
-
         setOnCheckedChangeListener { _, checkedId ->
             val visibility = when (checkedId) {
                 R.id.publicRadioButton ->
@@ -50,7 +51,7 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     fun allowUnleakable(allowed: Boolean = true) {
-        unleakableRadioButton.visibility = when (allowed) {
+        binding.unleakableRadioButton.visibility = when (allowed) {
             true -> View.VISIBLE
             else -> View.GONE
         }

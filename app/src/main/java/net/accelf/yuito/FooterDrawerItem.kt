@@ -1,45 +1,48 @@
 package net.accelf.yuito
 
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
+import android.view.ViewGroup
 import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.databinding.ItemDrawerFooterBinding
 import com.keylesspalace.tusky.entity.Instance
+import com.keylesspalace.tusky.util.BindingHolder
 import com.mikepenz.materialdrawer.model.AbstractDrawerItem
 import com.uber.autodispose.SingleSubscribeProxy
-import kotlinx.android.synthetic.main.item_drawer_footer.view.*
 
-class FooterDrawerItem : AbstractDrawerItem<FooterDrawerItem, FooterDrawerItem.ViewHolder>() {
+class FooterDrawerItem : AbstractDrawerItem<FooterDrawerItem, BindingHolder<ItemDrawerFooterBinding>>() {
+
     override val type = R.id.instanceData
 
-    override val layoutRes = R.layout.item_drawer_footer
+    override val layoutRes: Int
+        get() = throw UnsupportedOperationException()
 
-    private lateinit var context: Context
-    private lateinit var instanceData: TextView
+    private lateinit var binding: ItemDrawerFooterBinding
 
-    override fun bindView(holder: ViewHolder, payloads: List<Any>) {
-        super.bindView(holder, payloads)
-        context = holder.itemView.context
-        instanceData = holder.instanceData
-        holder.itemView.setPadding(0, 0, 0, 0)
-        instanceData.setTextColor(instanceData.hintTextColors)
+    override fun generateView(ctx: Context, parent: ViewGroup): View {
+        binding = ItemDrawerFooterBinding.inflate(LayoutInflater.from(ctx))
+        binding.instanceData.setTag(R.id.material_drawer_item, this)
+        return binding.root
     }
 
-    override fun getViewHolder(v: View) = ViewHolder(v)
+    override fun bindView(holder: BindingHolder<ItemDrawerFooterBinding>, payloads: List<Any>) {
+        super.bindView(holder, payloads)
+
+        holder.itemView.setPadding(0, 0, 0, 0)
+        binding.instanceData.setTextColor(binding.instanceData.hintTextColors)
+    }
+
+    override fun getViewHolder(v: View): BindingHolder<ItemDrawerFooterBinding> = throw UnsupportedOperationException()
 
     fun setSubscribeProxy(subscribeProxy: SingleSubscribeProxy<Instance>) {
         subscribeProxy.subscribe(
                 { instance ->
-                    instanceData.text = String.format("%s\n%s\n%s", instance.title, instance.uri, instance.version)
+                    binding.instanceData.text = String.format("%s\n%s\n%s", instance.title, instance.uri, instance.version)
                 },
                 {
-                    instanceData.text = context.getString(R.string.instance_data_failed)
+                    binding.instanceData.text = binding.root.context.getString(R.string.instance_data_failed)
                 }
         )
-    }
-
-    class ViewHolder internal constructor(internal val view: View): RecyclerView.ViewHolder(view) {
-        internal val instanceData = view.instanceData
     }
 }
