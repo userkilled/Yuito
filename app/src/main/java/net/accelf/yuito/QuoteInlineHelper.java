@@ -66,7 +66,7 @@ public class QuoteInlineHelper {
         quoteUsername.setText(usernameText);
     }
 
-    private void setContent(Spanned content, Status.Mention[] mentions, List<Emoji> emojis,
+    private void setContent(Spanned content, List<Status.Mention> mentions, List<Emoji> emojis,
                             LinkListener listener) {
         Spanned singleLineText = SpannedTextHelper.replaceSpanned(content);
         CharSequence emojifiedText = CustomEmojiHelper.emojify(singleLineText, emojis, quoteContent, statusDisplayOptions.animateEmojis());

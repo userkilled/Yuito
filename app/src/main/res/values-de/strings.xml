@@ -101,7 +101,7 @@
     <string name="action_accept">Akzeptieren</string>
     <string name="action_reject">Ablehnen</string>
     <string name="action_search">Suche</string>
-    <string name="action_access_saved_toot">Entwürfe</string>
+    <string name="action_access_drafts">Entwürfe</string>
     <string name="action_toggle_visibility">Beitragssichtbarkeit</string>
     <string name="action_content_warning">Inhaltswarnung</string>
     <string name="action_emoji_keyboard">Emoji</string>
@@ -294,7 +294,7 @@
     <string name="caption_blobmoji">Die Blob–Emojis aus Android 4.4–7.1</string>
     <string name="caption_twemoji">Die Standard-Emojis von Mastodon</string>
     <string name="caption_notoemoji">Die aktuellen Emojis von Google</string>
-    <string name="download_failed">Download fehlgeschlagen.</string>
+    <string name="download_failed">Download fehlgeschlagen</string>
     <string name="profile_badge_bot_text">Bot</string>
     <string name="account_moved_description">%1$s ist umgezogen auf:</string>
     <string name="reblog_private">An ursprüngliches Publikum teilen</string>
@@ -357,7 +357,7 @@
     <string name="compose_shortcut_short_label">Beitrag erstellen</string>
     <string name="pref_title_bot_overlay">Bot-Hinweis anzeigen</string>
     <string name="notification_clear_text">Bist du dir sicher, dass du alle deine Benachrichtigungen dauerhaft löschen möchtest\?</string>
-    <string name="poll_info_format">" %1$s • %2$s"</string>
+    <string name="poll_info_format"> <!-- 15 Stimmen • 1 Stunde verbleibend --> %1$s • %2$s</string>
     <plurals name="poll_info_votes">
         <item quantity="one">%s Stimme</item>
         <item quantity="other">%s Stimmen</item>
@@ -365,8 +365,8 @@
     <string name="poll_info_time_absolute">endet um %s</string>
     <string name="poll_info_closed">Geschlossen</string>
     <string name="poll_vote">Abstimmen</string>
-    <string name="poll_ended_voted">Eine Umfrage in der du abgestimmt hast ist vorbei</string>
-    <string name="poll_ended_created">Eine Umfrage die du erstellt hast ist vorbei</string>
+    <string name="poll_ended_voted">Eine Umfrage, in der du abgestimmt hast, ist vorbei</string>
+    <string name="poll_ended_created">Eine Umfrage, die du erstellt hast, ist vorbei</string>
     <plurals name="poll_timespan_days">
         <item quantity="one">%d Tag verbleibend</item>
         <item quantity="other">%d Tage verbleibend</item>
@@ -436,7 +436,7 @@
     <string name="select_list_title">Liste auswählen</string>
     <string name="list">Liste</string>
     <string name="post_lookup_error_format">Fehler beim Nachschlagen von Post %s</string>
-    <string name="no_saved_status">Du hast keine Entwürfe.</string>
+    <string name="no_drafts">Du hast keine Entwürfe.</string>
     <string name="no_scheduled_status">Du hast keine geplanten Beiträge.</string>
     <string name="warning_scheduling_interval">Das Datum des geplanten Toots muss mindestens 5 Minuten in der Zukunft liegen.</string>
     <string name="notification_follow_request_description">Benachrichtigungen über neue Folgeanfragen</string>
@@ -480,9 +480,6 @@
     <string name="title_announcements">Ankündigungen</string>
     <string name="drafts_toot_reply_removed">Der Beitrag auf den du antworten willst wurde gelöscht</string>
     <string name="draft_deleted">Entwurf gelöscht</string>
-    <string name="old_drafts">Alte Entwürfe</string>
-    <string name="new_drafts_warning">Das \"Entwürfe\"-Feature in Tusky wurde komplett neu gestaltet um schneller und benutzerfreundlicher zu sein.
-\nDu kannst deine alten Entwürfe noch hinter einem Button bei den neuen Entwürfen finden, aber sie werden mit einem zukünftigen Update gelöscht!</string>
     <string name="drafts_toot_failed_to_send">Dieser Beitrag konnte nicht gesendet werden!</string>
     <string name="dialog_delete_list_warning">Willst du die Liste %s wirklich löschen\?</string>
     <plurals name="error_upload_max_media_reached">
@@ -499,7 +496,7 @@
     <string name="pref_title_animate_custom_emojis">GIF-Emojis animieren</string>
     <string name="pref_title_notification_filter_subscriptions">Jemand, den ich abonniert habe, etwas Neues veröffentlicht</string>
     <string name="notification_subscription_format">%s hat gerade etwas gepostet</string>
-    <string name="abbreviated_minutes_ago">%dm</string>
+    <string name="abbreviated_minutes_ago">%d Min.</string>
     <string name="review_notifications">Benachrichtigungen überprüfen</string>
     <string name="wellbeing_mode_notice">Informationen, die dein Wohlbefinden beeinflussen könnten, werden versteckt. Das beinhaltet
 \n
@@ -514,4 +511,10 @@
     <string name="limit_notifications">Timeline-Benachrichtigungen einschränken</string>
     <string name="action_subscribe_account">Abonnieren</string>
     <string name="action_unsubscribe_account">nicht mehr abonnieren</string>
+    <string name="abbreviated_in_minutes">in %d M.</string>
+    <string name="abbreviated_in_hours">in %d St.</string>
+    <string name="drafts_failed_loading_reply">Antwortinformationen konnten nicht geladen werden</string>
+    <string name="abbreviated_days_ago">%d T.</string>
+    <string name="abbreviated_in_years">in %d J.</string>
+    <string name="abbreviated_in_seconds">in %d Sek.</string>
 </resources>

@@ -17,28 +17,37 @@ package com.keylesspalace.tusky
 
 import android.text.SpannedString
 import android.widget.LinearLayout
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.SearchResult
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
-import io.reactivex.Single
-import io.reactivex.android.plugins.RxAndroidPlugins
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.TestScheduler
+import io.reactivex.rxjava3.android.plugins.RxAndroidPlugins
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
+import io.reactivex.rxjava3.schedulers.TestScheduler
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.*
-import java.util.*
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.eq
+import org.mockito.Mockito.mock
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Date
 import java.util.concurrent.TimeUnit
 
-
 class BottomSheetActivityTest {
-    private lateinit var activity : FakeBottomSheetActivity
+
+    @get:Rule
+    val instantTaskExecutorRule: InstantTaskExecutorRule = InstantTaskExecutorRule()
+
+    private lateinit var activity: FakeBottomSheetActivity
     private lateinit var apiMock: MastodonApi
     private val accountQuery = "http://mastodon.foo.bar/@User"
     private val statusQuery = "http://mastodon.foo.bar/@User/345678"
@@ -46,52 +55,52 @@ class BottomSheetActivityTest {
     private val emptyCallback = Single.just(SearchResult(emptyList(), emptyList(), emptyList()))
     private val testScheduler = TestScheduler()
 
-    private val account = Account (
-            "1",
-            "admin",
-            "admin",
-            "Ad Min",
-            SpannedString(""),
-            "http://mastodon.foo.bar",
-            "",
-            "",
-            false,
-            0,
-            0,
-            0,
-            null,
-            false,
-            emptyList(),
-            emptyList()
+    private val account = Account(
+        "1",
+        "admin",
+        "admin",
+        "Ad Min",
+        SpannedString(""),
+        "http://mastodon.foo.bar",
+        "",
+        "",
+        false,
+        0,
+        0,
+        0,
+        null,
+        false,
+        emptyList(),
+        emptyList()
     )
     private val accountSingle = Single.just(SearchResult(listOf(account), emptyList(), emptyList()))
 
     private val status = Status(
-            "1",
-            statusQuery,
-            account,
-            null,
-            null,
-            null,
-            SpannedString("omgwat"),
-            Date(),
-            Collections.emptyList(),
-            0,
-            0,
-            false,
-            false,
-            false,
-            false,
-            "",
-            Status.Visibility.PUBLIC,
-            ArrayList(),
-            arrayOf(),
-            null,
-            pinned = false,
-            muted = false,
-            poll = null,
-            card = null,
-            quote = null
+        "1",
+        statusQuery,
+        account,
+        null,
+        null,
+        null,
+        SpannedString("omgwat"),
+        Date(),
+        Collections.emptyList(),
+        0,
+        0,
+        false,
+        false,
+        false,
+        false,
+        "",
+        Status.Visibility.PUBLIC,
+        ArrayList(),
+        listOf(),
+        null,
+        pinned = false,
+        muted = false,
+        poll = null,
+        card = null,
+        quote = null
     )
     private val statusSingle = Single.just(SearchResult(emptyList(), listOf(status), emptyList()))
 
@@ -114,7 +123,7 @@ class BottomSheetActivityTest {
         companion object {
             @Parameterized.Parameters(name = "match_{0}")
             @JvmStatic
-            fun data() : Iterable<Any> {
+            fun data(): Iterable<Any> {
                 return listOf(
                     arrayOf("https://mastodon.foo.bar/@User", true),
                     arrayOf("http://mastodon.foo.bar/@abc123", true),

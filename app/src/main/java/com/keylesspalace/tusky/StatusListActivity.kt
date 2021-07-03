@@ -21,17 +21,15 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
+import autodispose2.androidx.lifecycle.autoDispose
 import com.keylesspalace.tusky.appstore.EventHub
+import com.keylesspalace.tusky.components.timeline.TimelineFragment
+import com.keylesspalace.tusky.components.timeline.TimelineViewModel.Kind
 import com.keylesspalace.tusky.databinding.ActivityStatuslistBinding
 import com.keylesspalace.tusky.di.ViewModelFactory
-
-import com.keylesspalace.tusky.fragment.TimelineFragment
-import com.keylesspalace.tusky.fragment.TimelineFragment.Kind
-import com.uber.autodispose.AutoDispose
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import net.accelf.yuito.QuickTootViewModel
 import javax.inject.Inject
 
@@ -56,7 +54,7 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
         setSupportActionBar(binding.includedToolbar.toolbar)
 
-        val title = if(kind == Kind.FAVOURITES) {
+        val title = if (kind == Kind.FAVOURITES) {
             R.string.title_favourites
         } else {
             R.string.title_bookmarks
@@ -77,7 +75,7 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
         eventHub.events
                 .observeOn(AndroidSchedulers.mainThread())
-                .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)))
+                .autoDispose(this, Lifecycle.Event.ON_DESTROY)
                 .subscribe(binding.viewQuickToot::handleEvent)
         binding.floatingBtn.setOnClickListener(binding.viewQuickToot::onFABClicked)
     }
@@ -90,15 +88,14 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
         @JvmStatic
         fun newFavouritesIntent(context: Context) =
-                Intent(context, StatusListActivity::class.java).apply {
-                    putExtra(EXTRA_KIND, Kind.FAVOURITES.name)
-                }
+            Intent(context, StatusListActivity::class.java).apply {
+                putExtra(EXTRA_KIND, Kind.FAVOURITES.name)
+            }
 
         @JvmStatic
         fun newBookmarksIntent(context: Context) =
-                Intent(context, StatusListActivity::class.java).apply {
-                    putExtra(EXTRA_KIND, Kind.BOOKMARKS.name)
-                }
+            Intent(context, StatusListActivity::class.java).apply {
+                putExtra(EXTRA_KIND, Kind.BOOKMARKS.name)
+            }
     }
-
 }

@@ -28,128 +28,119 @@ import com.keylesspalace.tusky.db.DraftEntity
 import com.keylesspalace.tusky.entity.NewPoll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.util.IOUtils
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class DraftHelper @Inject constructor(
-        val context: Context,
-        db: AppDatabase
+    val context: Context,
+    db: AppDatabase
 ) {
 
     private val draftDao = db.draftDao()
 
-    fun saveDraft(
-            draftId: Int,
-            accountId: Long,
-            inReplyToId: String?,
-            content: String?,
-            contentWarning: String?,
-            sensitive: Boolean,
-            visibility: Status.Visibility,
-            mediaUris: List<String>,
-            mediaDescriptions: List<String?>,
-            poll: NewPoll?,
-            failedToSend: Boolean
-    ): Completable {
-        return Single.fromCallable {
+    suspend fun saveDraft(
+        draftId: Int,
+        accountId: Long,
+        inReplyToId: String?,
+        content: String?,
+        contentWarning: String?,
+        sensitive: Boolean,
+        visibility: Status.Visibility,
+        mediaUris: List<String>,
+        mediaDescriptions: List<String?>,
+        poll: NewPoll?,
+        failedToSend: Boolean
+    ) = withContext(Dispatchers.IO) {
+        val externalFilesDir = context.getExternalFilesDir("Tusky")
 
-            val externalFilesDir = context.getExternalFilesDir("Tusky")
+        if (externalFilesDir == null || !(externalFilesDir.exists())) {
+            Log.e("DraftHelper", "Error obtaining directory to save media.")
+            throw Exception()
+        }
 
-            if (externalFilesDir == null || !(externalFilesDir.exists())) {
-                Log.e("DraftHelper", "Error obtaining directory to save media.")
-                throw Exception()
+        val draftDirectory = File(externalFilesDir, "Drafts")
+
+        if (!draftDirectory.exists()) {
+            draftDirectory.mkdir()
+        }
+
+        val uris = mediaUris.map { uriString ->
+            uriString.toUri()
+        }.map { uri ->
+            if (uri.isNotInFolder(draftDirectory)) {
+                uri.copyToFolder(draftDirectory)
+            } else {
+                uri
             }
+        }
 
-            val draftDirectory = File(externalFilesDir, "Drafts")
-
-            if (!draftDirectory.exists()) {
-                draftDirectory.mkdir()
+        val types = uris.map { uri ->
+            val mimeType = context.contentResolver.getType(uri)
+            when (mimeType?.substring(0, mimeType.indexOf('/'))) {
+                "video" -> DraftAttachment.Type.VIDEO
+                "image" -> DraftAttachment.Type.IMAGE
+                "audio" -> DraftAttachment.Type.AUDIO
+                else -> throw IllegalStateException("unknown media type")
             }
+        }
 
-            val uris = mediaUris.map { uriString ->
-                uriString.toUri()
-            }.map { uri ->
-                if (uri.isNotInFolder(draftDirectory)) {
-                    uri.copyToFolder(draftDirectory)
-                } else {
-                    uri
-                }
-            }
-
-            val types = uris.map { uri ->
-                val mimeType = context.contentResolver.getType(uri)
-                when (mimeType?.substring(0, mimeType.indexOf('/'))) {
-                    "video" -> DraftAttachment.Type.VIDEO
-                    "image" -> DraftAttachment.Type.IMAGE
-                    "audio" -> DraftAttachment.Type.AUDIO
-                    else -> throw IllegalStateException("unknown media type")
-                }
-            }
-
-            val attachments: MutableList<DraftAttachment> = mutableListOf()
-            for (i in mediaUris.indices) {
-                attachments.add(
-                        DraftAttachment(
-                                uriString = uris[i].toString(),
-                                description = mediaDescriptions[i],
-                                type = types[i]
-                        )
+        val attachments: MutableList<DraftAttachment> = mutableListOf()
+        for (i in mediaUris.indices) {
+            attachments.add(
+                DraftAttachment(
+                    uriString = uris[i].toString(),
+                    description = mediaDescriptions[i],
+                    type = types[i]
                 )
-            }
-
-            DraftEntity(
-                    id = draftId,
-                    accountId = accountId,
-                    inReplyToId = inReplyToId,
-                    content = content,
-                    contentWarning = contentWarning,
-                    sensitive = sensitive,
-                    visibility = visibility,
-                    attachments = attachments,
-                    poll = poll,
-                    failedToSend = failedToSend
             )
+        }
 
-        }.flatMapCompletable { draft ->
-            draftDao.insertOrReplace(draft)
-        }.subscribeOn(Schedulers.io())
+        val draft = DraftEntity(
+            id = draftId,
+            accountId = accountId,
+            inReplyToId = inReplyToId,
+            content = content,
+            contentWarning = contentWarning,
+            sensitive = sensitive,
+            visibility = visibility,
+            attachments = attachments,
+            poll = poll,
+            failedToSend = failedToSend
+        )
+
+        draftDao.insertOrReplace(draft)
     }
 
-    fun deleteDraftAndAttachments(draftId: Int): Completable {
-        return draftDao.find(draftId)
-                .flatMapCompletable { draft ->
-                    deleteDraftAndAttachments(draft)
-                }
+    suspend fun deleteDraftAndAttachments(draftId: Int) {
+        draftDao.find(draftId)?.let { draft ->
+            deleteDraftAndAttachments(draft)
+        }
     }
 
-    fun deleteDraftAndAttachments(draft: DraftEntity): Completable {
-        return deleteAttachments(draft)
-                .andThen(draftDao.delete(draft.id))
+    suspend fun deleteDraftAndAttachments(draft: DraftEntity) {
+        deleteAttachments(draft)
+        draftDao.delete(draft.id)
     }
 
-    fun deleteAllDraftsAndAttachmentsForAccount(accountId: Long) {
-        draftDao.loadDraftsSingle(accountId)
-                .flatMapObservable { Observable.fromIterable(it) }
-                .flatMapCompletable { draft ->
-                    deleteDraftAndAttachments(draft)
-                }.subscribeOn(Schedulers.io())
-                .subscribe()
+    suspend fun deleteAllDraftsAndAttachmentsForAccount(accountId: Long) {
+        draftDao.loadDrafts(accountId).forEach { draft ->
+            deleteDraftAndAttachments(draft)
+        }
     }
 
-    fun deleteAttachments(draft: DraftEntity): Completable {
-        return Completable.fromCallable {
+    suspend fun deleteAttachments(draft: DraftEntity) {
+        withContext(Dispatchers.IO) {
             draft.attachments.forEach { attachment ->
                 if (context.contentResolver.delete(attachment.uri, null, null) == 0) {
                     Log.e("DraftHelper", "Did not delete file ${attachment.uriString}")
                 }
             }
-        }.subscribeOn(Schedulers.io())
+        }
     }
 
     private fun Uri.isNotInFolder(folder: File): Boolean {
@@ -171,5 +162,4 @@ class DraftHelper @Inject constructor(
         IOUtils.copyToFile(contentResolver, this, file)
         return FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileprovider", file)
     }
-
 }

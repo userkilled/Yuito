@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import com.keylesspalace.tusky.databinding.ActivityAboutBinding
 import com.keylesspalace.tusky.di.Injectable
-import com.keylesspalace.tusky.util.CustomURLSpan
+import com.keylesspalace.tusky.util.NoUnderlineURLSpan
 import com.keylesspalace.tusky.util.hide
 import net.accelf.yuito.AccessTokenLoginActivity
 
@@ -37,7 +37,7 @@ class AboutActivity : BottomSheetActivity(), Injectable {
 
         binding.versionTextView.text = getString(R.string.about_app_version, getString(R.string.app_name), BuildConfig.VERSION_NAME)
 
-        if(BuildConfig.CUSTOM_INSTANCE.isBlank()) {
+        if (BuildConfig.CUSTOM_INSTANCE.isBlank()) {
             binding.aboutPoweredByTusky.hide()
         }
 
@@ -73,7 +73,7 @@ private fun TextView.setClickableTextWithoutUnderlines(@StringRes textId: Int) {
         val end = builder.getSpanEnd(span)
         val flags = builder.getSpanFlags(span)
 
-        val customSpan = object : CustomURLSpan(span.url) {}
+        val customSpan = NoUnderlineURLSpan(span.url)
 
         builder.removeSpan(span)
         builder.setSpan(customSpan, start, end, flags)

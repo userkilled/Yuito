@@ -4,12 +4,12 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import autodispose2.SingleSubscribeProxy
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.databinding.ItemDrawerFooterBinding
 import com.keylesspalace.tusky.entity.Instance
 import com.keylesspalace.tusky.util.BindingHolder
 import com.mikepenz.materialdrawer.model.AbstractDrawerItem
-import com.uber.autodispose.SingleSubscribeProxy
 
 class FooterDrawerItem : AbstractDrawerItem<FooterDrawerItem, BindingHolder<ItemDrawerFooterBinding>>() {
 

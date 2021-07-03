@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License along with Tusky; if not,
  * see <http://www.gnu.org/licenses>. */
 
-
 package com.keylesspalace.tusky.di
 
 import com.keylesspalace.tusky.AccountsInListFragment
@@ -29,7 +28,11 @@ import com.keylesspalace.tusky.components.search.fragments.SearchAccountsFragmen
 import com.keylesspalace.tusky.components.search.fragments.SearchHashtagsFragment
 import com.keylesspalace.tusky.components.search.fragments.SearchNotestockFragment
 import com.keylesspalace.tusky.components.search.fragments.SearchStatusesFragment
-import com.keylesspalace.tusky.fragment.*
+import com.keylesspalace.tusky.components.timeline.TimelineFragment
+import com.keylesspalace.tusky.fragment.AccountListFragment
+import com.keylesspalace.tusky.fragment.AccountMediaFragment
+import com.keylesspalace.tusky.fragment.NotificationsFragment
+import com.keylesspalace.tusky.fragment.ViewThreadFragment
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 

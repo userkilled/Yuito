@@ -34,7 +34,7 @@ public final class HttpToastInterceptor implements Interceptor {
         }
 
         int code = response.code();
-        if (code == 200) {
+        if (code == 101 || code == 200) {
             return response;
         }
 

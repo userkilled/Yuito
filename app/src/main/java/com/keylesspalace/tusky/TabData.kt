@@ -20,8 +20,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.keylesspalace.tusky.components.conversation.ConversationsFragment
+import com.keylesspalace.tusky.components.timeline.TimelineFragment
+import com.keylesspalace.tusky.components.timeline.TimelineViewModel
 import com.keylesspalace.tusky.fragment.NotificationsFragment
-import com.keylesspalace.tusky.fragment.TimelineFragment
 
 /** this would be a good case for a sealed class, but that does not work nice with Room */
 
@@ -35,66 +36,68 @@ const val LIST = "List"
 
 const val STREAMING = "STR"
 
-data class TabData(val id: String,
-                   @StringRes val text: Int,
-                   @DrawableRes val icon: Int,
-                   val fragment: (List<String>) -> Fragment,
-                   val arguments: List<String> = emptyList(),
-                   val title: (Context) -> String = { context -> context.getString(text)},
-                   val enableStreaming: Boolean = false)
+data class TabData(
+    val id: String,
+    @StringRes val text: Int,
+    @DrawableRes val icon: Int,
+    val fragment: (List<String>) -> Fragment,
+    val arguments: List<String> = emptyList(),
+    val title: (Context) -> String = { context -> context.getString(text) },
+    val enableStreaming: Boolean = false,
+)
 
 fun createTabDataFromId(id: String, arguments: List<String> = emptyList()): TabData {
     val enableStreaming = id.endsWith(STREAMING)
     return when (if (enableStreaming) id.slice(IntRange(0, id.length - 4)) else id) {
         HOME -> TabData(
-                HOME,
-                R.string.title_home,
-                R.drawable.ic_home_24dp,
-                { TimelineFragment.newInstance(TimelineFragment.Kind.HOME, enableStreaming = enableStreaming) },
-                enableStreaming = enableStreaming
+            HOME,
+            R.string.title_home,
+            R.drawable.ic_home_24dp,
+            { TimelineFragment.newInstance(TimelineViewModel.Kind.HOME, enableStreaming = enableStreaming) },
+            enableStreaming = enableStreaming
         )
         NOTIFICATIONS -> TabData(
-                NOTIFICATIONS,
-                R.string.title_notifications,
-                R.drawable.ic_notifications_24dp,
-                { NotificationsFragment.newInstance() }
+            NOTIFICATIONS,
+            R.string.title_notifications,
+            R.drawable.ic_notifications_24dp,
+            { NotificationsFragment.newInstance() }
         )
         LOCAL -> TabData(
-                LOCAL,
-                R.string.title_public_local,
-                R.drawable.ic_local_24dp,
-                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_LOCAL, enableStreaming = enableStreaming) },
-                enableStreaming = enableStreaming
+            LOCAL,
+            R.string.title_public_local,
+            R.drawable.ic_local_24dp,
+            { TimelineFragment.newInstance(TimelineViewModel.Kind.PUBLIC_LOCAL, enableStreaming = enableStreaming) },
+            enableStreaming = enableStreaming
         )
         FEDERATED -> TabData(
-                FEDERATED,
-                R.string.title_public_federated,
-                R.drawable.ic_public_24dp,
-                { TimelineFragment.newInstance(TimelineFragment.Kind.PUBLIC_FEDERATED, enableStreaming = enableStreaming) },
-                enableStreaming = enableStreaming
+            FEDERATED,
+            R.string.title_public_federated,
+            R.drawable.ic_public_24dp,
+            { TimelineFragment.newInstance(TimelineViewModel.Kind.PUBLIC_FEDERATED, enableStreaming = enableStreaming) },
+            enableStreaming = enableStreaming
         )
         DIRECT -> TabData(
-                DIRECT,
-                R.string.title_direct_messages,
-                R.drawable.ic_reblog_direct_24dp,
-                { ConversationsFragment.newInstance() }
+            DIRECT,
+            R.string.title_direct_messages,
+            R.drawable.ic_reblog_direct_24dp,
+            { ConversationsFragment.newInstance() }
         )
         HASHTAG -> TabData(
-                HASHTAG,
-                R.string.hashtags,
-                R.drawable.ic_hashtag,
-                { args -> TimelineFragment.newHashtagInstance(args) },
-                arguments,
-                { context -> arguments.joinToString(separator = " ") { context.getString(R.string.title_tag, it) }}
+            HASHTAG,
+            R.string.hashtags,
+            R.drawable.ic_hashtag,
+            { args -> TimelineFragment.newHashtagInstance(args) },
+            arguments,
+            { context -> arguments.joinToString(separator = " ") { context.getString(R.string.title_tag, it) } }
         )
         LIST -> TabData(
-                LIST,
-                R.string.list,
-                R.drawable.ic_list,
-                { args -> TimelineFragment.newInstance(TimelineFragment.Kind.LIST, args.getOrNull(0).orEmpty(), true, enableStreaming) },
-                arguments,
-                { arguments.getOrNull(1).orEmpty() },
-                enableStreaming
+            LIST,
+            R.string.list,
+            R.drawable.ic_list,
+            { args -> TimelineFragment.newInstance(TimelineViewModel.Kind.LIST, args.getOrNull(0).orEmpty(), true, enableStreaming) },
+            arguments,
+            { arguments.getOrNull(1).orEmpty() },
+            enableStreaming
         )
         else -> throw IllegalArgumentException("unknown tab type")
     }
@@ -102,9 +105,9 @@ fun createTabDataFromId(id: String, arguments: List<String> = emptyList()): TabD
 
 fun defaultTabs(): List<TabData> {
     return listOf(
-            createTabDataFromId(HOME),
-            createTabDataFromId(NOTIFICATIONS),
-            createTabDataFromId(LOCAL),
-            createTabDataFromId(FEDERATED)
+        createTabDataFromId(HOME),
+        createTabDataFromId(NOTIFICATIONS),
+        createTabDataFromId(LOCAL),
+        createTabDataFromId(FEDERATED)
     )
 }

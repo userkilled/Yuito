@@ -24,14 +24,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Lifecycle;
 
-import com.keylesspalace.tusky.appstore.EventHub;
-import com.keylesspalace.tusky.di.ViewModelFactory;
-import com.keylesspalace.tusky.fragment.TimelineFragment;
-
-import net.accelf.yuito.QuickTootView;
-import net.accelf.yuito.QuickTootViewModel;
+import com.keylesspalace.tusky.components.timeline.TimelineFragment;
 
 import java.util.Collections;
 
@@ -40,10 +34,6 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasAndroidInjector;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-
-import static com.uber.autodispose.AutoDispose.autoDisposable;
-import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
 public class ViewTagActivity extends BottomSheetActivity implements HasAndroidInjector {
 
@@ -51,10 +41,6 @@ public class ViewTagActivity extends BottomSheetActivity implements HasAndroidIn
 
     @Inject
     public DispatchingAndroidInjector<Object> dispatchingAndroidInjector;
-    @Inject
-    public EventHub eventHub;
-    @Inject
-    public ViewModelFactory viewModelFactory;
 
     public static Intent getIntent(Context context, String tag){
         Intent intent = new Intent(context,ViewTagActivity.class);
@@ -83,15 +69,6 @@ public class ViewTagActivity extends BottomSheetActivity implements HasAndroidIn
         Fragment fragment = TimelineFragment.newHashtagInstance(Collections.singletonList(hashtag));
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.commit();
-
-        QuickTootViewModel quickTootViewModel = viewModelFactory.create(QuickTootViewModel.class);
-        QuickTootView quickTootView = findViewById(R.id.viewQuickToot);
-        quickTootView.attachViewModel(quickTootViewModel, this);
-
-        eventHub.getEvents()
-                .observeOn(AndroidSchedulers.mainThread())
-                .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
-                .subscribe(quickTootView::handleEvent);
     }
 
     @Override

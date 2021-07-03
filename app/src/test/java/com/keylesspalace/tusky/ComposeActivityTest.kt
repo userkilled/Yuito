@@ -25,17 +25,22 @@ import com.keylesspalace.tusky.components.compose.ComposeViewModel
 import com.keylesspalace.tusky.components.compose.DEFAULT_CHARACTER_LIMIT
 import com.keylesspalace.tusky.components.compose.MediaUploader
 import com.keylesspalace.tusky.components.drafts.DraftHelper
-import com.keylesspalace.tusky.db.*
+import com.keylesspalace.tusky.db.AccountEntity
+import com.keylesspalace.tusky.db.AccountManager
+import com.keylesspalace.tusky.db.AppDatabase
+import com.keylesspalace.tusky.db.InstanceDao
+import com.keylesspalace.tusky.db.InstanceEntity
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Instance
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.service.ServiceClient
-import com.keylesspalace.tusky.util.SaveTootHelper
 import com.nhaarman.mockitokotlin2.any
-import io.reactivex.Single
-import io.reactivex.SingleObserver
-import org.junit.Assert.*
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.core.SingleObserver
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,25 +65,25 @@ class ComposeActivityTest {
     private val instanceDomain = "example.domain"
 
     private val account = AccountEntity(
-            id = 1,
-            domain = instanceDomain,
-            accessToken = "token",
-            isActive = true,
-            accountId = "1",
-            username = "username",
-            displayName = "Display Name",
-            profilePictureUrl = "",
-            notificationsEnabled = true,
-            notificationsMentioned = true,
-            notificationsFollowed = true,
-            notificationsFollowRequested = false,
-            notificationsReblogged = true,
-            notificationsFavorited = true,
-            notificationSound = true,
-            notificationVibration = true,
-            notificationLight = true
+        id = 1,
+        domain = instanceDomain,
+        accessToken = "token",
+        isActive = true,
+        accountId = "1",
+        username = "username",
+        displayName = "Display Name",
+        profilePictureUrl = "",
+        notificationsEnabled = true,
+        notificationsMentioned = true,
+        notificationsFollowed = true,
+        notificationsFollowRequested = false,
+        notificationsReblogged = true,
+        notificationsFavorited = true,
+        notificationSound = true,
+        notificationVibration = true,
+        notificationLight = true
     )
-    private var instanceResponseCallback: (()->Instance)? = null
+    private var instanceResponseCallback: (() -> Instance)? = null
     private var composeOptions: ComposeActivity.ComposeOptions? = null
 
     @Before
@@ -91,7 +96,7 @@ class ComposeActivityTest {
 
         apiMock = mock(MastodonApi::class.java)
         `when`(apiMock.getCustomEmojis()).thenReturn(Single.just(emptyList()))
-        `when`(apiMock.getInstance()).thenReturn(object: Single<Instance>() {
+        `when`(apiMock.getInstance()).thenReturn(object : Single<Instance>() {
             override fun subscribeActual(observer: SingleObserver<in Instance>) {
                 val instance = instanceResponseCallback?.invoke()
                 if (instance == null) {
@@ -104,20 +109,19 @@ class ComposeActivityTest {
 
         val instanceDaoMock = mock(InstanceDao::class.java)
         `when`(instanceDaoMock.loadMetadataForInstance(any())).thenReturn(
-                Single.just(InstanceEntity(instanceDomain, emptyList(),null, null, null, null))
+            Single.just(InstanceEntity(instanceDomain, emptyList(), null, null, null, null))
         )
 
         val dbMock = mock(AppDatabase::class.java)
         `when`(dbMock.instanceDao()).thenReturn(instanceDaoMock)
 
         val viewModel = ComposeViewModel(
-                apiMock,
-                accountManagerMock,
-                mock(MediaUploader::class.java),
-                mock(ServiceClient::class.java),
-                mock(DraftHelper::class.java),
-                mock(SaveTootHelper::class.java),
-                dbMock
+            apiMock,
+            accountManagerMock,
+            mock(MediaUploader::class.java),
+            mock(ServiceClient::class.java),
+            mock(DraftHelper::class.java),
+            dbMock
         )
         activity.intent = Intent(activity, ComposeActivity::class.java).apply {
             putExtra(ComposeActivity.COMPOSE_OPTIONS_EXTRA, composeOptions)
@@ -383,41 +387,38 @@ class ComposeActivityTest {
         activity.findViewById<EditText>(R.id.composeEditField).setText(text ?: "Some text")
     }
 
-    private fun getInstanceWithMaximumTootCharacters(maximumTootCharacters: Int?): Instance
-    {
+    private fun getInstanceWithMaximumTootCharacters(maximumTootCharacters: Int?): Instance {
         return Instance(
+            "https://example.token",
+            "Example dot Token",
+            "Example instance for testing",
+            "admin@example.token",
+            "2.6.3",
+            HashMap(),
+            null,
+            null,
+            listOf("en"),
+            Account(
+                "1",
+                "admin",
+                "admin",
+                "admin",
+                SpannedString(""),
                 "https://example.token",
-                "Example dot Token",
-                "Example instance for testing",
-                "admin@example.token",
-                "2.6.3",
-                HashMap(),
+                "",
+                "",
+                false,
+                0,
+                0,
+                0,
                 null,
-                null,
-                listOf("en"),
-                Account(
-                        "1",
-                        "admin",
-                        "admin",
-                        "admin",
-                        SpannedString(""),
-                        "https://example.token",
-                        "",
-                        "",
-                        false,
-                        0,
-                        0,
-                        0,
-                        null,
-                        false,
-                        emptyList(),
-                        emptyList()
-                ),
-                maximumTootCharacters,
-                null,
-                null
+                false,
+                emptyList(),
+                emptyList()
+            ),
+            maximumTootCharacters,
+            null,
+            null
         )
     }
-
 }
-

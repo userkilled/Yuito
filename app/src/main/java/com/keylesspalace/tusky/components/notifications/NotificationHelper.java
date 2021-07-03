@@ -70,8 +70,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import static com.keylesspalace.tusky.viewdata.PollViewDataKt.buildDescription;
 
@@ -316,7 +316,7 @@ public class NotificationHelper {
         Status actionableStatus = status.getActionableStatus();
         Status.Visibility replyVisibility = actionableStatus.getVisibility();
         String contentWarning = actionableStatus.getSpoilerText();
-        Status.Mention[] mentions = actionableStatus.getMentions();
+        List<Status.Mention> mentions = actionableStatus.getMentions();
         List<String> mentionedUsernames = new ArrayList<>();
         mentionedUsernames.add(actionableStatus.getAccount().getUsername());
         for (Status.Mention mention : mentions) {
@@ -381,7 +381,6 @@ public class NotificationHelper {
 
             NotificationChannelGroup channelGroup = new NotificationChannelGroup(account.getIdentifier(), account.getFullName());
 
-            //noinspection ConstantConditions
             notificationManager.createNotificationChannelGroup(channelGroup);
 
             for (int i = 0; i < channelIds.length; i++) {

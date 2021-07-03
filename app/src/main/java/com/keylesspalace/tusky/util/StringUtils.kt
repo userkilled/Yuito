@@ -3,8 +3,7 @@
 package com.keylesspalace.tusky.util
 
 import android.text.Spanned
-import java.util.*
-
+import java.util.Random
 
 private const val POSSIBLE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -29,7 +28,6 @@ fun String.inc(): String {
     builder[lastIndex] = builder[lastIndex].inc()
     return String(builder)
 }
-
 
 /**
  * "Decrement" string so that during sorting it's smaller than [this].
@@ -70,6 +68,15 @@ fun String.isLessThan(other: String): Boolean {
         this.length < other.length -> true
         this.length > other.length -> false
         else -> this < other
+    }
+}
+
+fun String.idCompareTo(other: String): Int {
+    return when {
+        this === other -> 0
+        this.length < other.length -> -1
+        this.length > other.length -> 1
+        else -> this.compareTo(other)
     }
 }
 

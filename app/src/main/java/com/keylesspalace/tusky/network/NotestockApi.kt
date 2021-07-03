@@ -1,7 +1,7 @@
 package com.keylesspalace.tusky.network
 
 import com.keylesspalace.tusky.entity.SearchResult
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
 

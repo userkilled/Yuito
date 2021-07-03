@@ -24,16 +24,17 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.keylesspalace.tusky.TabDataKt;
 import com.keylesspalace.tusky.components.conversation.ConversationEntity;
 
+import java.io.File;
+
 /**
  * DB version & declare DAO
  */
 
-@Database(entities = { TootEntity.class, DraftEntity.class, AccountEntity.class, InstanceEntity.class, TimelineStatusEntity.class,
+@Database(entities = { DraftEntity.class, AccountEntity.class, InstanceEntity.class, TimelineStatusEntity.class,
                 TimelineAccountEntity.class,  ConversationEntity.class
-        }, version = 25)
+        }, version = 27)
 public abstract class AppDatabase extends RoomDatabase {
 
-    public abstract TootDao tootDao();
     public abstract AccountDao accountDao();
     public abstract InstanceDao instanceDao();
     public abstract ConversationsDao conversationDao();
@@ -363,6 +364,40 @@ public abstract class AppDatabase extends RoomDatabase {
                             "`poll` TEXT," +
                             "`failedToSend` INTEGER NOT NULL)"
             );
+        }
+    };
+
+    public static class Migration25_26 extends Migration {
+
+        private final File oldDraftDirectory;
+
+        public Migration25_26(File oldDraftDirectory) {
+            super(25, 26);
+            this.oldDraftDirectory = oldDraftDirectory;
+        }
+
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("DROP TABLE  `TootEntity`");
+
+            if (oldDraftDirectory != null && oldDraftDirectory.isDirectory()) {
+                File[] oldDraftFiles = oldDraftDirectory.listFiles();
+                if (oldDraftFiles != null) {
+                    for (File file : oldDraftFiles) {
+                        if (!file.isDirectory()) {
+                            file.delete();
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    public static final Migration MIGRATION_26_27 = new Migration(26, 27) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `ConversationEntity` ADD COLUMN `s_muted`  INTEGER NOT NULL DEFAULT 0");
         }
     };
 }

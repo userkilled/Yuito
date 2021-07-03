@@ -210,7 +210,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     protected void setSpoilerAndContent(boolean expanded,
                                         @NonNull Spanned content,
                                         @Nullable String spoilerText,
-                                        @Nullable Status.Mention[] mentions,
+                                        @Nullable List<Status.Mention> mentions,
                                         @NonNull List<Emoji> emojis,
                                         @Nullable PollViewData poll,
                                         @NonNull StatusDisplayOptions statusDisplayOptions,
@@ -252,7 +252,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private void setTextVisible(boolean sensitive,
                                 boolean expanded,
                                 Spanned content,
-                                Status.Mention[] mentions,
+                                List<Status.Mention> mentions,
                                 List<Emoji> emojis,
                                 @Nullable PollViewData poll,
                                 StatusDisplayOptions statusDisplayOptions,
@@ -814,23 +814,25 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         this.setupWithStatus(status, listener, statusDisplayOptions, null);
     }
 
-    protected void setupWithStatus(StatusViewData.Concrete status,
-                                   final StatusActionListener listener,
-                                   StatusDisplayOptions statusDisplayOptions,
-                                   @Nullable Object payloads) {
+    public void setupWithStatus(StatusViewData.Concrete status,
+                                final StatusActionListener listener,
+                                StatusDisplayOptions statusDisplayOptions,
+                                @Nullable Object payloads) {
         if (payloads == null) {
-            setDisplayName(status.getUserFullName(), status.getAccountEmojis(), statusDisplayOptions);
-            setUsername(status.getNickname());
-            setCreatedAt(status.getCreatedAt(), statusDisplayOptions);
-            setStatusVisibility(status.getVisibility());
-            setIsReply(status.getInReplyToId() != null);
-            setAvatar(status.getAvatar(), status.getRebloggedAvatar(), status.isBot(), statusDisplayOptions);
-            setReblogged(status.isReblogged());
-            setFavourited(status.isFavourited());
-            setQuoteContainer(status.getQuote(), listener, statusDisplayOptions);
-            setBookmarked(status.isBookmarked());
-            List<Attachment> attachments = status.getAttachments();
-            boolean sensitive = status.isSensitive();
+            Status actionable = status.getActionable();
+            setDisplayName(actionable.getAccount().getName(), actionable.getAccount().getEmojis(), statusDisplayOptions);
+            setUsername(status.getUsername());
+            setCreatedAt(actionable.getCreatedAt(), statusDisplayOptions);
+            setStatusVisibility(actionable.getVisibility());
+            setIsReply(actionable.getInReplyToId() != null);
+            setAvatar(actionable.getAccount().getAvatar(), status.getRebloggedAvatar(),
+                    actionable.getAccount().getBot(), statusDisplayOptions);
+            setReblogged(actionable.getReblogged());
+            setFavourited(actionable.getFavourited());
+            setQuoteContainer(actionable.getQuote(), listener, statusDisplayOptions);
+            setBookmarked(actionable.getBookmarked());
+            List<Attachment> attachments = actionable.getAttachments();
+            boolean sensitive = actionable.getSensitive();
             if (statusDisplayOptions.mediaPreviewEnabled() && hasPreviewableAttachment(attachments)) {
                 setMediaPreviews(attachments, sensitive, listener, status.isShowingContent(), statusDisplayOptions.useBlurhash());
 
@@ -855,12 +857,15 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 setupCard(status, statusDisplayOptions.cardViewMode(), statusDisplayOptions);
             }
 
-            setupButtons(listener, status.getSenderId(), status.getContent().toString(),
-                    status.isNotestock(), statusDisplayOptions);
-            setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
-            setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
+            setupButtons(listener, actionable.getAccount().getId(), status.getContent().toString(),
+                    actionable.isNotestock(), statusDisplayOptions);
+            setRebloggingEnabled(actionable.rebloggingAllowed(), actionable.getVisibility());
+            setQuoteEnabled(actionable.rebloggingAllowed() && !actionable.isNotestock(), actionable.getVisibility());
 
-            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), status.getPoll(), statusDisplayOptions, listener);
+            setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(),
+                    actionable.getMentions(), actionable.getEmojis(),
+                    PollViewDataKt.toViewData(actionable.getPoll()), statusDisplayOptions,
+                    listener);
 
             setDescriptionForStatus(status, statusDisplayOptions);
 
@@ -874,7 +879,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             if (payloads instanceof List)
                 for (Object item : (List<?>) payloads) {
                     if (Key.KEY_CREATED.equals(item)) {
-                        setCreatedAt(status.getCreatedAt(), statusDisplayOptions);
+                        setCreatedAt(status.getActionable().getCreatedAt(), statusDisplayOptions);
                     }
                 }
 
@@ -893,21 +898,22 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private void setDescriptionForStatus(@NonNull StatusViewData.Concrete status,
                                          StatusDisplayOptions statusDisplayOptions) {
         Context context = itemView.getContext();
+        Status actionable = status.getActionable();
 
         String description = context.getString(R.string.description_status,
-                status.getUserFullName(),
+                actionable.getAccount().getName(),
                 getContentWarningDescription(context, status),
-                (TextUtils.isEmpty(status.getSpoilerText()) || !status.isSensitive() || status.isExpanded() ? status.getContent() : ""),
-                getCreatedAtDescription(status.getCreatedAt(), statusDisplayOptions),
+                (TextUtils.isEmpty(status.getSpoilerText()) || !actionable.getSensitive() || status.isExpanded() ? status.getContent() : ""),
+                getCreatedAtDescription(actionable.getCreatedAt(), statusDisplayOptions),
                 getReblogDescription(context, status),
-                status.getNickname(),
-                status.isReblogged() ? context.getString(R.string.description_status_reblogged) : "",
-                status.isFavourited() ? context.getString(R.string.description_status_favourited) : "",
-                status.isBookmarked() ? context.getString(R.string.description_status_bookmarked) : "",
+                status.getUsername(),
+                actionable.getReblogged() ? context.getString(R.string.description_status_reblogged) : "",
+                actionable.getFavourited() ? context.getString(R.string.description_status_favourited) : "",
+                actionable.getBookmarked() ? context.getString(R.string.description_status_bookmarked) : "",
                 getMediaDescription(context, status),
-                getVisibilityDescription(context, status.getVisibility()),
-                getFavsText(context, status.getFavouritesCount()),
-                getReblogsText(context, status.getReblogsCount()),
+                getVisibilityDescription(context, actionable.getVisibility()),
+                getFavsText(context, actionable.getFavouritesCount()),
+                getReblogsText(context, actionable.getReblogsCount()),
                 getPollDescription(status, context, statusDisplayOptions)
         );
         itemView.setContentDescription(description);
@@ -915,10 +921,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     private static CharSequence getReblogDescription(Context context,
                                                      @NonNull StatusViewData.Concrete status) {
-        String rebloggedUsername = status.getRebloggedByUsername();
-        if (rebloggedUsername != null) {
+        Status reblog = status.getRebloggingStatus();
+        if (reblog != null) {
             return context
-                    .getString(R.string.status_boosted_format, rebloggedUsername);
+                    .getString(R.string.status_boosted_format, reblog.getAccount().getUsername());
         } else {
             return "";
         }
@@ -926,11 +932,11 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     private static CharSequence getMediaDescription(Context context,
                                                     @NonNull StatusViewData.Concrete status) {
-        if (status.getAttachments().isEmpty()) {
+        if (status.getActionable().getAttachments().isEmpty()) {
             return "";
         }
         StringBuilder mediaDescriptions = CollectionsKt.fold(
-                status.getAttachments(),
+                status.getActionable().getAttachments(),
                 new StringBuilder(),
                 (builder, a) -> {
                     if (a.getDescription() == null) {
@@ -983,7 +989,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private CharSequence getPollDescription(@NonNull StatusViewData.Concrete status,
                                             Context context,
                                             StatusDisplayOptions statusDisplayOptions) {
-        PollViewData poll = status.getPoll();
+        PollViewData poll = PollViewDataKt.toViewData(status.getActionable().getPoll());
         if (poll == null) {
             return "";
         } else {
@@ -1089,7 +1095,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                          StatusDisplayOptions statusDisplayOptions,
                                          Context context) {
         String votesText;
-        if(poll.getVotersCount() == null) {
+        if (poll.getVotersCount() == null) {
             String voters = numberFormat.format(poll.getVotesCount());
             votesText = context.getResources().getQuantityString(R.plurals.poll_info_votes, poll.getVotesCount(), voters);
         } else {
@@ -1113,12 +1119,12 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     protected void setupCard(StatusViewData.Concrete status, CardViewMode cardViewMode, StatusDisplayOptions statusDisplayOptions) {
+        final Card card = status.getActionable().getCard();
         if (cardViewMode != CardViewMode.NONE &&
-                status.getAttachments().size() == 0 &&
-                status.getCard() != null &&
-                !TextUtils.isEmpty(status.getCard().getUrl()) &&
+                status.getActionable().getAttachments().size() == 0 &&
+                card != null &&
+                !TextUtils.isEmpty(card.getUrl()) &&
                 (!status.isCollapsible() || !status.isCollapsed())) {
-            final Card card = status.getCard();
             cardView.setVisibility(View.VISIBLE);
             cardTitle.setText(card.getTitle());
             if (TextUtils.isEmpty(card.getDescription()) && TextUtils.isEmpty(card.getAuthorName())) {
@@ -1137,7 +1143,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             // Statuses from other activitypub sources can be marked sensitive even if there's no media,
             // so let's blur the preview in that case
             // If media previews are disabled, show placeholder for cards as well
-            if (statusDisplayOptions.mediaPreviewEnabled() && !status.isSensitive() && !TextUtils.isEmpty(card.getImage())) {
+            if (statusDisplayOptions.mediaPreviewEnabled() && !status.getActionable().getSensitive() && !TextUtils.isEmpty(card.getImage())) {
 
                 int topLeftRadius = 0;
                 int topRightRadius = 0;

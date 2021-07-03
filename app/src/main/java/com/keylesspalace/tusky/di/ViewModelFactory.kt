@@ -11,6 +11,7 @@ import com.keylesspalace.tusky.components.drafts.DraftsViewModel
 import com.keylesspalace.tusky.components.report.ReportViewModel
 import com.keylesspalace.tusky.components.scheduled.ScheduledTootViewModel
 import com.keylesspalace.tusky.components.search.SearchViewModel
+import com.keylesspalace.tusky.components.timeline.TimelineViewModel
 import com.keylesspalace.tusky.viewmodel.AccountViewModel
 import com.keylesspalace.tusky.viewmodel.AccountsInListViewModel
 import com.keylesspalace.tusky.viewmodel.EditProfileViewModel
@@ -62,7 +63,6 @@ abstract class ViewModelModule {
     @ViewModelKey(ListsViewModel::class)
     internal abstract fun listsViewModel(viewModel: ListsViewModel): ViewModel
 
-
     @Binds
     @IntoMap
     @ViewModelKey(AccountsInListViewModel::class)
@@ -97,6 +97,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(DraftsViewModel::class)
     internal abstract fun draftsViewModel(viewModel: DraftsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(TimelineViewModel::class)
+    internal abstract fun timelineViewModel(viewModel: TimelineViewModel): ViewModel
 
     @Binds
     @IntoMap

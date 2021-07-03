@@ -105,7 +105,7 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
     }
 
     @Override
-    protected void setupWithStatus(final StatusViewData.Concrete status,
+    public void setupWithStatus(final StatusViewData.Concrete status,
                                    final StatusActionListener listener,
                                    StatusDisplayOptions statusDisplayOptions,
                                    @Nullable Object payloads) {
@@ -114,12 +114,13 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
         if (payloads == null) {
 
             if (!statusDisplayOptions.hideStats()) {
-                setReblogAndFavCount(status.getReblogsCount(), status.getFavouritesCount(), listener);
+                setReblogAndFavCount(status.getActionable().getReblogsCount(),
+                        status.getActionable().getFavouritesCount(), listener);
             } else {
                 hideQuantitativeStats();
             }
 
-            setApplication(status.getApplication());
+            setApplication(status.getActionable().getApplication());
 
             View.OnLongClickListener longClickListener = view -> {
                 TextView textView = (TextView) view;

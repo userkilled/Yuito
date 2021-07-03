@@ -16,7 +16,6 @@
 package com.keylesspalace.tusky.components.compose
 
 import android.Manifest
-import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -25,18 +24,20 @@ import android.content.pm.PackageManager
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
-import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.PopupMenu
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
@@ -84,18 +85,19 @@ import com.mikepenz.iconics.utils.sizeDp
 import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.IOException
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
-class ComposeActivity : BaseActivity(),
-        ComposeOptionsListener,
-        ComposeAutoCompleteAdapter.AutocompletionProvider,
-        OnEmojiSelectedListener,
-        Injectable,
-        InputConnectionCompat.OnCommitContentListener,
-        ComposeScheduleView.OnTimeSetListener {
+class ComposeActivity :
+    BaseActivity(),
+    ComposeOptionsListener,
+    ComposeAutoCompleteAdapter.AutocompletionProvider,
+    OnEmojiSelectedListener,
+    Injectable,
+    InputConnectionCompat.OnCommitContentListener,
+    ComposeScheduleView.OnTimeSetListener {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -121,6 +123,21 @@ class ComposeActivity : BaseActivity(),
     private val maxUploadMediaNumber = 4
     private var mediaCount = 0
 
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            pickMedia(photoUploadUri!!)
+        }
+    }
+    private val pickMediaFile = registerForActivityResult(PickMediaFiles()) { uris ->
+        if (mediaCount + uris.size > maxUploadMediaNumber) {
+            Toast.makeText(this, resources.getQuantityString(R.plurals.error_upload_max_media_reached, maxUploadMediaNumber, maxUploadMediaNumber), Toast.LENGTH_SHORT).show()
+        } else {
+            uris.forEach { uri ->
+                pickMedia(uri)
+            }
+        }
+    }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -137,16 +154,16 @@ class ComposeActivity : BaseActivity(),
 
         setupAvatar(preferences, activeAccount)
         val mediaAdapter = MediaPreviewAdapter(
-                this,
-                onAddCaption = { item ->
-                    makeCaptionDialog(item.description, item.uri) { newDescription ->
-                        viewModel.updateDescription(item.localId, newDescription)
-                    }
-                },
-                onRemove = this::removeMediaFromQueue
+            this,
+            onAddCaption = { item ->
+                makeCaptionDialog(item.description, item.uri) { newDescription ->
+                    viewModel.updateDescription(item.localId, newDescription)
+                }
+            },
+            onRemove = this::removeMediaFromQueue
         )
         binding.composeMediaPreviewBar.layoutManager =
-                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.composeMediaPreviewBar.adapter = mediaAdapter
         binding.composeMediaPreviewBar.itemAnimator = null
 
@@ -168,11 +185,7 @@ class ComposeActivity : BaseActivity(),
             binding.composeEditField.setText(tootText)
         }
 
-        if (loadInstanceData(preferences, composeOptions?.tootRightNow == true)) {
-            viewModel.loadInstanceDataFromNetwork()
-        } else {
-            viewModel.loadInstanceDataFromCache()
-        }
+        viewModel.loadInstanceDataFromNetwork(loadInstanceData(preferences, composeOptions?.tootRightNow == true))
 
         if (!composeOptions?.scheduledAt.isNullOrEmpty()) {
             binding.composeScheduleView.setDateTime(composeOptions?.scheduledAt)
@@ -314,11 +327,11 @@ class ComposeActivity : BaseActivity(),
         binding.composeEditField.setOnKeyListener { _, keyCode, event -> this.onKeyDown(keyCode, event) }
 
         binding.composeEditField.setAdapter(
-                ComposeAutoCompleteAdapter(
-                        this,
-                        preferences.getBoolean(PrefKeys.ANIMATE_GIF_AVATARS, false),
-                        preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false)
-                )
+            ComposeAutoCompleteAdapter(
+                this,
+                preferences.getBoolean(PrefKeys.ANIMATE_GIF_AVATARS, false),
+                preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false)
+            )
         )
         binding.composeEditField.setTokenizer(ComposeTokenizer())
 
@@ -333,8 +346,9 @@ class ComposeActivity : BaseActivity(),
         }
 
         // work around Android platform bug -> https://issuetracker.google.com/issues/67102093
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O
-                || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O ||
+            Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1
+        ) {
             binding.composeEditField.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         }
     }
@@ -375,9 +389,9 @@ class ComposeActivity : BaseActivity(),
                 updateScheduleButton()
             }
             combineOptionalLiveData(viewModel.media, viewModel.poll) { media, poll ->
-                val active = poll == null
-                        && media!!.size != 4
-                        && (media.isEmpty() || media.first().type == QueuedMedia.Type.IMAGE)
+                val active = poll == null &&
+                    media!!.size != 4 &&
+                    (media.isEmpty() || media.first().type == QueuedMedia.Type.IMAGE)
                 enableButton(binding.composeAddMediaButton, active, active)
                 enablePollButton(media.isNullOrEmpty())
             }.subscribe()
@@ -457,7 +471,6 @@ class ComposeActivity : BaseActivity(),
             setDisplayShowHomeEnabled(true)
             setHomeAsUpIndicator(R.drawable.ic_close_24dp)
         }
-
     }
 
     private fun setupAvatar(preferences: SharedPreferences, activeAccount: AccountEntity) {
@@ -468,13 +481,15 @@ class ComposeActivity : BaseActivity(),
 
         val animateAvatars = preferences.getBoolean("animateGifAvatars", false)
         loadAvatar(
-                activeAccount.profilePictureUrl,
-                binding.composeAvatar,
-                avatarSize / 8,
-                animateAvatars
+            activeAccount.profilePictureUrl,
+            binding.composeAvatar,
+            avatarSize / 8,
+            animateAvatars
         )
-        binding.composeAvatar.contentDescription = getString(R.string.compose_active_account_description,
-                activeAccount.fullName)
+        binding.composeAvatar.contentDescription = getString(
+            R.string.compose_active_account_description,
+            activeAccount.fullName
+        )
     }
 
     private fun replaceTextAtCaret(text: CharSequence) {
@@ -532,7 +547,6 @@ class ComposeActivity : BaseActivity(),
         }
     }
 
-
     private fun atButtonClicked() {
         prependSelectedWordsWith("@")
     }
@@ -548,7 +562,7 @@ class ComposeActivity : BaseActivity(),
 
     private fun displayTransientError(@StringRes stringId: Int) {
         val bar = Snackbar.make(binding.activityCompose, stringId, Snackbar.LENGTH_LONG)
-        //necessary so snackbar is shown over everything
+        // necessary so snackbar is shown over everything
         bar.view.elevation = resources.getDimension(R.dimen.compose_activity_snackbar_elevation)
         bar.show()
     }
@@ -566,7 +580,6 @@ class ComposeActivity : BaseActivity(),
                 binding.composeHideMediaButton.setImageResource(R.drawable.ic_hide_media_24dp)
                 binding.composeHideMediaButton.isClickable = false
                 ContextCompat.getColor(this, R.color.transparent_tusky_blue)
-
             } else {
                 binding.composeHideMediaButton.isClickable = true
                 if (markMediaSensitive) {
@@ -676,15 +689,17 @@ class ComposeActivity : BaseActivity(),
     private fun onMediaPick() {
         addMediaBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                //Wait until bottom sheet is not collapsed and show next screen after
+                // Wait until bottom sheet is not collapsed and show next screen after
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     addMediaBehavior.removeBottomSheetCallback(this)
                     if (ContextCompat.checkSelfPermission(this@ComposeActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this@ComposeActivity,
-                                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                                PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE)
+                        ActivityCompat.requestPermissions(
+                            this@ComposeActivity,
+                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                            PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE
+                        )
                     } else {
-                        initiateMediaPicking()
+                        pickMediaFile.launch(true)
                     }
                 }
             }
@@ -698,8 +713,10 @@ class ComposeActivity : BaseActivity(),
     private fun openPollDialog() {
         addMediaBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         val instanceParams = viewModel.instanceParams.value!!
-        showAddPollDialog(this, viewModel.poll.value, instanceParams.pollMaxOptions,
-                instanceParams.pollMaxLength, viewModel::updatePoll)
+        showAddPollDialog(
+            this, viewModel.poll.value, instanceParams.pollMaxOptions,
+            instanceParams.pollMaxLength, viewModel::updatePoll
+        )
     }
 
     private fun setupPollView() {
@@ -826,35 +843,40 @@ class ComposeActivity : BaseActivity(),
 
             if (viewModel.media.value!!.isNotEmpty()) {
                 finishingUploadDialog = ProgressDialog.show(
-                        this, getString(R.string.dialog_title_finishing_media_upload),
-                        getString(R.string.dialog_message_uploading_media), true, true)
+                    this, getString(R.string.dialog_title_finishing_media_upload),
+                    getString(R.string.dialog_message_uploading_media), true, true
+                )
             }
 
-            viewModel.sendStatus(contentText, spoilerText).observe(this, {
-                finishingUploadDialog?.dismiss()
-                deleteDraftAndFinish()
-            })
-
+            viewModel.sendStatus(contentText, spoilerText).observe(
+                this,
+                {
+                    finishingUploadDialog?.dismiss()
+                    deleteDraftAndFinish()
+                }
+            )
         } else {
             binding.composeEditField.error = getString(R.string.error_compose_character_limit)
             enableButtons(true)
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
         if (requestCode == PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                initiateMediaPicking()
+                pickMediaFile.launch(true)
             } else {
-                val bar = Snackbar.make(binding.activityCompose, R.string.error_media_upload_permission,
-                        Snackbar.LENGTH_SHORT).apply {
-
+                Snackbar.make(
+                    binding.activityCompose, R.string.error_media_upload_permission,
+                    Snackbar.LENGTH_SHORT
+                ).apply {
+                    setAction(R.string.action_retry) { onMediaPick() }
+                    // necessary so snackbar is shown over everything
+                    view.elevation = resources.getDimension(R.dimen.compose_activity_snackbar_elevation)
+                    show()
                 }
-                bar.setAction(R.string.action_retry) { onMediaPick() }
-                //necessary so snackbar is shown over everything
-                bar.view.elevation = resources.getDimension(R.dimen.compose_activity_snackbar_elevation)
-                bar.show()
             }
         }
     }
@@ -862,81 +884,44 @@ class ComposeActivity : BaseActivity(),
     private fun initiateCameraApp() {
         addMediaBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
-        // We don't need to ask for permission in this case, because the used calls require
-        // android.permission.WRITE_EXTERNAL_STORAGE only on SDKs *older* than Kitkat, which was
-        // way before permission dialogues have been introduced.
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (intent.resolveActivity(packageManager) != null) {
-            val photoFile: File = try {
-                createNewImageFile(this)
-            } catch (ex: IOException) {
-                displayTransientError(R.string.error_media_upload_opening)
-                return
-            }
-
-            // Continue only if the File was successfully created
-            photoUploadUri = FileProvider.getUriForFile(this,
-                    BuildConfig.APPLICATION_ID + ".fileprovider",
-                    photoFile)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUploadUri)
-            startActivityForResult(intent, MEDIA_TAKE_PHOTO_RESULT)
+        val photoFile: File = try {
+            createNewImageFile(this)
+        } catch (ex: IOException) {
+            displayTransientError(R.string.error_media_upload_opening)
+            return
         }
-    }
 
-    private fun initiateMediaPicking() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-        val mimeTypes = arrayOf("image/*", "video/*", "audio/*")
-        intent.type = "*/*"
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        startActivityForResult(intent, MEDIA_PICK_RESULT)
+        // Continue only if the File was successfully created
+        photoUploadUri = FileProvider.getUriForFile(
+            this,
+            BuildConfig.APPLICATION_ID + ".fileprovider",
+            photoFile
+        )
+        takePicture.launch(photoUploadUri)
     }
 
     private fun enableButton(button: ImageButton, clickable: Boolean, colorActive: Boolean) {
         button.isEnabled = clickable
-        ThemeUtils.setDrawableTint(this, button.drawable,
-                if (colorActive) android.R.attr.textColorTertiary
-                else R.attr.textColorDisabled)
+        ThemeUtils.setDrawableTint(
+            this, button.drawable,
+            if (colorActive) android.R.attr.textColorTertiary
+            else R.attr.textColorDisabled
+        )
     }
 
     private fun enablePollButton(enable: Boolean) {
         binding.addPollTextActionTextView.isEnabled = enable
-        val textColor = ThemeUtils.getColor(this,
-                if (enable) android.R.attr.textColorTertiary
-                else R.attr.textColorDisabled)
+        val textColor = ThemeUtils.getColor(
+            this,
+            if (enable) android.R.attr.textColorTertiary
+            else R.attr.textColorDisabled
+        )
         binding.addPollTextActionTextView.setTextColor(textColor)
         binding.addPollTextActionTextView.compoundDrawablesRelative[0].colorFilter = PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN)
     }
 
     private fun removeMediaFromQueue(item: QueuedMedia) {
         viewModel.removeMediaFromQueue(item)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        super.onActivityResult(requestCode, resultCode, intent)
-        if (resultCode == Activity.RESULT_OK && requestCode == MEDIA_PICK_RESULT && intent != null) {
-            if (intent.data != null) {
-                // Single media, upload it and done.
-                pickMedia(intent.data!!)
-            } else if (intent.clipData != null) {
-                val clipData = intent.clipData!!
-                val count = clipData.itemCount
-                if (mediaCount + count > maxUploadMediaNumber) {
-                    // check if exist media + upcoming media > 4, then prob error message.
-                    Toast.makeText(this, resources.getQuantityString(R.plurals.error_upload_max_media_reached, maxUploadMediaNumber, maxUploadMediaNumber), Toast.LENGTH_SHORT).show()
-                } else {
-                    // if not grater then 4, upload all multiple media.
-                    for (i in 0 until count) {
-                        val imageUri = clipData.getItemAt(i).getUri()
-                        pickMedia(imageUri)
-                    }
-                }
-            }
-        } else if (resultCode == Activity.RESULT_OK && requestCode == MEDIA_TAKE_PHOTO_RESULT) {
-            pickMedia(photoUploadUri!!)
-        }
     }
 
     private fun pickMedia(uri: Uri, contentInfoCompat: InputContentInfoCompat? = null) {
@@ -962,7 +947,6 @@ class ComposeActivity : BaseActivity(),
                     }
                     displayTransientError(errorId)
                 }
-
             }
         }
     }
@@ -994,9 +978,10 @@ class ComposeActivity : BaseActivity(),
     override fun onBackPressed() {
         // Acting like a teen: deliberately ignoring parent.
         if (composeOptionsBehavior.state == BottomSheetBehavior.STATE_EXPANDED ||
-                addMediaBehavior.state == BottomSheetBehavior.STATE_EXPANDED ||
-                emojiBehavior.state == BottomSheetBehavior.STATE_EXPANDED ||
-                scheduleBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+            addMediaBehavior.state == BottomSheetBehavior.STATE_EXPANDED ||
+            emojiBehavior.state == BottomSheetBehavior.STATE_EXPANDED ||
+            scheduleBehavior.state == BottomSheetBehavior.STATE_EXPANDED
+        ) {
             composeOptionsBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             addMediaBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             emojiBehavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -1031,12 +1016,12 @@ class ComposeActivity : BaseActivity(),
         val contentWarning = binding.composeContentWarningField.text.toString()
         if (viewModel.didChange(contentText, contentWarning)) {
             AlertDialog.Builder(this)
-                    .setMessage(R.string.compose_save_draft)
-                    .setPositiveButton(R.string.action_save) { _, _ ->
-                        saveDraftAndFinish(contentText, contentWarning)
-                    }
-                    .setNegativeButton(R.string.action_delete) { _, _ -> deleteDraftAndFinish() }
-                    .show()
+                .setMessage(R.string.compose_save_draft)
+                .setPositiveButton(R.string.action_save) { _, _ ->
+                    saveDraftAndFinish(contentText, contentWarning)
+                }
+                .setNegativeButton(R.string.action_delete) { _, _ -> deleteDraftAndFinish() }
+                .show()
         } else {
             finishWithoutSlideOutAnimation()
         }
@@ -1068,13 +1053,13 @@ class ComposeActivity : BaseActivity(),
     }
 
     data class QueuedMedia(
-            val localId: Long,
-            val uri: Uri,
-            val type: Type,
-            val mediaSize: Long,
-            val uploadPercent: Int = 0,
-            val id: String? = null,
-            val description: String? = null
+        val localId: Long,
+        val uri: Uri,
+        val type: Type,
+        val mediaSize: Long,
+        val uploadPercent: Int = 0,
+        val id: String? = null,
+        val description: String? = null
     ) {
         enum class Type {
             IMAGE, VIDEO, AUDIO;
@@ -1099,7 +1084,6 @@ class ComposeActivity : BaseActivity(),
     data class ComposeOptions(
             // Let's keep fields var until all consumers are Kotlin
             var scheduledTootId: String? = null,
-            var savedTootUid: Int? = null,
             var draftId: Int? = null,
             var tootText: String? = null,
             var mediaUrls: List<String>? = null,
@@ -1125,8 +1109,6 @@ class ComposeActivity : BaseActivity(),
 
     companion object {
         private const val TAG = "ComposeActivity" // logging tag
-        private const val MEDIA_PICK_RESULT = 1
-        private const val MEDIA_TAKE_PHOTO_RESULT = 2
         private const val PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1
 
         internal const val COMPOSE_OPTIONS_EXTRA = "COMPOSE_OPTIONS"

@@ -1,4 +1,4 @@
-/* Copyright 2019 Conny Duck
+/* Copyright 2021 Tusky Contributors
  *
  * This file is a part of Tusky.
  *
@@ -21,65 +21,70 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.TypeConverters
 import com.keylesspalace.tusky.db.Converters
-import com.keylesspalace.tusky.entity.*
+import com.keylesspalace.tusky.entity.Account
+import com.keylesspalace.tusky.entity.Attachment
+import com.keylesspalace.tusky.entity.Conversation
+import com.keylesspalace.tusky.entity.Emoji
+import com.keylesspalace.tusky.entity.Poll
+import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.util.shouldTrimStatus
-import java.util.*
+import java.util.Date
 
-@Entity(primaryKeys = ["id","accountId"])
+@Entity(primaryKeys = ["id", "accountId"])
 @TypeConverters(Converters::class)
 data class ConversationEntity(
-        val accountId: Long,
-        val id: String,
-        val accounts: List<ConversationAccountEntity>,
-        val unread: Boolean,
-        @Embedded(prefix = "s_") val lastStatus: ConversationStatusEntity
+    val accountId: Long,
+    val id: String,
+    val accounts: List<ConversationAccountEntity>,
+    val unread: Boolean,
+    @Embedded(prefix = "s_") val lastStatus: ConversationStatusEntity
 )
 
 data class ConversationAccountEntity(
-        val id: String,
-        val username: String,
-        val displayName: String,
-        val avatar: String,
-        val emojis: List<Emoji>
+    val id: String,
+    val username: String,
+    val displayName: String,
+    val avatar: String,
+    val emojis: List<Emoji>
 ) {
     fun toAccount(): Account {
         return Account(
-                id = id,
-                username = username,
-                displayName = displayName,
-                avatar = avatar,
-                emojis = emojis,
-                url = "",
-                localUsername = "",
-                note = SpannedString(""),
-                header = ""
+            id = id,
+            username = username,
+            displayName = displayName,
+            avatar = avatar,
+            emojis = emojis,
+            url = "",
+            localUsername = "",
+            note = SpannedString(""),
+            header = ""
         )
     }
 }
 
 @TypeConverters(Converters::class)
 data class ConversationStatusEntity(
-        val id: String,
-        val url: String?,
-        val inReplyToId: String?,
-        val inReplyToAccountId: String?,
-        val account: ConversationAccountEntity,
-        val content: Spanned,
-        val createdAt: Date,
-        val emojis: List<Emoji>,
-        val favouritesCount: Int,
-        val favourited: Boolean,
-        val bookmarked: Boolean,
-        val sensitive: Boolean,
-        val spoilerText: String,
-        val attachments: ArrayList<Attachment>,
-        val mentions: Array<Status.Mention>,
-        val showingHiddenContent: Boolean,
-        val expanded: Boolean,
-        val collapsible: Boolean,
-        val collapsed: Boolean,
-        val poll: Poll?
-
+    val id: String,
+    val url: String?,
+    val inReplyToId: String?,
+    val inReplyToAccountId: String?,
+    val account: ConversationAccountEntity,
+    val content: Spanned,
+    val createdAt: Date,
+    val emojis: List<Emoji>,
+    val favouritesCount: Int,
+    val favourited: Boolean,
+    val bookmarked: Boolean,
+    val sensitive: Boolean,
+    val spoilerText: String,
+    val attachments: ArrayList<Attachment>,
+    val mentions: List<Status.Mention>,
+    val showingHiddenContent: Boolean,
+    val expanded: Boolean,
+    val collapsible: Boolean,
+    val collapsed: Boolean,
+    val muted: Boolean,
+    val poll: Poll?
 ) {
     /** its necessary to override this because Spanned.equals does not work as expected  */
     override fun equals(other: Any?): Boolean {
@@ -93,7 +98,7 @@ data class ConversationStatusEntity(
         if (inReplyToId != other.inReplyToId) return false
         if (inReplyToAccountId != other.inReplyToAccountId) return false
         if (account != other.account) return false
-        if (content.toString() != other.content.toString()) return false //TODO find a better method to compare two spanned strings
+        if (content.toString() != other.content.toString()) return false // TODO find a better method to compare two spanned strings
         if (createdAt != other.createdAt) return false
         if (emojis != other.emojis) return false
         if (favouritesCount != other.favouritesCount) return false
@@ -101,11 +106,12 @@ data class ConversationStatusEntity(
         if (sensitive != other.sensitive) return false
         if (spoilerText != other.spoilerText) return false
         if (attachments != other.attachments) return false
-        if (!mentions.contentEquals(other.mentions)) return false
+        if (mentions != other.mentions) return false
         if (showingHiddenContent != other.showingHiddenContent) return false
         if (expanded != other.expanded) return false
         if (collapsible != other.collapsible) return false
         if (collapsed != other.collapsed) return false
+        if (muted != other.muted) return false
         if (poll != other.poll) return false
 
         return true
@@ -125,72 +131,86 @@ data class ConversationStatusEntity(
         result = 31 * result + sensitive.hashCode()
         result = 31 * result + spoilerText.hashCode()
         result = 31 * result + attachments.hashCode()
-        result = 31 * result + mentions.contentHashCode()
+        result = 31 * result + mentions.hashCode()
         result = 31 * result + showingHiddenContent.hashCode()
         result = 31 * result + expanded.hashCode()
         result = 31 * result + collapsible.hashCode()
         result = 31 * result + collapsed.hashCode()
+        result = 31 * result + muted.hashCode()
         result = 31 * result + poll.hashCode()
         return result
     }
 
     fun toStatus(): Status {
         return Status(
-                id = id,
-                url = url,
-                account = account.toAccount(),
-                inReplyToId = inReplyToId,
-                inReplyToAccountId = inReplyToAccountId,
-                content = content,
-                reblog = null,
-                createdAt = createdAt,
-                emojis = emojis,
-                reblogsCount = 0,
-                favouritesCount = favouritesCount,
-                reblogged = false,
-                favourited = favourited,
-                bookmarked = bookmarked,
-                sensitive= sensitive,
-                spoilerText = spoilerText,
-                visibility = Status.Visibility.DIRECT,
-                attachments = attachments,
-                mentions = mentions,
-                application = null,
-                pinned = false,
-                muted = false,
-                poll = poll,
-                card = null,
-                quote = null)
+            id = id,
+            url = url,
+            account = account.toAccount(),
+            inReplyToId = inReplyToId,
+            inReplyToAccountId = inReplyToAccountId,
+            content = content,
+            reblog = null,
+            createdAt = createdAt,
+            emojis = emojis,
+            reblogsCount = 0,
+            favouritesCount = favouritesCount,
+            reblogged = false,
+            favourited = favourited,
+            bookmarked = bookmarked,
+            sensitive = sensitive,
+            spoilerText = spoilerText,
+            visibility = Status.Visibility.DIRECT,
+            attachments = attachments,
+            mentions = mentions,
+            application = null,
+            pinned = false,
+            muted = muted,
+            poll = poll,
+            card = null,
+            quote = null,
+        )
     }
 }
 
 fun Account.toEntity() =
-        ConversationAccountEntity(
-                id,
-                username,
-                name,
-                avatar,
-                emojis ?: emptyList()
-        )
+    ConversationAccountEntity(
+        id = id,
+        username = username,
+        displayName = name,
+        avatar = avatar,
+        emojis = emojis ?: emptyList()
+    )
 
 fun Status.toEntity() =
-        ConversationStatusEntity(
-                id, url, inReplyToId, inReplyToAccountId, account.toEntity(), content,
-                createdAt, emojis, favouritesCount, favourited, bookmarked, sensitive,
-                spoilerText, attachments, mentions,
-                false,
-                false,
-                shouldTrimStatus(content),
-                true,
-                poll
-        )
-
+    ConversationStatusEntity(
+        id = id,
+        url = url,
+        inReplyToId = inReplyToId,
+        inReplyToAccountId = inReplyToAccountId,
+        account = account.toEntity(),
+        content = content,
+        createdAt = createdAt,
+        emojis = emojis,
+        favouritesCount = favouritesCount,
+        favourited = favourited,
+        bookmarked = bookmarked,
+        sensitive = sensitive,
+        spoilerText = spoilerText,
+        attachments = attachments,
+        mentions = mentions,
+        showingHiddenContent = false,
+        expanded = false,
+        collapsible = shouldTrimStatus(content),
+        collapsed = true,
+        muted = muted ?: false,
+        poll = poll
+    )
 
 fun Conversation.toEntity(accountId: Long) =
-        ConversationEntity(
-                accountId,
-                id,
-                accounts.map { it.toEntity() },
-                unread,
-                lastStatus!!.toEntity()
-        )
+    ConversationEntity(
+        accountId = accountId,
+        id = id,
+        accounts = accounts.map { it.toEntity() },
+        unread = unread,
+        lastStatus = lastStatus!!.toEntity()
+    )

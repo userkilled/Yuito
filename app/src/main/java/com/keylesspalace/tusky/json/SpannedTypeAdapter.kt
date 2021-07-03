@@ -18,7 +18,13 @@ package com.keylesspalace.tusky.json
 import android.text.Spanned
 import androidx.core.text.HtmlCompat
 import androidx.core.text.parseAsHtml
-import com.google.gson.*
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.keylesspalace.tusky.util.trimTrailingWhitespace
 import org.jsoup.Jsoup
 import java.lang.reflect.Type

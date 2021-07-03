@@ -1,4 +1,4 @@
-/* Copyright 2017 Andrew Dawson
+/* Copyright 2021 Tusky Contributors
  *
  * This file is a part of Tusky.
  *
@@ -199,14 +199,15 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                         } else {
                             holder.showNotificationContent(true);
 
-                            holder.setDisplayName(statusViewData.getUserFullName(), statusViewData.getAccountEmojis());
-                            holder.setUsername(statusViewData.getNickname());
-                            holder.setCreatedAt(statusViewData.getCreatedAt());
+                            Status status = statusViewData.getActionable();
+                            holder.setDisplayName(status.getAccount().getName(), status.getAccount().getEmojis());
+                            holder.setUsername(status.getAccount().getUsername());
+                            holder.setCreatedAt(status.getCreatedAt());
 
-                            if(concreteNotificaton.getType() == Notification.Type.STATUS) {
-                                holder.setAvatar(statusViewData.getAvatar(), statusViewData.isBot());
+                            if (concreteNotificaton.getType() == Notification.Type.STATUS) {
+                                holder.setAvatar(status.getAccount().getAvatar(), status.getAccount().getBot());
                             } else {
-                                holder.setAvatars(statusViewData.getAvatar(),
+                                holder.setAvatars(status.getAccount().getAvatar(),
                                         concreteNotificaton.getAccount().getAvatar());
                             }
                         }
@@ -219,7 +220,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                         if (payloadForHolder instanceof List)
                             for (Object item : (List) payloadForHolder) {
                                 if (StatusBaseViewHolder.Key.KEY_CREATED.equals(item) && statusViewData != null) {
-                                    holder.setCreatedAt(statusViewData.getCreatedAt());
+                                    holder.setCreatedAt(statusViewData.getStatus().getActionableStatus().getCreatedAt());
                                 }
                             }
                     }
@@ -539,7 +540,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             message.setText(emojifiedText);
 
             if (statusViewData != null) {
-                boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getSpoilerText());
+                boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getStatus().getSpoilerText());
                 contentWarningDescriptionTextView.setVisibility(hasSpoiler ? View.VISIBLE : View.GONE);
                 contentWarningButton.setVisibility(hasSpoiler ? View.VISIBLE : View.GONE);
                 if (statusViewData.isExpanded()) {
@@ -594,7 +595,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
 
             notificationAvatar.setVisibility(View.VISIBLE);
             ImageLoadingHelper.loadAvatar(notificationAvatarUrl, notificationAvatar,
-                avatarRadius24dp, statusDisplayOptions.animateAvatars());
+                    avatarRadius24dp, statusDisplayOptions.animateAvatars());
         }
 
         private void setQuoteContainer(Status status, final LinkListener listener, StatusDisplayOptions statusDisplayOptions) {
@@ -627,7 +628,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         private void setupContentAndSpoiler(final LinkListener listener) {
 
             boolean shouldShowContentIfSpoiler = statusViewData.isExpanded();
-            boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getSpoilerText());
+            boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getStatus(). getSpoilerText());
             if (!shouldShowContentIfSpoiler && hasSpoiler) {
                 statusContent.setVisibility(View.GONE);
             } else {
@@ -635,7 +636,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
 
             Spanned content = statusViewData.getContent();
-            List<Emoji> emojis = statusViewData.getStatusEmojis();
+            List<Emoji> emojis = statusViewData.getActionable().getEmojis();
 
             if (statusViewData.isCollapsible() && (statusViewData.isExpanded() || !hasSpoiler)) {
                 contentCollapseButton.setOnClickListener(view -> {
@@ -661,17 +662,22 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             CharSequence emojifiedText = CustomEmojiHelper.emojify(
                     content, emojis, statusContent, statusDisplayOptions.animateEmojis()
             );
-            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener);
+            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getActionable().getMentions(), listener);
 
-            CharSequence emojifiedContentWarning = CustomEmojiHelper.emojify(
-                    statusViewData.getSpoilerText(),
-                    statusViewData.getStatusEmojis(),
-                    contentWarningDescriptionTextView,
-                    statusDisplayOptions.animateEmojis()
-            );
+            CharSequence emojifiedContentWarning;
+            if (statusViewData.getSpoilerText() != null) {
+                emojifiedContentWarning = CustomEmojiHelper.emojify(
+                        statusViewData.getSpoilerText(),
+                        statusViewData.getActionable().getEmojis(),
+                        contentWarningDescriptionTextView,
+                        statusDisplayOptions.animateEmojis()
+                );
+            } else {
+                emojifiedContentWarning = "";
+            }
             contentWarningDescriptionTextView.setText(emojifiedContentWarning);
 
-            setQuoteContainer(statusViewData.getQuote(), listener, statusDisplayOptions);
+            setQuoteContainer(statusViewData.getStatus().getQuote(), listener, statusDisplayOptions);
         }
 
     }

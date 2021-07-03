@@ -15,12 +15,12 @@
 
 package com.keylesspalace.tusky.viewdata;
 
+import androidx.annotation.Nullable;
+
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Notification;
 
 import java.util.Objects;
-
-import io.reactivex.annotations.Nullable;
 
 /**
  * Created by charlag on 12/07/2017.
@@ -86,15 +86,17 @@ public abstract class NotificationViewData {
             return type == concrete.type &&
                     Objects.equals(id, concrete.id) &&
                     account.getId().equals(concrete.account.getId()) &&
-                    (statusViewData == concrete.statusViewData ||
-                            statusViewData != null &&
-                                    statusViewData.deepEquals(concrete.statusViewData));
+                    (Objects.equals(statusViewData, concrete.statusViewData));
         }
 
         @Override
         public int hashCode() {
 
             return Objects.hash(type, id, account, statusViewData);
+        }
+
+        public Concrete copyWithStatus(@Nullable StatusViewData.Concrete statusViewData) {
+            return new Concrete(type, id, account, statusViewData);
         }
     }
 

@@ -27,11 +27,11 @@ import com.keylesspalace.tusky.util.onTextChanged
 import com.keylesspalace.tusky.util.visible
 
 class AddPollOptionsAdapter(
-        private var options: MutableList<String>,
-        private val maxOptionLength: Int,
-        private val onOptionRemoved: (Boolean) -> Unit,
-        private val onOptionChanged: (Boolean) -> Unit
-): RecyclerView.Adapter<BindingHolder<ItemAddPollOptionBinding>>() {
+    private var options: MutableList<String>,
+    private val maxOptionLength: Int,
+    private val onOptionRemoved: (Boolean) -> Unit,
+    private val onOptionChanged: (Boolean) -> Unit
+) : RecyclerView.Adapter<BindingHolder<ItemAddPollOptionBinding>>() {
 
     val pollOptions: List<String>
         get() = options.toList()
@@ -47,8 +47,8 @@ class AddPollOptionsAdapter(
         binding.optionEditText.filters = arrayOf(InputFilter.LengthFilter(maxOptionLength))
 
         binding.optionEditText.onTextChanged { s, _, _, _ ->
-            val pos = holder.adapterPosition
-            if(pos != RecyclerView.NO_POSITION) {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
                 options[pos] = s.toString()
                 onOptionChanged(validateInput())
             }
@@ -68,8 +68,8 @@ class AddPollOptionsAdapter(
 
         holder.binding.deleteButton.setOnClickListener {
             holder.binding.optionEditText.clearFocus()
-            options.removeAt(holder.adapterPosition)
-            notifyItemRemoved(holder.adapterPosition)
+            options.removeAt(holder.bindingAdapterPosition)
+            notifyItemRemoved(holder.bindingAdapterPosition)
             onOptionRemoved(validateInput())
         }
     }

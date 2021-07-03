@@ -36,7 +36,7 @@ import okhttp3.OkHttp
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import java.net.InetSocketAddress
@@ -55,16 +55,16 @@ class NetworkModule {
     @Singleton
     fun providesGson(): Gson {
         return GsonBuilder()
-                .registerTypeAdapter(Spanned::class.java, SpannedTypeAdapter())
-                .create()
+            .registerTypeAdapter(Spanned::class.java, SpannedTypeAdapter())
+            .create()
     }
 
     @Provides
     @Singleton
     fun providesHttpClient(
-            accountManager: AccountManager,
-            context: Context,
-            preferences: SharedPreferences
+        accountManager: AccountManager,
+        context: Context,
+        preferences: SharedPreferences
     ): OkHttpClient {
         val httpProxyEnabled = preferences.getBoolean("httpProxyEnabled", false)
         val httpServer = preferences.getNonNullString("httpProxyServer", "")
@@ -94,28 +94,27 @@ class NetworkModule {
             builder.proxy(Proxy(Proxy.Type.HTTP, address))
         }
         return builder
-                .apply {
-                    addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
-                    if (BuildConfig.DEBUG) {
-                        addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
-                        addInterceptor(HttpToastInterceptor(context))
-                    }
+            .apply {
+                addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+                    addInterceptor(HttpToastInterceptor(context))
                 }
-                .build()
+            }
+            .build()
     }
 
     @Provides
     @Singleton
     fun providesRetrofit(
-            httpClient: OkHttpClient,
-            gson: Gson
+        httpClient: OkHttpClient,
+        gson: Gson
     ): Retrofit {
         return Retrofit.Builder().baseUrl("https://" + MastodonApi.PLACEHOLDER_DOMAIN)
-                .client(httpClient)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
-                .build()
-
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+            .build()
     }
 
     @Provides
@@ -124,13 +123,15 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun providesNotestockApi(okHttpClient: OkHttpClient,
-                             gson: Gson): NotestockApi {
+    fun providesNotestockApi(
+        okHttpClient: OkHttpClient,
+                             gson: Gson
+    ): NotestockApi {
         val retrofit = Retrofit.Builder().baseUrl("https://notestock.osa-p.net")
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
-                .build()
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+            .build()
         return retrofit.create(NotestockApi::class.java)
     }
 }

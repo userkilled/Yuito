@@ -16,9 +16,9 @@
 package com.keylesspalace.tusky
 
 import android.os.Bundle
-import androidx.annotation.RawRes
 import android.util.Log
 import android.widget.TextView
+import androidx.annotation.RawRes
 import com.keylesspalace.tusky.databinding.ActivityLicenseBinding
 import com.keylesspalace.tusky.util.IOUtils
 import java.io.BufferedReader
@@ -42,7 +42,6 @@ class LicenseActivity : BaseActivity() {
 
         loadFileIntoTextView(R.raw.apache, binding.licenseApacheTextView)
         loadFileIntoTextView(R.raw.mit, binding.licenseMitTextView)
-
     }
 
     private fun loadFileIntoTextView(@RawRes fileId: Int, textView: TextView) {

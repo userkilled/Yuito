@@ -40,6 +40,7 @@ import com.keylesspalace.tusky.interfaces.LinkListener;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 public class LinkHelper {
     public static String getDomain(String urlString) {
@@ -69,7 +70,7 @@ public class LinkHelper {
      * @param listener to notify about particular spans that are clicked
      */
     public static void setClickableText(TextView view, CharSequence content,
-                                        @Nullable Status.Mention[] mentions, final LinkListener listener) {
+                                        @Nullable List<Status.Mention> mentions, final LinkListener listener) {
         SpannableStringBuilder builder = SpannableStringBuilder.valueOf(content);
         URLSpan[] urlSpans = builder.getSpans(0, content.length(), URLSpan.class);
         for (URLSpan span : urlSpans) {
@@ -81,11 +82,11 @@ public class LinkHelper {
 
             if (text.charAt(0) == '#') {
                 final String tag = text.subSequence(1, text.length()).toString();
-                customSpan = new ClickableSpanNoUnderline() {
+                customSpan = new NoUnderlineURLSpan(span.getURL()) {
                     @Override
                     public void onClick(@NonNull View widget) { listener.onViewTag(tag); }
                 };
-            } else if (text.charAt(0) == '@' && mentions != null && mentions.length > 0) {
+            } else if (text.charAt(0) == '@' && mentions != null && mentions.size() > 0) {
                 String accountUsername = text.subSequence(1, text.length()).toString();
                 /* There may be multiple matches for users on different instances with the same
                  * username. If a match has the same domain we know it's for sure the same, but if
@@ -101,7 +102,7 @@ public class LinkHelper {
                 }
                 if (id != null) {
                     final String accountId = id;
-                    customSpan = new ClickableSpanNoUnderline() {
+                    customSpan = new NoUnderlineURLSpan(span.getURL()) {
                         @Override
                         public void onClick(@NonNull View widget) { listener.onViewAccount(accountId); }
                     };
@@ -109,9 +110,9 @@ public class LinkHelper {
             }
 
             if (customSpan == null) {
-                customSpan = new CustomURLSpan(span.getURL()) {
+                customSpan = new NoUnderlineURLSpan(span.getURL()) {
                     @Override
-                    public void onClick(View widget) {
+                    public void onClick(@NonNull View widget) {
                         listener.onViewUrl(getURL(), text.toString());
                     }
                 };
@@ -141,8 +142,8 @@ public class LinkHelper {
      * @param listener to notify about particular spans that are clicked
      */
     public static void setClickableMentions(
-            TextView view, @Nullable Status.Mention[] mentions, final LinkListener listener) {
-        if (mentions == null || mentions.length == 0) {
+            TextView view, @Nullable List<Status.Mention> mentions, final LinkListener listener) {
+        if (mentions == null || mentions.size() == 0) {
             view.setText(null);
             return;
         }
@@ -154,7 +155,7 @@ public class LinkHelper {
         for (Status.Mention mention : mentions) {
             String accountUsername = mention.getLocalUsername();
             final String accountId = mention.getId();
-            ClickableSpan customSpan = new ClickableSpanNoUnderline() {
+            ClickableSpan customSpan = new NoUnderlineURLSpan(mention.getUrl()) {
                 @Override
                 public void onClick(@NonNull View widget) { listener.onViewAccount(accountId); }
             };
@@ -180,7 +181,7 @@ public class LinkHelper {
     }
 
     public static CharSequence createClickableText(String text, String link) {
-        URLSpan span = new CustomURLSpan(link);
+        URLSpan span = new NoUnderlineURLSpan(link);
 
         SpannableStringBuilder clickableText = new SpannableStringBuilder(text);
         clickableText.setSpan(span, 0, text.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);

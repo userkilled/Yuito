@@ -17,9 +17,8 @@
 
 package com.keylesspalace.tusky.util
 
-import java.util.LinkedHashSet
 import java.util.ArrayList
-
+import java.util.LinkedHashSet
 
 /**
  * @return true if list is null or else return list.isEmpty()
@@ -52,4 +51,8 @@ inline fun <T> List<T>.replacedFirstWhich(replacement: T, predicate: (T) -> Bool
         newList[index] = replacement
     }
     return newList
+}
+
+inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
+    return firstOrNull { it is R }?.let { it as R }
 }

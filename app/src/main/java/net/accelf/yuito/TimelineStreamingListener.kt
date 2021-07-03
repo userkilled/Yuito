@@ -1,29 +1,27 @@
 package net.accelf.yuito
 
-import android.text.Spanned
 import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent
 import com.keylesspalace.tusky.appstore.StreamUpdateEvent
+import com.keylesspalace.tusky.components.timeline.TimelineViewModel
 import com.keylesspalace.tusky.entity.Filter
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.entity.StreamEvent
-import com.keylesspalace.tusky.fragment.TimelineFragment
-import com.keylesspalace.tusky.json.SpannedTypeAdapter
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-class TimelineStreamingListener(private val eventHub: EventHub,
-                                private val kind: TimelineFragment.Kind,
-                                private val identifier: String? = null) : WebSocketListener() {
+class TimelineStreamingListener(
+    private val eventHub: EventHub,
+    private val gson: Gson,
+    private val kind: TimelineViewModel.Kind,
+    private val identifier: String? = null,
+) : WebSocketListener() {
 
-    private val gson = buildGson()
     private val target = if (identifier == null) { kind.name } else { kind.name + ":" + identifier }
-    private var isFirstStatus = true
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.d(TAG, "Stream connected to: $target")
@@ -35,10 +33,7 @@ class TimelineStreamingListener(private val eventHub: EventHub,
         when (event.event) {
             StreamEvent.EventType.UPDATE -> {
                 val status = gson.fromJson(payload, Status::class.java)
-                eventHub.dispatch(StreamUpdateEvent(status, kind, identifier, isFirstStatus))
-                if (isFirstStatus) {
-                    isFirstStatus = false
-                }
+                eventHub.dispatch(StreamUpdateEvent(status, kind, identifier))
             }
             StreamEvent.EventType.DELETE -> eventHub.dispatch(StatusDeletedEvent(payload))
             StreamEvent.EventType.FILTERS_CHANGED -> eventHub.dispatch(PreferenceChangedEvent(Filter.HOME)) // It may be not a home but it doesn't matter
@@ -52,12 +47,5 @@ class TimelineStreamingListener(private val eventHub: EventHub,
 
     companion object {
         private const val TAG = "StreamingListener"
-
-        private fun buildGson(): Gson {
-            return GsonBuilder()
-                    .registerTypeAdapter(Spanned::class.java, SpannedTypeAdapter())
-                    .create()
-        }
     }
-
 }

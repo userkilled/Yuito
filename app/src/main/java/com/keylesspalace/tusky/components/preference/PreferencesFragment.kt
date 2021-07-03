@@ -25,7 +25,14 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.Notification
-import com.keylesspalace.tusky.settings.*
+import com.keylesspalace.tusky.settings.AppTheme
+import com.keylesspalace.tusky.settings.PrefKeys
+import com.keylesspalace.tusky.settings.emojiPreference
+import com.keylesspalace.tusky.settings.listPreference
+import com.keylesspalace.tusky.settings.makePreferenceScreen
+import com.keylesspalace.tusky.settings.preference
+import com.keylesspalace.tusky.settings.preferenceCategory
+import com.keylesspalace.tusky.settings.switchPreference
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.deserialize
 import com.keylesspalace.tusky.util.getNonNullString
@@ -342,7 +349,7 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
 
         try {
             val httpPort = sharedPreferences.getNonNullString(PrefKeys.HTTP_PROXY_PORT, "-1")
-                    .toInt()
+                .toInt()
 
             if (httpProxyEnabled && httpServer.isNotBlank() && httpPort > 0 && httpPort < 65535) {
                 httpProxyPref?.summary = "$httpServer:$httpPort"

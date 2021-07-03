@@ -3,16 +3,16 @@ package com.keylesspalace.tusky.appstore
 import com.google.gson.Gson
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
-import io.reactivex.Single
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class CacheUpdater @Inject constructor(
-        eventHub: EventHub,
-        accountManager: AccountManager,
-        private val appDatabase: AppDatabase,
-        gson: Gson
+    eventHub: EventHub,
+    accountManager: AccountManager,
+    private val appDatabase: AppDatabase,
+    gson: Gson
 ) {
 
     private val disposable: Disposable
@@ -27,7 +27,7 @@ class CacheUpdater @Inject constructor(
                 is ReblogEvent ->
                     timelineDao.setReblogged(accountId, event.statusId, event.reblog)
                 is BookmarkEvent ->
-                    timelineDao.setBookmarked(accountId, event.statusId, event.bookmark )
+                    timelineDao.setBookmarked(accountId, event.statusId, event.bookmark)
                 is UnfollowEvent ->
                     timelineDao.removeAllByUser(accountId, event.accountId)
                 is StatusDeletedEvent ->
@@ -49,7 +49,7 @@ class CacheUpdater @Inject constructor(
             appDatabase.timelineDao().removeAllForAccount(accountId)
             appDatabase.timelineDao().removeAllUsersForAccount(accountId)
         }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            .subscribeOn(Schedulers.io())
+            .subscribe()
     }
 }

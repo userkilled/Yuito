@@ -19,28 +19,26 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider.from
+import autodispose2.autoDispose
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.keylesspalace.tusky.BaseActivity
 import com.keylesspalace.tusky.R
-import com.keylesspalace.tusky.SavedTootActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.databinding.ActivityDraftsBinding
 import com.keylesspalace.tusky.db.DraftEntity
 import com.keylesspalace.tusky.di.ViewModelFactory
-import com.keylesspalace.tusky.util.hide
-import com.keylesspalace.tusky.util.show
-import com.uber.autodispose.android.lifecycle.autoDispose
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.keylesspalace.tusky.util.visible
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -54,10 +52,7 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
     private lateinit var binding: ActivityDraftsBinding
     private lateinit var bottomSheet: BottomSheetBehavior<LinearLayout>
 
-    private var oldDraftsButton: MenuItem? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
 
         binding = ActivityDraftsBinding.inflate(layoutInflater)
@@ -70,7 +65,7 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
             setDisplayShowHomeEnabled(true)
         }
 
-        binding.draftsErrorMessageView.setup(R.drawable.elephant_friend_empty, R.string.no_saved_status)
+        binding.draftsErrorMessageView.setup(R.drawable.elephant_friend_empty, R.string.no_drafts)
 
         val adapter = DraftsAdapter(this)
 
@@ -80,44 +75,15 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
 
         bottomSheet = BottomSheetBehavior.from(binding.bottomSheet.root)
 
-        viewModel.drafts.observe(this) { draftList ->
-            if (draftList.isEmpty()) {
-                binding.draftsRecyclerView.hide()
-                binding.draftsErrorMessageView.show()
-            } else {
-                binding.draftsRecyclerView.show()
-                binding.draftsErrorMessageView.hide()
-                adapter.submitList(draftList)
+        lifecycleScope.launch {
+            viewModel.drafts.collectLatest { draftData ->
+                adapter.submitData(draftData)
             }
         }
-    }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.drafts, menu)
-        oldDraftsButton = menu.findItem(R.id.action_old_drafts)
-        viewModel.showOldDraftsButton()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-                .subscribe { showOldDraftsButton ->
-                    oldDraftsButton?.isVisible = showOldDraftsButton
-                }
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                return true
-            }
-            R.id.action_old_drafts -> {
-                val intent = Intent(this, SavedTootActivity::class.java)
-                startActivityWithSlideInAnimation(intent)
-                return true
-            }
+        adapter.addLoadStateListener {
+            binding.draftsErrorMessageView.visible(adapter.itemCount == 0)
         }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onOpenDraft(draft: DraftEntity) {
@@ -125,27 +91,28 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
         if (draft.inReplyToId != null) {
             bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
             viewModel.getToot(draft.inReplyToId)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(this)
-                    .subscribe({ status ->
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(from(this))
+                .subscribe(
+                    { status ->
                         val composeOptions = ComposeActivity.ComposeOptions(
-                                draftId = draft.id,
-                                tootText = draft.content,
-                                contentWarning = draft.contentWarning,
-                                inReplyToId = draft.inReplyToId,
-                                replyingStatusContent = status.content.toString(),
-                                replyingStatusAuthor = status.account.localUsername,
-                                draftAttachments = draft.attachments,
-                                poll = draft.poll,
-                                sensitive = draft.sensitive,
-                                visibility = draft.visibility
+                            draftId = draft.id,
+                            tootText = draft.content,
+                            contentWarning = draft.contentWarning,
+                            inReplyToId = draft.inReplyToId,
+                            replyingStatusContent = status.content.toString(),
+                            replyingStatusAuthor = status.account.localUsername,
+                            draftAttachments = draft.attachments,
+                            poll = draft.poll,
+                            sensitive = draft.sensitive,
+                            visibility = draft.visibility
                         )
 
                         bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
 
                         startActivity(ComposeActivity.startIntent(this, composeOptions))
-
-                    }, { throwable ->
+                    },
+                    { throwable ->
 
                         bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
 
@@ -158,9 +125,10 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
                             openDraftWithoutReply(draft)
                         } else {
                             Snackbar.make(binding.root, getString(R.string.drafts_failed_loading_reply), Snackbar.LENGTH_SHORT)
-                                    .show()
+                                .show()
                         }
-                    })
+                    }
+                )
         } else {
             openDraftWithoutReply(draft)
         }
@@ -168,13 +136,13 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
 
     private fun openDraftWithoutReply(draft: DraftEntity) {
         val composeOptions = ComposeActivity.ComposeOptions(
-                draftId = draft.id,
-                tootText = draft.content,
-                contentWarning = draft.contentWarning,
-                draftAttachments = draft.attachments,
-                poll = draft.poll,
-                sensitive = draft.sensitive,
-                visibility = draft.visibility
+            draftId = draft.id,
+            tootText = draft.content,
+            contentWarning = draft.contentWarning,
+            draftAttachments = draft.attachments,
+            poll = draft.poll,
+            sensitive = draft.sensitive,
+            visibility = draft.visibility
         )
 
         startActivity(ComposeActivity.startIntent(this, composeOptions))
@@ -183,10 +151,10 @@ class DraftsActivity : BaseActivity(), DraftActionListener {
     override fun onDeleteDraft(draft: DraftEntity) {
         viewModel.deleteDraft(draft)
         Snackbar.make(binding.root, getString(R.string.draft_deleted), Snackbar.LENGTH_LONG)
-                .setAction(R.string.action_undo) {
-                    viewModel.restoreDraft(draft)
-                }
-                .show()
+            .setAction(R.string.action_undo) {
+                viewModel.restoreDraft(draft)
+            }
+            .show()
     }
 
     companion object {
