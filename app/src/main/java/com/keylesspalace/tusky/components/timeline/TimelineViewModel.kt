@@ -531,9 +531,9 @@ class TimelineViewModel @Inject constructor(
             } else {
                 throw HttpException(response)
             }
-        }
+        }.toMutableList()
 
-        filterStatuses(statuses.toMutableList())
+        filterStatuses(statuses)
 
         return statuses
     }
@@ -610,7 +610,7 @@ class TimelineViewModel @Inject constructor(
         if (statuses.size > 1) {
             clearPlaceholdersForResponse(mutableStatusResponse)
             this.statuses.clear()
-            this.statuses.addAll(statuses.toViewData())
+            this.statuses.addAll(mutableStatusResponse.toViewData())
         }
     }
 
