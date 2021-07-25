@@ -25,14 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.AsyncDifferConfig
-import androidx.recyclerview.widget.AsyncListDiffer
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListUpdateCallback
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
+import androidx.recyclerview.widget.*
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import at.connyduck.sparkbutton.helpers.Utils
 import autodispose2.androidx.lifecycle.autoDispose
@@ -50,18 +43,9 @@ import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.fragment.SFragment
-import com.keylesspalace.tusky.interfaces.ActionButtonActivity
-import com.keylesspalace.tusky.interfaces.RefreshableFragment
-import com.keylesspalace.tusky.interfaces.ReselectableFragment
-import com.keylesspalace.tusky.interfaces.StatusActionListener
+import com.keylesspalace.tusky.interfaces.*
 import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.util.CardViewMode
-import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate
-import com.keylesspalace.tusky.util.StatusDisplayOptions
-import com.keylesspalace.tusky.util.hide
-import com.keylesspalace.tusky.util.show
-import com.keylesspalace.tusky.util.viewBinding
-import com.keylesspalace.tusky.util.visible
+import com.keylesspalace.tusky.util.*
 import com.keylesspalace.tusky.view.EndlessOnScrollListener
 import com.keylesspalace.tusky.viewdata.AttachmentViewData
 import com.keylesspalace.tusky.viewdata.StatusViewData
@@ -76,6 +60,7 @@ class TimelineFragment :
     StatusActionListener,
     Injectable,
     ReselectableFragment,
+    ResettableFragment,
     RefreshableFragment {
 
     @Inject
@@ -281,7 +266,7 @@ class TimelineFragment :
         binding.swipeRefreshLayout.isEnabled = isSwipeToRefreshEnabled
         binding.statusView.hide()
 
-        viewModel.fullyRefresh()
+        viewModel.refresh()
     }
 
     override fun onReply(position: Int) {
@@ -548,6 +533,10 @@ class TimelineFragment :
             binding.recyclerView.stopScroll()
             scrollListener!!.reset()
         }
+    }
+
+    override fun onReset() {
+        viewModel.fullyRefresh()
     }
 
     override fun refreshContent() {

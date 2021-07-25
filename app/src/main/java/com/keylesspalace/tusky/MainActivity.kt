@@ -77,16 +77,10 @@ import com.keylesspalace.tusky.fragment.NotificationsFragment
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
 import com.keylesspalace.tusky.interfaces.ReselectableFragment
+import com.keylesspalace.tusky.interfaces.ResettableFragment
 import com.keylesspalace.tusky.pager.MainPagerAdapter
 import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.util.ThemeUtils
-import com.keylesspalace.tusky.util.deleteStaleCachedMedia
-import com.keylesspalace.tusky.util.emojify
-import com.keylesspalace.tusky.util.hide
-import com.keylesspalace.tusky.util.removeShortcut
-import com.keylesspalace.tusky.util.updateShortcut
-import com.keylesspalace.tusky.util.viewBinding
-import com.keylesspalace.tusky.util.visible
+import com.keylesspalace.tusky.util.*
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.iconics.utils.colorInt
@@ -95,19 +89,8 @@ import com.mikepenz.materialdrawer.holder.BadgeStyle
 import com.mikepenz.materialdrawer.holder.ColorHolder
 import com.mikepenz.materialdrawer.holder.StringHolder
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
-import com.mikepenz.materialdrawer.model.AbstractDrawerItem
-import com.mikepenz.materialdrawer.model.DividerDrawerItem
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem
-import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem
-import com.mikepenz.materialdrawer.model.SecondaryDrawerItem
-import com.mikepenz.materialdrawer.model.interfaces.IProfile
-import com.mikepenz.materialdrawer.model.interfaces.descriptionRes
-import com.mikepenz.materialdrawer.model.interfaces.descriptionText
-import com.mikepenz.materialdrawer.model.interfaces.iconRes
-import com.mikepenz.materialdrawer.model.interfaces.iconUrl
-import com.mikepenz.materialdrawer.model.interfaces.nameRes
-import com.mikepenz.materialdrawer.model.interfaces.nameText
+import com.mikepenz.materialdrawer.model.*
+import com.mikepenz.materialdrawer.model.interfaces.*
 import com.mikepenz.materialdrawer.util.*
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import dagger.android.DispatchingAndroidInjector
@@ -638,6 +621,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             if (popup.menu is MenuBuilder) {
                 val menuBuilder = popup.menu as MenuBuilder
 
+                if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED, HASHTAG, LIST)) {
+                    menuBuilder.findItem(R.id.tabReset).isVisible = true
+                }
                 if (tabs[i].id == LIST) {
                     menuBuilder.findItem(R.id.tabEditList).isVisible = true
                 }
@@ -677,6 +663,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     R.id.tabJumpToTop -> {
                         if (fragment is ReselectableFragment) {
                             (fragment as ReselectableFragment).onReselect()
+                        }
+                    }
+                    R.id.tabReset -> {
+                        if (fragment is ResettableFragment) {
+                            fragment.onReset()
                         }
                     }
                     R.id.tabEditList -> {

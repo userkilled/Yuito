@@ -150,6 +150,7 @@
     <string name="action_quote">Quote</string>
     <string name="action_authorize">Authorize Now!</string>
     <string name="action_tab_jump_to_top">Jump to top</string>
+    <string name="action_tab_reset">Reset tab</string>
     <string name="action_tab_edit_list">Edit this list</string>
     <string name="action_tab_toggle_streaming">Use streaming in this tab</string>
     <string name="action_tab_toggle_notifications_filter">Toggle notifications filter</string>
