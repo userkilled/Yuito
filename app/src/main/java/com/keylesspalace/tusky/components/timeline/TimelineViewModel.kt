@@ -14,15 +14,7 @@ import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.util.Either
-import com.keylesspalace.tusky.util.HttpHeaderLink
-import com.keylesspalace.tusky.util.LinkHelper
-import com.keylesspalace.tusky.util.RxAwareViewModel
-import com.keylesspalace.tusky.util.dec
-import com.keylesspalace.tusky.util.firstIsInstanceOrNull
-import com.keylesspalace.tusky.util.inc
-import com.keylesspalace.tusky.util.isLessThan
-import com.keylesspalace.tusky.util.toViewData
+import com.keylesspalace.tusky.util.*
 import com.keylesspalace.tusky.viewdata.StatusViewData
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -752,6 +744,7 @@ class TimelineViewModel @Inject constructor(
             statuses.removeAt(pos)
         }
         if (newStatuses.isEmpty()) {
+            triggerViewUpdate()
             return
         }
         val newViewData = newStatuses
