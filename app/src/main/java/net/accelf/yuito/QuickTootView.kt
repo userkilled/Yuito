@@ -35,12 +35,10 @@ class QuickTootView @JvmOverloads constructor(
 
     private var bypass by Delegates.notNull<Boolean>()
 
-    init {
-        syncBypass()
-    }
-
     fun attachViewModel(viewModel: QuickTootViewModel, owner: LifecycleOwner) {
         this.viewModel = viewModel
+
+        syncBypass()
 
         binding.buttonVisibility.attachViewModel(viewModel, owner)
 
