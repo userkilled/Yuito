@@ -3,7 +3,6 @@ package net.accelf.yuito
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.keylesspalace.tusky.appstore.QuickReplyEvent
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.CAN_USE_UNLEAKABLE
 import com.keylesspalace.tusky.components.compose.mutableLiveData
@@ -57,8 +56,7 @@ class QuickTootViewModel @Inject constructor(
         visibilityMutable.value = overrideTo
     }
 
-    fun reply(event: QuickReplyEvent) {
-        val status = event.status.actionableStatus
+    fun reply(status: Status) {
         inReplyToMutable.value = status
         overrideVisibility(status.visibility)
     }

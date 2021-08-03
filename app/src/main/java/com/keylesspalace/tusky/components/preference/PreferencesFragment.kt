@@ -25,14 +25,7 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.Notification
-import com.keylesspalace.tusky.settings.AppTheme
-import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.settings.emojiPreference
-import com.keylesspalace.tusky.settings.listPreference
-import com.keylesspalace.tusky.settings.makePreferenceScreen
-import com.keylesspalace.tusky.settings.preference
-import com.keylesspalace.tusky.settings.preferenceCategory
-import com.keylesspalace.tusky.settings.switchPreference
+import com.keylesspalace.tusky.settings.*
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.deserialize
 import com.keylesspalace.tusky.util.getNonNullString
@@ -183,6 +176,13 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                     setDefaultValue(false)
                     key = PrefKeys.ANIMATE_CUSTOM_EMOJIS
                     setTitle(R.string.pref_title_animate_custom_emojis)
+                    isSingleLineTitle = false
+                }
+
+                switchPreference {
+                    setDefaultValue(true)
+                    key = PrefKeys.USE_QUICK_TOOT
+                    setTitle(R.string.pref_title_use_quick_toot)
                     isSingleLineTitle = false
                 }
             }

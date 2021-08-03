@@ -17,7 +17,9 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF_DEFAULT_TAG
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF_USE_DEFAULT_TAG
 import com.keylesspalace.tusky.databinding.ViewQuickTootBinding
+import com.keylesspalace.tusky.settings.PrefKeys.USE_QUICK_TOOT
 import com.keylesspalace.tusky.util.ThemeUtils
+import kotlin.properties.Delegates
 
 class QuickTootView @JvmOverloads constructor(
         context: Context,
@@ -27,9 +29,15 @@ class QuickTootView @JvmOverloads constructor(
 
     private val binding = ViewQuickTootBinding.inflate(LayoutInflater.from(context), this, true)
 
-    private val preference by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
+    private val preference = PreferenceManager.getDefaultSharedPreferences(context)
 
     private lateinit var viewModel: QuickTootViewModel
+
+    private var bypass by Delegates.notNull<Boolean>()
+
+    init {
+        syncBypass()
+    }
 
     fun attachViewModel(viewModel: QuickTootViewModel, owner: LifecycleOwner) {
         this.viewModel = viewModel
@@ -79,18 +87,40 @@ class QuickTootView @JvmOverloads constructor(
         }
     }
 
+    private fun syncBypass() {
+        bypass = !preference.getBoolean(USE_QUICK_TOOT, true)
+        visibility = when (bypass) {
+            true -> GONE
+            false -> VISIBLE
+        }
+        if (bypass) {
+            viewModel.reset()
+        }
+    }
+
     fun onFABClicked(view: View) {
-        val intent = ComposeActivity.startIntent(view.context, viewModel.composeOptions(false))
+        startCompose(view.context)
+    }
+
+    private fun startCompose(context: Context) {
+        val intent = ComposeActivity.startIntent(context, viewModel.composeOptions(false))
         viewModel.reset()
-        view.context.startActivity(intent)
+        context.startActivity(intent)
     }
 
     fun handleEvent(event: Event?) {
         when (event) {
-            is QuickReplyEvent -> viewModel.reply(event)
+            is QuickReplyEvent -> {
+                viewModel.reply(event.status.actionableStatus)
+                if (bypass) {
+                    startCompose(context)
+                }
+            }
             is PreferenceChangedEvent -> {
-                if (event.preferenceKey in arrayOf(PREF_DEFAULT_TAG, PREF_USE_DEFAULT_TAG)) {
-                    syncDefaultTag()
+                when (event.preferenceKey) {
+                    PREF_DEFAULT_TAG,
+                    PREF_USE_DEFAULT_TAG -> syncDefaultTag()
+                    USE_QUICK_TOOT -> syncBypass()
                 }
             }
         }

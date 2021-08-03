@@ -271,6 +271,7 @@
     <string name="pref_title_animate_gif_avatars">Animate GIF avatars</string>
     <string name="pref_title_gradient_for_media">Show colorful gradients for hidden media</string>
     <string name="pref_title_animate_custom_emojis">Animate custom emojis</string>
+    <string name="pref_title_use_quick_toot">Use quick compose field</string>
 
     <string name="pref_title_status_filter">Timeline filtering</string>
     <string name="pref_title_status_tabs">Tabs</string>
