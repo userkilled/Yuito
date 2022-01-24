@@ -1,10 +1,10 @@
 package com.keylesspalace.tusky.appstore
 
 import com.keylesspalace.tusky.TabData
-import com.keylesspalace.tusky.components.timeline.TimelineViewModel
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
+import net.accelf.yuito.streaming.Subscription
 
 data class FavoriteEvent(val statusId: String, val favourite: Boolean) : Dispatchable
 data class ReblogEvent(val statusId: String, val reblog: Boolean) : Dispatchable
@@ -24,4 +24,4 @@ data class DomainMuteEvent(val instance: String) : Dispatchable
 data class AnnouncementReadEvent(val announcementId: String) : Dispatchable
 data class PinEvent(val statusId: String, val pinned: Boolean) : Dispatchable
 data class QuickReplyEvent(val status: Status) : Dispatchable
-data class StreamUpdateEvent(val status: Status, val targetKind: TimelineViewModel.Kind, val targetIdentifier: String?) : Dispatchable
+data class StreamUpdateEvent(val status: Status, val subscription: Subscription) : Dispatchable

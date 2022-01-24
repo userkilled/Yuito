@@ -101,6 +101,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import net.accelf.yuito.FooterDrawerItem
 import net.accelf.yuito.QuickTootViewModel
+import net.accelf.yuito.streaming.StreamingManager
 import javax.inject.Inject
 
 class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInjector {
@@ -122,13 +123,15 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
+    @Inject
+    lateinit var streamingManager: StreamingManager
+
     private val binding by viewBinding(ActivityMainBinding::inflate)
 
     private val quickTootViewModel: QuickTootViewModel by viewModels { viewModelFactory }
 
     private lateinit var header: AccountHeaderView
 
-    private var streamingTabsCount = 0
     private var notificationTabPosition = 0
     private var onTabSelectedListener: OnTabSelectedListener? = null
 
@@ -273,9 +276,15 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        streamingManager.pause()
+    }
+
     override fun onResume() {
         super.onResume()
         NotificationHelper.clearNotificationsForActiveAccount(this, accountManager)
+        streamingManager.resume()
     }
 
     override fun onStart() {
@@ -284,7 +293,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     private fun keepScreenOn() {
-        if (streamingTabsCount > 0) {
+        if (streamingManager.active) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -682,11 +691,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                             item.isChecked = current
                             tintCheckIcon(item)
 
-                            if (current) {
-                                streamingTabsCount++
-                            } else {
-                                streamingTabsCount--
-                            }
                             keepScreenOn()
 
                             tabs[i] = tabs[i].copy(enableStreaming = current)
@@ -721,10 +725,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 if (selectNotificationTab) {
                     tab.select()
                 }
-            }
-
-            if (tabs[i].enableStreaming) {
-                streamingTabsCount++
             }
         }
 

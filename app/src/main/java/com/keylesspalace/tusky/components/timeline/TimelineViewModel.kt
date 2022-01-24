@@ -4,7 +4,6 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.keylesspalace.tusky.appstore.*
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Filter
@@ -24,11 +23,9 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
-import net.accelf.yuito.TimelineStreamingListener
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.WebSocket
+import net.accelf.yuito.streaming.StreamType
+import net.accelf.yuito.streaming.StreamingManager
+import net.accelf.yuito.streaming.Subscription
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
@@ -43,8 +40,7 @@ class TimelineViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val filterModel: FilterModel,
     private val connectivityManager: ConnectivityManager,
-    private val okHttpClient: OkHttpClient,
-    private val gson: Gson,
+    private val streamingManager: StreamingManager,
 ) : RxAwareViewModel() {
 
     enum class FailureReason {
@@ -73,6 +69,22 @@ class TimelineViewModel @Inject constructor(
     var tags: List<String> = emptyList()
         private set
 
+    private val subscription by lazy {
+        when (kind) {
+            Kind.HOME -> Subscription(StreamType.USER)
+            Kind.PUBLIC_LOCAL -> Subscription(StreamType.LOCAL)
+            Kind.PUBLIC_FEDERATED -> Subscription(StreamType.PUBLIC)
+            Kind.LIST -> Subscription(StreamType.USER)
+            Kind.TAG,
+            Kind.USER,
+            Kind.USER_PINNED,
+            Kind.USER_WITH_REPLIES,
+            Kind.FAVOURITES,
+            Kind.BOOKMARKS -> {
+                throw NotImplementedError("streaming not implemented for this type")
+            }
+        }
+    }
     var isStreamingEnabled = false
         set(value) {
             field = value
@@ -81,8 +93,7 @@ class TimelineViewModel @Inject constructor(
                 false -> stopStreaming()
             }
         }
-    private var webSocket: WebSocket? = null
-    private var firstOfStreaming = false
+    var firstOfStreaming = false
 
     private var alwaysShowSensitiveMedia = false
     private var alwaysOpenSpoilers = false
@@ -137,50 +148,13 @@ class TimelineViewModel @Inject constructor(
         super.onCleared()
     }
 
-    fun tryStartStreaming() {
-        if (isStreamingEnabled) {
-            startStreaming()
-        }
-    }
-
-    private fun startStreaming() {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host(MastodonApi.PLACEHOLDER_DOMAIN)
-            .addPathSegments("api/v1/streaming")
-            .addQueryParameter(
-                "stream",
-                when (kind) {
-                    Kind.HOME -> "user"
-                    Kind.PUBLIC_LOCAL -> "public:local"
-                    Kind.PUBLIC_FEDERATED -> "public"
-                    Kind.LIST -> "list"
-                    else -> throw IllegalStateException("unexpected streaming request: $kind")
-                }
-            )
-            .apply {
-                if (kind == Kind.LIST) {
-                    addQueryParameter("list", id)
-                }
-            }
-            .build()
-            .toString()
-            .replace("https://", "wss://")
-
-        webSocket?.let {
-            webSocket = null
-        }
-
-        val request = Request.Builder().url(url).build()
-        webSocket = okHttpClient.newWebSocket(request, TimelineStreamingListener(eventHub, gson, kind, id))
+    fun startStreaming() {
+        streamingManager.subscribe(subscription)
         firstOfStreaming = true
     }
 
     fun stopStreaming() {
-        webSocket?.let {
-            it.close(1000, null)
-            webSocket = null
-        }
+        streamingManager.unsubscribe(subscription)
     }
 
     private suspend fun updateCurrent() {
@@ -983,7 +957,7 @@ class TimelineViewModel @Inject constructor(
                 onPreferenceChanged(event.preferenceKey)
             }
             is StreamUpdateEvent -> {
-                if (isStreamingEnabled && event.targetKind == kind && event.targetIdentifier == id) {
+                if (isStreamingEnabled && event.subscription == subscription) {
                     handleStreamUpdateEvent(event)
                 }
             }

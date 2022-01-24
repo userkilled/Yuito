@@ -160,6 +160,7 @@ class TimelineFragment :
         setupRecyclerView()
         updateViews()
         viewModel.loadInitial()
+        viewModel.startStreaming()
     }
 
     private fun setupSwipeRefreshLayout() {
@@ -248,11 +249,11 @@ class TimelineFragment :
     override fun onStart() {
         super.onStart()
 
-        viewModel.tryStartStreaming()
+        viewModel.firstOfStreaming = true
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
 
         viewModel.stopStreaming()
     }
