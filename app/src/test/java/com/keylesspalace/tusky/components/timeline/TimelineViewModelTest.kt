@@ -2,7 +2,6 @@ package com.keylesspalace.tusky.components.timeline
 
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import com.google.gson.Gson
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.components.timeline.TimelineViewModel.Companion.LOAD_AT_ONCE
 import com.keylesspalace.tusky.db.AccountEntity
@@ -23,7 +22,7 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
+import net.accelf.yuito.streaming.StreamingManager
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -42,8 +41,7 @@ class TimelineViewModelTest {
     lateinit var accountManager: AccountManager
     lateinit var sharedPreference: SharedPreferences
     lateinit var connectivityManager: ConnectivityManager
-    lateinit var okHttpClient: OkHttpClient
-    lateinit var gson: Gson
+    lateinit var streamingManager: StreamingManager
 
     @Before
     fun setup() {
@@ -66,8 +64,7 @@ class TimelineViewModelTest {
         }
         sharedPreference = mock()
         connectivityManager = mock()
-        okHttpClient = mock()
-        gson = mock()
+        streamingManager = mock()
         viewModel = TimelineViewModel(
             timelineRepository,
             timelineCases,
@@ -77,8 +74,7 @@ class TimelineViewModelTest {
             sharedPreference,
             FilterModel(),
             connectivityManager,
-            okHttpClient,
-            gson,
+            streamingManager,
         )
     }
 
