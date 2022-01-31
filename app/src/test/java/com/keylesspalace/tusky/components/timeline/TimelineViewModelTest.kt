@@ -149,7 +149,7 @@ class TimelineViewModelTest {
 
     @Test
     fun `loadInitial, list`() {
-        val listId = "listId"
+        val listId = "1"
         viewModel.init(TimelineViewModel.Kind.LIST, listId, listOf(), false)
         val status = makeStatus("1")
 
