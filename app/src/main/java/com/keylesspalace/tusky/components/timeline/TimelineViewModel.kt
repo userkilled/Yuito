@@ -74,7 +74,7 @@ class TimelineViewModel @Inject constructor(
             Kind.HOME -> Subscription(StreamType.USER)
             Kind.PUBLIC_LOCAL -> Subscription(StreamType.LOCAL)
             Kind.PUBLIC_FEDERATED -> Subscription(StreamType.PUBLIC)
-            Kind.LIST -> Subscription(StreamType.USER)
+            Kind.LIST -> Subscription(StreamType.LIST, id?.toInt())
             Kind.TAG,
             Kind.USER,
             Kind.USER_PINNED,
@@ -148,7 +148,7 @@ class TimelineViewModel @Inject constructor(
         super.onCleared()
     }
 
-    fun startStreaming() {
+    private fun startStreaming() {
         streamingManager.subscribe(subscription)
         firstOfStreaming = true
     }

@@ -1,5 +1,6 @@
 package net.accelf.yuito.streaming
 
+import android.util.Log
 import com.google.gson.Gson
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.network.MastodonApi
@@ -47,10 +48,12 @@ class StreamingManager @Inject constructor(
     }
 
     private fun sendSubscribe(subscription: Subscription) {
+        Log.d("StreamingManager", "Subscribed $subscription")
         webSocket!!.send(gson.toJson(SubscribeRequest.fromSubscription(RequestType.SUBSCRIBE, subscription)))
     }
 
     private fun sendUnsubscribe(subscription: Subscription) {
+        Log.d("StreamingManager", "Unsubscribed $subscription")
         webSocket!!.send(gson.toJson(SubscribeRequest.fromSubscription(RequestType.UNSUBSCRIBE, subscription)))
     }
 

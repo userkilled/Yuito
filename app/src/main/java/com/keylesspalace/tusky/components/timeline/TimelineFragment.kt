@@ -160,7 +160,6 @@ class TimelineFragment :
         setupRecyclerView()
         updateViews()
         viewModel.loadInitial()
-        viewModel.startStreaming()
     }
 
     private fun setupSwipeRefreshLayout() {
