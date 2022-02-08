@@ -829,10 +829,6 @@ class TimelineViewModel @Inject constructor(
         }
 
         triggerViewUpdate()
-
-        if (kind == Kind.HOME) {
-            timelineRepo.addStatuses(newStatuses)
-        }
     }
 
     private fun deleteStatusById(id: String) {

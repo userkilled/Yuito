@@ -1,6 +1,7 @@
 package com.keylesspalace.tusky.appstore
 
 import com.google.gson.Gson
+import com.keylesspalace.tusky.components.timeline.toEntity
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
 import io.reactivex.rxjava3.core.Single
@@ -35,6 +36,14 @@ class CacheUpdater @Inject constructor(
                 is PollVoteEvent -> {
                     val pollString = gson.toJson(event.poll)
                     timelineDao.setVoted(accountId, event.statusId, pollString)
+                }
+                is StreamUpdateEvent -> {
+                    val status = event.status
+                    timelineDao.insertInTransaction(
+                        status.toEntity(accountId, gson),
+                        status.account.toEntity(accountId, gson),
+                        status.reblog?.account?.toEntity(accountId, gson),
+                    )
                 }
             }
         }
