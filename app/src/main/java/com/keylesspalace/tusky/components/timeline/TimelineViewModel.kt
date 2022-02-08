@@ -87,10 +87,17 @@ class TimelineViewModel @Inject constructor(
     }
     var isStreamingEnabled = false
         set(value) {
-            field = value
-            when (value) {
-                true -> startStreaming()
-                false -> stopStreaming()
+            if (field != value) {
+                field = value
+                when (value) {
+                    true -> {
+                        streamingManager.subscribe(subscription)
+                        firstOfStreaming = true
+                    }
+                    false -> {
+                        streamingManager.unsubscribe(subscription)
+                    }
+                }
             }
         }
     var firstOfStreaming = false
@@ -144,17 +151,8 @@ class TimelineViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        stopStreaming()
+        isStreamingEnabled = false
         super.onCleared()
-    }
-
-    private fun startStreaming() {
-        streamingManager.subscribe(subscription)
-        firstOfStreaming = true
-    }
-
-    fun stopStreaming() {
-        streamingManager.unsubscribe(subscription)
     }
 
     private suspend fun updateCurrent() {

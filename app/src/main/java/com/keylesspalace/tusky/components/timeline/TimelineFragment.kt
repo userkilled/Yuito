@@ -251,12 +251,6 @@ class TimelineFragment :
         viewModel.firstOfStreaming = true
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        viewModel.stopStreaming()
-    }
-
     fun toggleStreaming(): Boolean =
         (!viewModel.isStreamingEnabled).also {
             viewModel.isStreamingEnabled = it
