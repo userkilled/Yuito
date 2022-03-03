@@ -261,6 +261,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 statusDisplayOptions.useBlurhash(),
                 CardViewMode.NONE,
                 statusDisplayOptions.confirmReblogs(),
+                statusDisplayOptions.confirmFavourites(),
                 statusDisplayOptions.hideStats(),
                 statusDisplayOptions.animateEmojis(),
                 statusDisplayOptions.quoteEnabled()
