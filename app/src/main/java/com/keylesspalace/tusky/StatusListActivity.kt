@@ -24,7 +24,7 @@ import androidx.lifecycle.Lifecycle
 import autodispose2.androidx.lifecycle.autoDispose
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
-import com.keylesspalace.tusky.components.timeline.TimelineViewModel.Kind
+import com.keylesspalace.tusky.components.timeline.viewmodel.TimelineViewModel.Kind
 import com.keylesspalace.tusky.databinding.ActivityStatuslistBinding
 import com.keylesspalace.tusky.di.ViewModelFactory
 import dagger.android.DispatchingAndroidInjector

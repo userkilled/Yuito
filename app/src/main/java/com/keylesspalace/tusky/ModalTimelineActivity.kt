@@ -9,7 +9,7 @@ import autodispose2.androidx.lifecycle.autoDispose
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
-import com.keylesspalace.tusky.components.timeline.TimelineViewModel
+import com.keylesspalace.tusky.components.timeline.viewmodel.TimelineViewModel
 import com.keylesspalace.tusky.databinding.ActivityModalTimelineBinding
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity

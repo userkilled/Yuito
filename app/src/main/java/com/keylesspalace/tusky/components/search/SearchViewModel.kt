@@ -62,7 +62,7 @@ class SearchViewModel @Inject constructor(
     private val loadedNotestockStatuses: MutableList<Pair<Status, StatusViewData.Concrete>> = mutableListOf()
 
     private val statusesPagingSourceFactory = SearchPagingSourceFactory(mastodonApi, SearchType.Status, loadedStatuses) {
-        it.statuses.map { status -> Pair(status, status.toViewData(alwaysShowSensitiveMedia, alwaysOpenSpoiler)) }
+        it.statuses.map { status -> Pair(status, status.toViewData(alwaysShowSensitiveMedia, alwaysOpenSpoiler, true)) }
             .apply {
                 loadedStatuses.addAll(this)
             }
@@ -74,7 +74,7 @@ class SearchViewModel @Inject constructor(
         it.hashtags
     }
     private val notestockStatusesPagingSourceFactory = SearchNotestockPagingSourceFactory(notestockApi) {
-        it.statuses.map { status -> Pair(status, status.toViewData(alwaysShowSensitiveMedia, alwaysOpenSpoiler)) }
+        it.statuses.map { status -> Pair(status, status.toViewData(alwaysShowSensitiveMedia, alwaysOpenSpoiler, true)) }
             .apply {
                 loadedNotestockStatuses.addAll(this)
             }

@@ -111,7 +111,8 @@ public final class ViewThreadFragment extends SFragment implements
                     return ViewDataUtils.statusToViewData(
                             input,
                             alwaysShowSensitiveMedia,
-                            alwaysOpenSpoiler
+                            alwaysOpenSpoiler,
+                            true
                     );
                 }
             });

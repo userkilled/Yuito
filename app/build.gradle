@@ -189,6 +189,8 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:1.1.2"
     testImplementation "androidx.arch.core:core-testing:2.1.0"
 
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0'
+
     implementation 'net.accelf:easter:1.0.2'
     implementation 'org.jsoup:jsoup:1.13.1'
 }

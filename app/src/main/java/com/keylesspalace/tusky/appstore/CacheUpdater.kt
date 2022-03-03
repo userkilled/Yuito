@@ -1,12 +1,12 @@
 package com.keylesspalace.tusky.appstore
 
 import com.google.gson.Gson
-import com.keylesspalace.tusky.components.timeline.toEntity
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CacheUpdater @Inject constructor(
@@ -20,6 +20,12 @@ class CacheUpdater @Inject constructor(
 
     init {
         val timelineDao = appDatabase.timelineDao()
+
+        Schedulers.io().scheduleDirect {
+            val olderThan = System.currentTimeMillis() - CLEANUP_INTERVAL
+            appDatabase.timelineDao().cleanup(olderThan)
+        }
+
         disposable = eventHub.events.subscribe { event ->
             val accountId = accountManager.activeAccount?.id ?: return@subscribe
             when (event) {
@@ -37,14 +43,8 @@ class CacheUpdater @Inject constructor(
                     val pollString = gson.toJson(event.poll)
                     timelineDao.setVoted(accountId, event.statusId, pollString)
                 }
-                is StreamUpdateEvent -> {
-                    val status = event.status
-                    timelineDao.insertInTransaction(
-                        status.toEntity(accountId, gson),
-                        status.account.toEntity(accountId, gson),
-                        status.reblog?.account?.toEntity(accountId, gson),
-                    )
-                }
+                is PinEvent ->
+                    timelineDao.setPinned(accountId, event.statusId, event.pinned)
             }
         }
     }
@@ -60,5 +60,9 @@ class CacheUpdater @Inject constructor(
         }
             .subscribeOn(Schedulers.io())
             .subscribe()
+    }
+
+    companion object {
+        val CLEANUP_INTERVAL = TimeUnit.DAYS.toMillis(14)
     }
 }
