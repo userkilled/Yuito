@@ -1,0 +1,2 @@
+* ストリーミングに `/api/v1/streaming` への単一のコネクションを使用するように変更
+* https://github.com/tuskyapp/Tusky/compare/821411b0ebe0c7f7691c88d000c10ab8b615c4e1...73e9338f3c8ff25ab6ef7ad647cf8069e0e81cf2
