@@ -15,7 +15,6 @@
 
 package com.keylesspalace.tusky.components.conversation
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,9 +29,9 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
-import com.keylesspalace.tusky.AccountActivity
 import com.keylesspalace.tusky.R
-import com.keylesspalace.tusky.ViewTagActivity
+import com.keylesspalace.tusky.StatusListActivity
+import com.keylesspalace.tusky.components.account.AccountActivity
 import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.databinding.FragmentTimelineBinding
 import com.keylesspalace.tusky.di.Injectable
@@ -53,6 +52,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 
+@OptIn(ExperimentalPagingApi::class)
 class ConversationsFragment : SFragment(), StatusActionListener, Injectable, ReselectableFragment {
 
     @Inject
@@ -73,7 +73,6 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable, Res
         return inflater.inflate(R.layout.fragment_timeline, container, false)
     }
 
-    @ExperimentalPagingApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val preferences = PreferenceManager.getDefaultSharedPreferences(view.context)
 
@@ -239,8 +238,7 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable, Res
     }
 
     override fun onViewTag(tag: String) {
-        val intent = Intent(context, ViewTagActivity::class.java)
-        intent.putExtra("hashtag", tag)
+        val intent = StatusListActivity.newHashtagIntent(requireContext(), tag)
         startActivity(intent)
     }
 

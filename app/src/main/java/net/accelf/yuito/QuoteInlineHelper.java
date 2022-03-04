@@ -12,6 +12,7 @@ import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Emoji;
+import com.keylesspalace.tusky.entity.HashTag;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.LinkListener;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
@@ -66,11 +67,16 @@ public class QuoteInlineHelper {
         quoteUsername.setText(usernameText);
     }
 
-    private void setContent(Spanned content, List<Status.Mention> mentions, List<Emoji> emojis,
-                            LinkListener listener) {
+    private void setContent(
+            Spanned content,
+            List<Status.Mention> mentions,
+            List<HashTag> tags,
+            List<Emoji> emojis,
+            LinkListener listener
+    ) {
         Spanned singleLineText = SpannedTextHelper.replaceSpanned(content);
         CharSequence emojifiedText = CustomEmojiHelper.emojify(singleLineText, emojis, quoteContent, statusDisplayOptions.animateEmojis());
-        LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener);
+        LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, tags, listener);
     }
 
     private void setAvatar(String url, @Px int avatarRadius24dp, StatusDisplayOptions statusDisplayOptions) {
@@ -117,8 +123,13 @@ public class QuoteInlineHelper {
         Account account = quoteStatus.getAccount();
         setDisplayName(account.getName(), account.getEmojis());
         setUsername(account.getUsername());
-        setContent(quoteStatus.getContent(), quoteStatus.getMentions(),
-                quoteStatus.getEmojis(), listener);
+        setContent(
+                quoteStatus.getContent(),
+                quoteStatus.getMentions(),
+                quoteStatus.getTags(),
+                quoteStatus.getEmojis(),
+                listener
+        );
         setAvatar(account.getAvatar(), avatarRadius24dp, statusDisplayOptions);
         setOnClickListener(account.getId(), quoteStatus.getUrl());
 

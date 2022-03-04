@@ -1,14 +1,13 @@
 package com.keylesspalace.tusky.components.search.adapter
 
 import com.keylesspalace.tusky.entity.SearchResult
-import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.NotestockApi
 import com.keylesspalace.tusky.viewdata.StatusViewData
 
 class SearchNotestockPagingSourceFactory(
         private val notestockApi: NotestockApi,
-        private val initialItems: List<Pair<Status, StatusViewData.Concrete>>? = null,
-        private val parser: (SearchResult) -> List<Pair<Status, StatusViewData.Concrete>>
+        private val initialItems: List<StatusViewData.Concrete>? = null,
+        private val parser: (SearchResult) -> List<StatusViewData.Concrete>
 ) : () -> SearchNotestockPagingSource {
 
     private var searchRequest: String = ""

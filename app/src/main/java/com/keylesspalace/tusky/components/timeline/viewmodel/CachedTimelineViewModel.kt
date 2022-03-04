@@ -44,12 +44,15 @@ import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.util.dec
 import com.keylesspalace.tusky.util.inc
 import com.keylesspalace.tusky.viewdata.StatusViewData
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import net.accelf.yuito.streaming.StreamingManager
 import retrofit2.HttpException
 import javax.inject.Inject
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * TimelineViewModel that caches all statuses in a local database
@@ -66,11 +69,11 @@ class CachedTimelineViewModel @Inject constructor(
     streamingManager: StreamingManager,
 ) : TimelineViewModel(timelineCases, api, eventHub, accountManager, sharedPreferences, filterModel, streamingManager) {
 
-    @ExperimentalPagingApi
+    @OptIn(ExperimentalPagingApi::class)
     override val statuses = Pager(
         config = PagingConfig(pageSize = LOAD_AT_ONCE),
         remoteMediator = CachedTimelineRemoteMediator(accountManager, api, db, gson),
-        pagingSourceFactory = { db.timelineDao().getStatusesForAccount(accountManager.activeAccount!!.id) }
+        pagingSourceFactory = { db.timelineDao().getStatuses(accountManager.activeAccount!!.id) }
     ).flow
         .map { pagingData ->
             pagingData.map { timelineStatus ->
@@ -83,6 +86,16 @@ class CachedTimelineViewModel @Inject constructor(
             }
         }
         .cachedIn(viewModelScope)
+
+    init {
+        viewModelScope.launch {
+            delay(5.toDuration(DurationUnit.SECONDS)) // delay so the db is not locked during initial ui refresh
+            accountManager.activeAccount?.id?.let { accountId ->
+                db.timelineDao().cleanup(accountId, MAX_STATUSES_IN_CACHE)
+                db.timelineDao().cleanupAccounts(accountId)
+            }
+        }
+    }
 
     override fun updatePoll(newPoll: Poll, status: StatusViewData.Concrete) {
         // handled by CacheUpdater
@@ -131,7 +144,9 @@ class CachedTimelineViewModel @Inject constructor(
 
                 timelineDao.insertStatus(Placeholder(placeholderId, loading = true).toEntity(activeAccount.id))
 
-                val response = api.homeTimeline(maxId = placeholderId.inc(), limit = 20).await()
+                val nextPlaceholderId = timelineDao.getNextPlaceholderIdAfter(activeAccount.id, placeholderId)
+
+                val response = api.homeTimeline(maxId = placeholderId.inc(), sinceId = nextPlaceholderId, limit = LOAD_AT_ONCE).await()
 
                 val statuses = response.body()
                 if (!response.isSuccessful || statuses == null) {
@@ -165,13 +180,13 @@ class CachedTimelineViewModel @Inject constructor(
                         )
                     }
 
-                    if (overlappedStatuses == 0) {
+                    if (overlappedStatuses == 0 && statuses.isNotEmpty()) {
                         timelineDao.insertStatus(
                             Placeholder(statuses.last().id.dec(), loading = false).toEntity(activeAccount.id)
                         )
                     }
                 }
-            } catch (e: java.lang.Exception) {
+            } catch (e: Exception) {
                 loadMoreFailed(placeholderId, e)
             }
         }
@@ -230,10 +245,11 @@ class CachedTimelineViewModel @Inject constructor(
     override fun fullReload() {
         viewModelScope.launch {
             val activeAccount = accountManager.activeAccount!!
-            db.runInTransaction {
-                db.timelineDao().removeAllForAccount(activeAccount.id)
-                db.timelineDao().removeAllUsersForAccount(activeAccount.id)
-            }
+            db.timelineDao().removeAll(activeAccount.id)
         }
+    }
+
+    companion object {
+        private const val MAX_STATUSES_IN_CACHE = 1000
     }
 }

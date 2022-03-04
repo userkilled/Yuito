@@ -5,7 +5,8 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.Gson
-import com.keylesspalace.tusky.appstore.CacheUpdater
+import com.keylesspalace.tusky.components.timeline.Placeholder
+import com.keylesspalace.tusky.components.timeline.toEntity
 import com.keylesspalace.tusky.entity.Status
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -52,7 +53,7 @@ class TimelineDaoTest {
             timelineDao.insertStatus(status)
         }
 
-        val pagingSource = timelineDao.getStatusesForAccount(setOne.first.timelineUserId)
+        val pagingSource = timelineDao.getStatuses(setOne.first.timelineUserId)
 
         val loadResult = pagingSource.load(PagingSource.LoadParams.Refresh(null, 2, false))
 
@@ -64,28 +65,25 @@ class TimelineDaoTest {
 
     @Test
     fun cleanup() = runBlocking {
-        val now = System.currentTimeMillis()
-        val oldDate = now - CacheUpdater.CLEANUP_INTERVAL - 20_000
-        val oldThisAccount = makeStatus(
-            statusId = 5,
-            createdAt = oldDate
-        )
-        val oldAnotherAccount = makeStatus(
-            statusId = 10,
-            createdAt = oldDate,
-            accountId = 2
-        )
-        val recentThisAccount = makeStatus(
-            statusId = 30,
-            createdAt = System.currentTimeMillis()
-        )
-        val recentAnotherAccount = makeStatus(
-            statusId = 60,
-            createdAt = System.currentTimeMillis(),
-            accountId = 2
+
+        val statusesBeforeCleanup = listOf(
+            makeStatus(statusId = 100),
+            makeStatus(statusId = 10, authorServerId = "3"),
+            makeStatus(statusId = 8, reblog = true, authorServerId = "10"),
+            makeStatus(statusId = 5),
+            makeStatus(statusId = 3, authorServerId = "4"),
+            makeStatus(statusId = 2, accountId = 2, authorServerId = "5"),
+            makeStatus(statusId = 1, authorServerId = "5")
         )
 
-        for ((status, author, reblogAuthor) in listOf(oldThisAccount, oldAnotherAccount, recentThisAccount, recentAnotherAccount)) {
+        val statusesAfterCleanup = listOf(
+            makeStatus(statusId = 100),
+            makeStatus(statusId = 10, authorServerId = "3"),
+            makeStatus(statusId = 8, reblog = true, authorServerId = "10"),
+            makeStatus(statusId = 2, accountId = 2, authorServerId = "5"),
+        )
+
+        for ((status, author, reblogAuthor) in statusesBeforeCleanup) {
             timelineDao.insertAccount(author)
             reblogAuthor?.let {
                 timelineDao.insertAccount(it)
@@ -93,15 +91,34 @@ class TimelineDaoTest {
             timelineDao.insertStatus(status)
         }
 
-        timelineDao.cleanup(now - CacheUpdater.CLEANUP_INTERVAL)
+        timelineDao.cleanup(accountId = 1, limit = 3)
+        timelineDao.cleanupAccounts(accountId = 1)
 
         val loadParams: PagingSource.LoadParams<Int> = PagingSource.LoadParams.Refresh(null, 100, false)
 
-        val loadedStatusAccount1 = (timelineDao.getStatusesForAccount(1).load(loadParams) as PagingSource.LoadResult.Page).data
-        val loadedStatusAccount2 = (timelineDao.getStatusesForAccount(2).load(loadParams) as PagingSource.LoadResult.Page).data
+        val loadedStatuses = (timelineDao.getStatuses(1).load(loadParams) as PagingSource.LoadResult.Page).data
 
-        assertStatuses(listOf(recentThisAccount), loadedStatusAccount1)
-        assertStatuses(listOf(recentAnotherAccount), loadedStatusAccount2)
+        assertStatuses(statusesAfterCleanup, loadedStatuses)
+
+        val loadedAccounts: MutableList<Pair<Long, String>> = mutableListOf()
+        val accountCursor = db.query("SELECT timelineUserId, serverId FROM TimelineAccountEntity", null)
+        accountCursor.moveToFirst()
+        while (!accountCursor.isAfterLast) {
+            val accountId: Long = accountCursor.getLong(accountCursor.getColumnIndex("timelineUserId"))
+            val serverId: String = accountCursor.getString(accountCursor.getColumnIndex("serverId"))
+            loadedAccounts.add(accountId to serverId)
+            accountCursor.moveToNext()
+        }
+
+        val expectedAccounts = listOf(
+            1L to "3",
+            1L to "10",
+            1L to "R10",
+            1L to "20",
+            2L to "5"
+        )
+
+        assertEquals(expectedAccounts, loadedAccounts)
     }
 
     @Test
@@ -112,8 +129,6 @@ class TimelineDaoTest {
             makeStatus(statusId = 2),
             makeStatus(statusId = 1)
         )
-
-        timelineDao.deleteRange(1, oldStatuses.last().first.serverId, oldStatuses.first().first.serverId)
 
         for ((status, author, reblogAuthor) in oldStatuses) {
             timelineDao.insertAccount(author)
@@ -129,7 +144,8 @@ class TimelineDaoTest {
             makeStatus(statusId = 1)
         )
 
-        timelineDao.deleteRange(1, newStatuses.last().first.serverId, newStatuses.first().first.serverId)
+        val deletedCount = timelineDao.deleteRange(1, newStatuses.last().first.serverId, newStatuses.first().first.serverId)
+        assertEquals(3, deletedCount)
 
         for ((status, author, reblogAuthor) in newStatuses) {
             timelineDao.insertAccount(author)
@@ -141,13 +157,62 @@ class TimelineDaoTest {
 
         // make sure status 2 is no longer in db
 
-        val pagingSource = timelineDao.getStatusesForAccount(1)
+        val pagingSource = timelineDao.getStatuses(1)
 
         val loadResult = pagingSource.load(PagingSource.LoadParams.Refresh(null, 100, false))
 
         val loadedStatuses = (loadResult as PagingSource.LoadResult.Page).data
 
         assertStatuses(newStatuses, loadedStatuses)
+    }
+
+    @Test
+    fun deleteRange() = runBlocking {
+        val statuses = listOf(
+            makeStatus(statusId = 100),
+            makeStatus(statusId = 50),
+            makeStatus(statusId = 15),
+            makeStatus(statusId = 14),
+            makeStatus(statusId = 13),
+            makeStatus(statusId = 13, accountId = 2),
+            makeStatus(statusId = 12),
+            makeStatus(statusId = 11),
+            makeStatus(statusId = 9)
+        )
+
+        for ((status, author, reblogAuthor) in statuses) {
+            timelineDao.insertAccount(author)
+            reblogAuthor?.let {
+                timelineDao.insertAccount(it)
+            }
+            timelineDao.insertStatus(status)
+        }
+
+        assertEquals(3, timelineDao.deleteRange(1, "12", "14"))
+        assertEquals(0, timelineDao.deleteRange(1, "80", "80"))
+        assertEquals(0, timelineDao.deleteRange(1, "60", "80"))
+        assertEquals(0, timelineDao.deleteRange(1, "5", "8"))
+        assertEquals(0, timelineDao.deleteRange(1, "101", "1000"))
+        assertEquals(1, timelineDao.deleteRange(1, "50", "50"))
+
+        val loadParams: PagingSource.LoadParams<Int> = PagingSource.LoadParams.Refresh(null, 100, false)
+
+        val statusesAccount1 = (timelineDao.getStatuses(1).load(loadParams) as PagingSource.LoadResult.Page).data
+        val statusesAccount2 = (timelineDao.getStatuses(2).load(loadParams) as PagingSource.LoadResult.Page).data
+
+        val remainingStatusesAccount1 = listOf(
+            makeStatus(statusId = 100),
+            makeStatus(statusId = 15),
+            makeStatus(statusId = 11),
+            makeStatus(statusId = 9)
+        )
+
+        val remainingStatusesAccount2 = listOf(
+            makeStatus(statusId = 13, accountId = 2)
+        )
+
+        assertStatuses(remainingStatusesAccount1, statusesAccount1)
+        assertStatuses(remainingStatusesAccount2, statusesAccount2)
     }
 
     @Test
@@ -204,8 +269,8 @@ class TimelineDaoTest {
 
         val loadParams: PagingSource.LoadParams<Int> = PagingSource.LoadParams.Refresh(null, 100, false)
 
-        val statusesAccount1 = (timelineDao.getStatusesForAccount(1).load(loadParams) as PagingSource.LoadResult.Page).data
-        val statusesAccount2 = (timelineDao.getStatusesForAccount(2).load(loadParams) as PagingSource.LoadResult.Page).data
+        val statusesAccount1 = (timelineDao.getStatuses(1).load(loadParams) as PagingSource.LoadResult.Page).data
+        val statusesAccount2 = (timelineDao.getStatuses(2).load(loadParams) as PagingSource.LoadResult.Page).data
 
         assertStatuses(listOf(statusWithBlueDomain, statusWithGreenDomain), statusesAccount1)
         assertStatuses(listOf(statusWithRedDomainOtherAccount, statusWithBlueDomainOtherAccount), statusesAccount2)
@@ -219,26 +284,28 @@ class TimelineDaoTest {
     @Test
     fun `should return correct topId`() = runBlocking {
 
-        val status1 = makeStatus(
-            statusId = 4,
-            accountId = 1,
-            domain = "mastodon.test",
-            authorServerId = "1"
-        )
-        val status2 = makeStatus(
-            statusId = 33,
-            accountId = 1,
-            domain = "mastodon.test",
-            authorServerId = "2"
-        )
-        val status3 = makeStatus(
-            statusId = 22,
-            accountId = 1,
-            domain = "mastodon.test",
-            authorServerId = "2"
+        val statusData = listOf(
+            makeStatus(
+                statusId = 4,
+                accountId = 1,
+                domain = "mastodon.test",
+                authorServerId = "1"
+            ),
+            makeStatus(
+                statusId = 33,
+                accountId = 1,
+                domain = "mastodon.test",
+                authorServerId = "2"
+            ),
+            makeStatus(
+                statusId = 22,
+                accountId = 1,
+                domain = "mastodon.test",
+                authorServerId = "2"
+            )
         )
 
-        for ((status, author, reblogAuthor) in listOf(status1, status2, status3)) {
+        for ((status, author, reblogAuthor) in statusData) {
             timelineDao.insertAccount(author)
             reblogAuthor?.let {
                 timelineDao.insertAccount(it)
@@ -247,6 +314,59 @@ class TimelineDaoTest {
         }
 
         assertEquals("33", timelineDao.getTopId(1))
+    }
+
+    @Test
+    fun `should return correct placeholderId after other ids`() = runBlocking {
+
+        val statusData = listOf(
+            makeStatus(statusId = 1000),
+            makePlaceholder(id = 99),
+            makeStatus(statusId = 97),
+            makeStatus(statusId = 95),
+            makePlaceholder(id = 94),
+            makeStatus(statusId = 90)
+        )
+
+        for ((status, author, reblogAuthor) in statusData) {
+            author?.let {
+                timelineDao.insertAccount(it)
+            }
+            reblogAuthor?.let {
+                timelineDao.insertAccount(it)
+            }
+            timelineDao.insertStatus(status)
+        }
+
+        assertEquals("99", timelineDao.getNextPlaceholderIdAfter(1, "1000"))
+        assertEquals("94", timelineDao.getNextPlaceholderIdAfter(1, "99"))
+        assertNull(timelineDao.getNextPlaceholderIdAfter(1, "90"))
+    }
+
+    @Test
+    fun `should return correct top placeholderId`() = runBlocking {
+
+        val statusData = listOf(
+            makeStatus(statusId = 1000),
+            makePlaceholder(id = 99),
+            makeStatus(statusId = 97),
+            makePlaceholder(id = 96),
+            makeStatus(statusId = 90),
+            makePlaceholder(id = 80),
+            makeStatus(statusId = 77)
+        )
+
+        for ((status, author, reblogAuthor) in statusData) {
+            author?.let {
+                timelineDao.insertAccount(it)
+            }
+            reblogAuthor?.let {
+                timelineDao.insertAccount(it)
+            }
+            timelineDao.insertStatus(status)
+        }
+
+        assertEquals("99", timelineDao.getTopPlaceholderId(1))
     }
 
     private fun makeStatus(
@@ -258,28 +378,28 @@ class TimelineDaoTest {
         domain: String = "mastodon.example"
     ): Triple<TimelineStatusEntity, TimelineAccountEntity, TimelineAccountEntity?> {
         val author = TimelineAccountEntity(
-            authorServerId,
-            accountId,
-            "localUsername@$domain",
-            "username@$domain",
-            "displayName",
-            "blah",
-            "avatar",
-            "[\"tusky\": \"http://tusky.cool/emoji.jpg\"]",
-            false
+            serverId = authorServerId,
+            timelineUserId = accountId,
+            localUsername = "localUsername@$domain",
+            username = "username@$domain",
+            displayName = "displayName",
+            url = "blah",
+            avatar = "avatar",
+            emojis = "[\"tusky\": \"http://tusky.cool/emoji.jpg\"]",
+            bot = false
         )
 
         val reblogAuthor = if (reblog) {
             TimelineAccountEntity(
-                "R$authorServerId",
-                accountId,
-                "RlocalUsername",
-                "Rusername",
-                "RdisplayName",
-                "Rblah",
-                "Ravatar",
-                "[]",
-                false
+                serverId = "R$authorServerId",
+                timelineUserId = accountId,
+                localUsername = "RlocalUsername",
+                username = "Rusername",
+                displayName = "RdisplayName",
+                url = "Rblah",
+                avatar = "Ravatar",
+                emojis = "[]",
+                bot = false
             )
         } else null
 
@@ -304,6 +424,7 @@ class TimelineDaoTest {
             visibility = Status.Visibility.PRIVATE,
             attachments = "attachments$accountId",
             mentions = "mentions$accountId",
+            tags = "tags$accountId",
             application = "application$accountId",
             reblogServerId = if (reblog) (statusId * 100).toString() else null,
             reblogAccountId = reblogAuthor?.serverId,
@@ -315,6 +436,14 @@ class TimelineDaoTest {
             pinned = false
         )
         return Triple(status, author, reblogAuthor)
+    }
+
+    private fun makePlaceholder(
+        accountId: Long = 1,
+        id: Long
+    ): Triple<TimelineStatusEntity, TimelineAccountEntity?, TimelineAccountEntity?> {
+        val placeholder = Placeholder(id.toString(), false).toEntity(accountId)
+        return Triple(placeholder, null, null)
     }
 
     private fun assertStatuses(

@@ -15,6 +15,7 @@
 
 package com.keylesspalace.tusky
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -25,8 +26,9 @@ import androidx.lifecycle.Lifecycle
 import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
 import autodispose2.autoDispose
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.keylesspalace.tusky.components.account.AccountActivity
 import com.keylesspalace.tusky.network.MastodonApi
-import com.keylesspalace.tusky.util.LinkHelper
+import com.keylesspalace.tusky.util.openLink
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import java.net.URI
 import java.net.URISyntaxException
@@ -163,9 +165,9 @@ abstract class BottomSheetActivity : BaseActivity() {
         }
     }
 
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     open fun openLink(url: String) {
-        LinkHelper.openLink(url, this)
+        (this as Context).openLink(url)
     }
 
     private fun showQuerySheet() {
@@ -186,6 +188,8 @@ abstract class BottomSheetActivity : BaseActivity() {
 // https://friendica.foo.bar/profile/user
 // https://friendica.foo.bar/display/d4643c42-3ae0-4b73-b8b0-c725f5819207
 // https://misskey.foo.bar/notes/83w6r388br (always lowercase)
+// https://pixelfed.social/p/connyduck/391263492998670833
+// https://pixelfed.social/connyduck
 // https://mastodon.foo.bar/users/User/statuses/000000000000000000
 fun looksLikeMastodonUrl(urlString: String): Boolean {
     val uri: URI
@@ -211,6 +215,8 @@ fun looksLikeMastodonUrl(urlString: String): Boolean {
         path.matches("^/notes/[a-z0-9]+$".toRegex()) ||
         path.matches("^/display/[-a-f0-9]+$".toRegex()) ||
         path.matches("^/profile/\\w+$".toRegex()) ||
+        path.matches("^/p/\\w+/\\d+$".toRegex()) ||
+        path.matches("^/\\w+$".toRegex()) ||
         path.matches("^/users/[^/]+/statuses/\\d+$".toRegex())
 }
 

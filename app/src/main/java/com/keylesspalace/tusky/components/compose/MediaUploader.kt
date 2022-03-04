@@ -25,7 +25,6 @@ import androidx.core.net.toUri
 import com.keylesspalace.tusky.BuildConfig
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.components.compose.ComposeActivity.QueuedMedia
-import com.keylesspalace.tusky.entity.Attachment
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.ProgressRequestBody
 import com.keylesspalace.tusky.util.MEDIA_SIZE_UNKNOWN
@@ -41,10 +40,11 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Date
+import javax.inject.Inject
 
 sealed class UploadEvent {
     data class ProgressEvent(val percentage: Int) : UploadEvent()
-    data class FinishedEvent(val attachment: Attachment) : UploadEvent()
+    data class FinishedEvent(val mediaId: String) : UploadEvent()
 }
 
 fun createNewImageFile(context: Context): File {
@@ -61,21 +61,16 @@ fun createNewImageFile(context: Context): File {
 
 data class PreparedMedia(val type: QueuedMedia.Type, val uri: Uri, val size: Long)
 
-interface MediaUploader {
-    fun prepareMedia(inUri: Uri): Single<PreparedMedia>
-    fun uploadMedia(media: QueuedMedia): Observable<UploadEvent>
-}
-
 class AudioSizeException : Exception()
 class VideoSizeException : Exception()
 class MediaTypeException : Exception()
 class CouldNotOpenFileException : Exception()
 
-class MediaUploaderImpl(
+class MediaUploader @Inject constructor(
     private val context: Context,
     private val mastodonApi: MastodonApi
-) : MediaUploader {
-    override fun uploadMedia(media: QueuedMedia): Observable<UploadEvent> {
+) {
+    fun uploadMedia(media: QueuedMedia): Observable<UploadEvent> {
         return Observable
             .fromCallable {
                 if (shouldResizeMedia(media)) {
@@ -86,7 +81,7 @@ class MediaUploaderImpl(
             .subscribeOn(Schedulers.io())
     }
 
-    override fun prepareMedia(inUri: Uri): Single<PreparedMedia> {
+    fun prepareMedia(inUri: Uri): Single<PreparedMedia> {
         return Single.fromCallable {
             var mediaSize = getMediaSize(contentResolver, inUri)
             var uri = inUri
@@ -187,14 +182,14 @@ class MediaUploaderImpl(
 
             val uploadDisposable = mastodonApi.uploadMedia(body, description)
                 .subscribe(
-                    { attachment ->
+                    { result ->
                         if (media.uri.scheme == "file") {
                             media.uri.path?.let {
                                 File(it).delete()
                             }
                         }
 
-                        emitter.onNext(UploadEvent.FinishedEvent(attachment))
+                        emitter.onNext(UploadEvent.FinishedEvent(result.id))
                         emitter.onComplete()
                     },
                     { e ->

@@ -35,7 +35,7 @@ abstract class TimelineDao {
 SELECT s.serverId, s.url, s.timelineUserId,
 s.authorServerId, s.inReplyToId, s.inReplyToAccountId, s.createdAt,
 s.emojis, s.reblogsCount, s.favouritesCount, s.reblogged, s.favourited, s.bookmarked, s.sensitive,
-s.spoilerText, s.visibility, s.mentions, s.application, s.reblogServerId,s.reblogAccountId,
+s.spoilerText, s.visibility, s.mentions, s.tags, s.application, s.reblogServerId,s.reblogAccountId,
 s.content, s.attachments, s.poll, s.muted, s.expanded, s.contentShowing, s.contentCollapsed, s.pinned,
 a.serverId as 'a_serverId', a.timelineUserId as 'a_timelineUserId',
 a.localUsername as 'a_localUsername', a.username as 'a_username',
@@ -51,7 +51,7 @@ LEFT JOIN TimelineAccountEntity rb ON (s.timelineUserId = rb.timelineUserId AND 
 WHERE s.timelineUserId = :account
 ORDER BY LENGTH(s.serverId) DESC, s.serverId DESC"""
     )
-    abstract fun getStatusesForAccount(account: Long): PagingSource<Int, TimelineStatusWithAccount>
+    abstract fun getStatuses(account: Long): PagingSource<Int, TimelineStatusWithAccount>
 
     @Query(
         """DELETE FROM TimelineStatusEntity WHERE timelineUserId = :accountId AND
@@ -86,11 +86,20 @@ WHERE timelineUserId = :accountId AND (serverId = :statusId OR reblogServerId = 
     )
     abstract fun removeAllByUser(accountId: Long, userId: String)
 
+    /**
+     * Removes everything in the TimelineStatusEntity and TimelineAccountEntity tables for one user account
+     * @param accountId id of the account for which to clean tables
+     */
+    suspend fun removeAll(accountId: Long) {
+        removeAllStatuses(accountId)
+        removeAllAccounts(accountId)
+    }
+
     @Query("DELETE FROM TimelineStatusEntity WHERE timelineUserId = :accountId")
-    abstract fun removeAllForAccount(accountId: Long)
+    abstract suspend fun removeAllStatuses(accountId: Long)
 
     @Query("DELETE FROM TimelineAccountEntity WHERE timelineUserId = :accountId")
-    abstract fun removeAllUsersForAccount(accountId: Long)
+    abstract suspend fun removeAllAccounts(accountId: Long)
 
     @Query(
         """DELETE FROM TimelineStatusEntity WHERE timelineUserId = :accountId
@@ -98,8 +107,39 @@ AND serverId = :statusId"""
     )
     abstract fun delete(accountId: Long, statusId: String)
 
-    @Query("""DELETE FROM TimelineStatusEntity WHERE createdAt < :olderThan""")
-    abstract fun cleanup(olderThan: Long)
+    /**
+     * Cleans the TimelineStatusEntity and TimelineAccountEntity tables from old entries.
+     * @param accountId id of the account for which to clean tables
+     * @param limit how many statuses to keep
+     */
+    suspend fun cleanup(accountId: Long, limit: Int) {
+        cleanupStatuses(accountId, limit)
+        cleanupAccounts(accountId)
+    }
+
+    /**
+     * Cleans the TimelineStatusEntity table from old status entries.
+     * @param accountId id of the account for which to clean statuses
+     * @param limit how many statuses to keep
+     */
+    @Query(
+        """DELETE FROM TimelineStatusEntity WHERE timelineUserId = :accountId AND serverId NOT IN
+        (SELECT serverId FROM TimelineStatusEntity WHERE timelineUserId = :accountId ORDER BY LENGTH(serverId) DESC, serverId DESC LIMIT :limit)
+    """
+    )
+    abstract suspend fun cleanupStatuses(accountId: Long, limit: Int)
+
+    /**
+     * Cleans the TimelineAccountEntity table from accounts that are no longer referenced in the TimelineStatusEntity table
+     * @param accountId id of the user account for which to clean timeline accounts
+     */
+    @Query(
+        """DELETE FROM TimelineAccountEntity WHERE timelineUserId = :accountId AND serverId NOT IN
+        (SELECT authorServerId FROM TimelineStatusEntity WHERE timelineUserId = :accountId) 
+        AND serverId NOT IN 
+        (SELECT reblogAccountId FROM TimelineStatusEntity WHERE timelineUserId = :accountId AND reblogAccountId IS NOT NULL)"""
+    )
+    abstract suspend fun cleanupAccounts(accountId: Long)
 
     @Query(
         """UPDATE TimelineStatusEntity SET poll = :poll
@@ -142,4 +182,10 @@ AND timelineUserId = :accountId
 
     @Query("SELECT serverId FROM TimelineStatusEntity WHERE timelineUserId = :accountId ORDER BY LENGTH(serverId) DESC, serverId DESC LIMIT 1")
     abstract suspend fun getTopId(accountId: Long): String?
+
+    @Query("SELECT serverId FROM TimelineStatusEntity WHERE timelineUserId = :accountId AND authorServerId IS NULL ORDER BY LENGTH(serverId) DESC, serverId DESC LIMIT 1")
+    abstract suspend fun getTopPlaceholderId(accountId: Long): String?
+
+    @Query("SELECT serverId FROM TimelineStatusEntity WHERE timelineUserId = :accountId AND authorServerId IS NULL AND (LENGTH(:serverId) > LENGTH(serverId) OR (LENGTH(:serverId) = LENGTH(serverId) AND :serverId > serverId)) ORDER BY LENGTH(serverId) DESC, serverId DESC LIMIT 1")
+    abstract suspend fun getNextPlaceholderIdAfter(accountId: Long, serverId: String): String?
 }

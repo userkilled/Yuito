@@ -1,4 +1,4 @@
-/* Copyright 2019 Tusky Contributors
+/* Copyright 2017 Andrew Dawson
  *
  * This file is a part of Tusky.
  *
@@ -13,18 +13,10 @@
  * You should have received a copy of the GNU General Public License along with Tusky; if not,
  * see <http://www.gnu.org/licenses>. */
 
-package com.keylesspalace.tusky.di
+package com.keylesspalace.tusky.interfaces
 
-import android.content.Context
-import com.keylesspalace.tusky.components.compose.MediaUploader
-import com.keylesspalace.tusky.components.compose.MediaUploaderImpl
-import com.keylesspalace.tusky.network.MastodonApi
-import dagger.Module
-import dagger.Provides
-
-@Module
-class MediaUploaderModule {
-    @Provides
-    fun providesMediaUploder(context: Context, mastodonApi: MastodonApi): MediaUploader =
-        MediaUploaderImpl(context, mastodonApi)
+interface LinkListener {
+    fun onViewTag(tag: String)
+    fun onViewAccount(id: String)
+    fun onViewUrl(url: String, text: String)
 }

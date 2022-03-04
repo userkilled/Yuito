@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License along with Tusky; if not,
  * see <http://www.gnu.org/licenses>. */
 
-package com.keylesspalace.tusky
+package com.keylesspalace.tusky.components.account
 
 import android.animation.ArgbEvaluator
 import android.content.Context
@@ -51,30 +51,39 @@ import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import com.keylesspalace.tusky.adapter.AccountFieldAdapter
+import com.keylesspalace.tusky.AccountListActivity
+import com.keylesspalace.tusky.BottomSheetActivity
+import com.keylesspalace.tusky.EditProfileActivity
+import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.StatusListActivity
+import com.keylesspalace.tusky.ViewMediaActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.report.ReportActivity
 import com.keylesspalace.tusky.databinding.ActivityAccountBinding
+import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Relationship
+import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
 import com.keylesspalace.tusky.interfaces.LinkListener
 import com.keylesspalace.tusky.interfaces.ReselectableFragment
-import com.keylesspalace.tusky.pager.AccountPagerAdapter
 import com.keylesspalace.tusky.settings.PrefKeys
 import com.keylesspalace.tusky.util.DefaultTextWatcher
-import com.keylesspalace.tusky.util.LinkHelper
+import com.keylesspalace.tusky.util.Error
+import com.keylesspalace.tusky.util.Loading
 import com.keylesspalace.tusky.util.Success
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.emojify
+import com.keylesspalace.tusky.util.getDomain
 import com.keylesspalace.tusky.util.hide
 import com.keylesspalace.tusky.util.loadAvatar
+import com.keylesspalace.tusky.util.openLink
+import com.keylesspalace.tusky.util.setClickableText
 import com.keylesspalace.tusky.util.show
 import com.keylesspalace.tusky.util.viewBinding
 import com.keylesspalace.tusky.util.visible
 import com.keylesspalace.tusky.view.showMuteAccountDialog
-import com.keylesspalace.tusky.viewmodel.AccountViewModel
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import java.text.NumberFormat
@@ -258,8 +267,10 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             val toolbarParams = binding.accountToolbar.layoutParams as ViewGroup.MarginLayoutParams
             toolbarParams.topMargin = top
 
+            val right = insets.getInsets(systemBars()).right
             val bottom = insets.getInsets(systemBars()).bottom
-            binding.accountCoordinatorLayout.updatePadding(bottom = bottom)
+            val left = insets.getInsets(systemBars()).left
+            binding.accountCoordinatorLayout.updatePadding(right = right, bottom = bottom, left = left)
 
             WindowInsetsCompat.CONSUMED
         }
@@ -353,6 +364,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                         .setAction(R.string.action_retry) { viewModel.refresh() }
                         .show()
                 }
+                is Loading -> { }
             }
         }
         viewModel.relationshipData.observe(this) {
@@ -404,7 +416,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         binding.accountDisplayNameTextView.text = account.name.emojify(account.emojis, binding.accountDisplayNameTextView, animateEmojis)
 
         val emojifiedNote = account.note.emojify(account.emojis, binding.accountNoteTextView, animateEmojis)
-        LinkHelper.setClickableText(binding.accountNoteTextView, emojifiedNote, null, this)
+        setClickableText(binding.accountNoteTextView, emojifiedNote, emptyList(), null, this)
 
         // accountFieldAdapter.fields = account.fields ?: emptyList()
         accountFieldAdapter.emojis = account.emojis ?: emptyList()
@@ -446,7 +458,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                 .into(binding.accountHeaderImageView)
 
             binding.accountAvatarImageView.setOnClickListener { avatarView ->
-                val intent = ViewMediaActivity.newSingleImageIntent(avatarView.context, account.avatar)
+                val intent =
+                    ViewMediaActivity.newSingleImageIntent(avatarView.context, account.avatar)
 
                 avatarView.transitionName = account.avatar
                 val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, avatarView, account.avatar)
@@ -511,7 +524,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             if (account.isRemote()) {
                 binding.accountRemoveView.show()
                 binding.accountRemoveView.setOnClickListener {
-                    LinkHelper.openLink(account.url, this)
+                    openLink(account.url)
                 }
             }
         }
@@ -674,6 +687,14 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.account_toolbar, menu)
 
+        val openAsItem = menu.findItem(R.id.action_open_as)
+        val title = openAsText
+        if (title == null) {
+            openAsItem.isVisible = false
+        } else {
+            openAsItem.title = title
+        }
+
         if (!viewModel.isSelf) {
 
             val block = menu.findItem(R.id.action_block)
@@ -692,7 +713,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
 
             if (loadedAccount != null) {
                 val muteDomain = menu.findItem(R.id.action_mute_domain)
-                domain = LinkHelper.getDomain(loadedAccount?.url)
+                domain = getDomain(loadedAccount?.url)
                 if (domain.isEmpty()) {
                     // If we can't get the domain, there's no way we can mute it anyway...
                     menu.removeItem(R.id.action_mute_domain)
@@ -793,8 +814,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
     }
 
     override fun onViewTag(tag: String) {
-        val intent = Intent(this, ViewTagActivity::class.java)
-        intent.putExtra("hashtag", tag)
+        val intent = StatusListActivity.newHashtagIntent(this, tag)
         startActivityWithSlideInAnimation(intent)
     }
 
@@ -812,10 +832,22 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         when (item.itemId) {
             R.id.action_open_in_web -> {
                 // If the account isn't loaded yet, eat the input.
-                if (loadedAccount != null) {
-                    LinkHelper.openLink(loadedAccount?.url, this)
+                if (loadedAccount?.url != null) {
+                    openLink(loadedAccount!!.url)
                 }
                 return true
+            }
+            R.id.action_open_as -> {
+                if (loadedAccount != null) {
+                    showAccountChooserDialog(
+                        item.title, false,
+                        object : AccountSelectionListener {
+                            override fun onAccountSelected(account: AccountEntity) {
+                                openAsAccount(loadedAccount!!.url, account)
+                            }
+                        }
+                    )
+                }
             }
             R.id.action_block -> {
                 toggleBlock()

@@ -38,6 +38,7 @@ import com.keylesspalace.tusky.entity.Attachment.Focus;
 import com.keylesspalace.tusky.entity.Attachment.MetaData;
 import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Emoji;
+import com.keylesspalace.tusky.entity.HashTag;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.util.CardViewMode;
@@ -211,6 +212,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                         @NonNull Spanned content,
                                         @Nullable String spoilerText,
                                         @Nullable List<Status.Mention> mentions,
+                                        @Nullable List<HashTag> tags,
                                         @NonNull List<Emoji> emojis,
                                         @Nullable PollViewData poll,
                                         @NonNull StatusDisplayOptions statusDisplayOptions,
@@ -231,13 +233,13 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 }
                 setContentWarningButtonText(!expanded);
 
-                this.setTextVisible(sensitive, !expanded, content, mentions, emojis, poll, statusDisplayOptions, listener);
+                this.setTextVisible(sensitive, !expanded, content, mentions, tags, emojis, poll, statusDisplayOptions, listener);
             });
-            this.setTextVisible(sensitive, expanded, content, mentions, emojis, poll, statusDisplayOptions, listener);
+            this.setTextVisible(sensitive, expanded, content, mentions, tags, emojis, poll, statusDisplayOptions, listener);
         } else {
             contentWarningDescription.setVisibility(View.GONE);
             contentWarningButton.setVisibility(View.GONE);
-            this.setTextVisible(sensitive, true, content, mentions, emojis, poll, statusDisplayOptions, listener);
+            this.setTextVisible(sensitive, true, content, mentions, tags, emojis, poll, statusDisplayOptions, listener);
         }
     }
 
@@ -253,13 +255,14 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                                 boolean expanded,
                                 Spanned content,
                                 List<Status.Mention> mentions,
+                                List<HashTag> tags,
                                 List<Emoji> emojis,
                                 @Nullable PollViewData poll,
                                 StatusDisplayOptions statusDisplayOptions,
                                 final StatusActionListener listener) {
         if (expanded) {
             CharSequence emojifiedText = CustomEmojiHelper.emojify(content, emojis, this.content, statusDisplayOptions.animateEmojis());
-            LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener);
+            LinkHelper.setClickableText(this.content, emojifiedText, mentions, tags, listener);
             for (int i = 0; i < mediaLabels.length; ++i) {
                 updateMediaLabel(i, sensitive, expanded);
             }
@@ -879,7 +882,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             }
 
             if (cardView != null) {
-                setupCard(status, statusDisplayOptions.cardViewMode(), statusDisplayOptions);
+                setupCard(status, statusDisplayOptions.cardViewMode(), statusDisplayOptions, listener);
             }
 
             setupButtons(listener, actionable.getAccount().getId(), status.getContent().toString(),
@@ -888,7 +891,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setQuoteEnabled(actionable.rebloggingAllowed() && !actionable.isNotestock(), actionable.getVisibility());
 
             setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(),
-                    actionable.getMentions(), actionable.getEmojis(),
+                    actionable.getMentions(), actionable.getTags(), actionable.getEmojis(),
                     PollViewDataKt.toViewData(actionable.getPoll()), statusDisplayOptions,
                     listener);
 
@@ -1143,7 +1146,12 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         return pollDescription.getContext().getString(R.string.poll_info_format, votesText, pollDurationInfo);
     }
 
-    protected void setupCard(StatusViewData.Concrete status, CardViewMode cardViewMode, StatusDisplayOptions statusDisplayOptions) {
+    protected void setupCard(
+            StatusViewData.Concrete status,
+            CardViewMode cardViewMode,
+            StatusDisplayOptions statusDisplayOptions,
+            final StatusActionListener listener
+    ) {
         final Card card = status.getActionable().getCard();
         if (cardViewMode != CardViewMode.NONE &&
                 status.getActionable().getAttachments().size() == 0 &&
@@ -1234,7 +1242,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 cardImage.setImageResource(R.drawable.card_image_placeholder);
             }
 
-            View.OnClickListener visitLink = v -> LinkHelper.openLink(card.getUrl(), v.getContext());
+            View.OnClickListener visitLink = v -> listener.onViewUrl(card.getUrl(), "");
             View.OnClickListener openImage = v -> cardView.getContext().startActivity(ViewMediaActivity.newSingleImageIntent(cardView.getContext(), card.getEmbed_url()));
 
             cardInfo.setOnClickListener(visitLink);

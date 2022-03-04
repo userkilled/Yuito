@@ -19,19 +19,11 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.keylesspalace.tusky.TuskyApplication
-import com.keylesspalace.tusky.appstore.EventHub
-import com.keylesspalace.tusky.appstore.EventHubImpl
-import com.keylesspalace.tusky.components.notifications.Notifier
-import com.keylesspalace.tusky.components.notifications.SystemNotifier
 import com.keylesspalace.tusky.db.AppDatabase
 import com.keylesspalace.tusky.db.Converters
-import com.keylesspalace.tusky.network.MastodonApi
-import com.keylesspalace.tusky.network.TimelineCases
-import com.keylesspalace.tusky.network.TimelineCasesImpl
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -55,26 +47,9 @@ class AppModule {
     }
 
     @Provides
-    fun providesBroadcastManager(app: Application): LocalBroadcastManager {
-        return LocalBroadcastManager.getInstance(app)
-    }
-
-    @Provides
     fun providesConnectivityManager(appContext: Context): ConnectivityManager {
         return appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
-
-    @Provides
-    fun providesTimelineUseCases(
-        api: MastodonApi,
-        eventHub: EventHub
-    ): TimelineCases {
-        return TimelineCasesImpl(api, eventHub)
-    }
-
-    @Provides
-    @Singleton
-    fun providesEventHub(): EventHub = EventHubImpl
 
     @Provides
     @Singleton
@@ -92,12 +67,9 @@ class AppModule {
                 AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_20_21, AppDatabase.MIGRATION_21_22,
                 AppDatabase.MIGRATION_22_23, AppDatabase.MIGRATION_23_24, AppDatabase.MIGRATION_24_25,
                 AppDatabase.Migration25_26(appContext.getExternalFilesDir("Tusky")),
-                AppDatabase.MIGRATION_26_27, AppDatabase.MIGRATION_27_28
+                AppDatabase.MIGRATION_26_27, AppDatabase.MIGRATION_27_28, AppDatabase.MIGRATION_28_29,
+                AppDatabase.MIGRATION_29_30
             )
             .build()
     }
-
-    @Provides
-    @Singleton
-    fun notifier(context: Context): Notifier = SystemNotifier(context)
 }

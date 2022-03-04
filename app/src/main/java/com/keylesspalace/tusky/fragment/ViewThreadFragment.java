@@ -61,6 +61,7 @@ import com.keylesspalace.tusky.network.FilterModel;
 import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.settings.PrefKeys;
 import com.keylesspalace.tusky.util.CardViewMode;
+import com.keylesspalace.tusky.util.LinkHelper;
 import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate;
 import com.keylesspalace.tusky.util.PairedList;
 import com.keylesspalace.tusky.util.StatusDisplayOptions;
@@ -107,10 +108,10 @@ public final class ViewThreadFragment extends SFragment implements
     private final PairedList<Status, StatusViewData.Concrete> statuses =
             new PairedList<>(new Function<Status, StatusViewData.Concrete>() {
                 @Override
-                public StatusViewData.Concrete apply(Status input) {
+                public StatusViewData.Concrete apply(Status status) {
                     return ViewDataUtils.statusToViewData(
-                            input,
-                            alwaysShowSensitiveMedia,
+                            status,
+                            alwaysShowSensitiveMedia || !status.getActionableStatus().getSensitive(),
                             alwaysOpenSpoiler,
                             true
                     );
@@ -328,6 +329,22 @@ public final class ViewThreadFragment extends SFragment implements
     }
 
     @Override
+    public void onViewUrl(String url, String text) {
+        Status status = null;
+        if (!statuses.isEmpty()) {
+            status = statuses.get(statusIndex);
+        }
+        if (status != null && status.getUrl().equals(url)) {
+            // already viewing the status with this url
+            // probably just a preview federated and the user is clicking again to view more -> open the browser
+            // this can happen with some friendica statuses
+            LinkHelper.openLink(requireContext(), url);
+            return;
+        }
+        super.onViewUrl(url, text);
+    }
+
+    @Override
     public void onOpenReblog(int position) {
         // there should be no reblogs in the thread but let's implement it to be sure
         super.openReblog(statuses.get(position));
@@ -490,7 +507,7 @@ public final class ViewThreadFragment extends SFragment implements
     private int setStatus(Status status) {
         if (statuses.size() > 0
                 && statusIndex < statuses.size()
-                && statuses.get(statusIndex).equals(status)) {
+                && statuses.get(statusIndex).getId().equals(status.getId())) {
             // Do not add this status on refresh, it's already in there.
             statuses.set(statusIndex, status);
             return statusIndex;

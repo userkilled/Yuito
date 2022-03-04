@@ -26,7 +26,7 @@ import com.keylesspalace.tusky.util.toViewData
 import com.keylesspalace.tusky.viewdata.StatusViewData
 import retrofit2.HttpException
 
-@ExperimentalPagingApi
+@OptIn(ExperimentalPagingApi::class)
 class NetworkTimelineRemoteMediator(
     private val accountManager: AccountManager,
     private val viewModel: NetworkTimelineViewModel
@@ -47,7 +47,11 @@ class NetworkTimelineRemoteMediator(
                 }
                 LoadType.APPEND -> {
                     val maxId = viewModel.nextKey
-                    viewModel.fetchStatusesForKind(maxId, null, limit = state.config.pageSize)
+                    if (maxId != null) {
+                        viewModel.fetchStatusesForKind(maxId, null, limit = state.config.pageSize)
+                    } else {
+                        return MediatorResult.Success(endOfPaginationReached = true)
+                    }
                 }
             }
 

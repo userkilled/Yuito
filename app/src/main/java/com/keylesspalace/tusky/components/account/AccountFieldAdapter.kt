@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License along with Tusky; if not,
  * see <http://www.gnu.org/licenses>. */
 
-package com.keylesspalace.tusky.adapter
+package com.keylesspalace.tusky.components.account
 
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -27,8 +27,9 @@ import com.keylesspalace.tusky.entity.IdentityProof
 import com.keylesspalace.tusky.interfaces.LinkListener
 import com.keylesspalace.tusky.util.BindingHolder
 import com.keylesspalace.tusky.util.Either
-import com.keylesspalace.tusky.util.LinkHelper
+import com.keylesspalace.tusky.util.createClickableText
 import com.keylesspalace.tusky.util.emojify
+import com.keylesspalace.tusky.util.setClickableText
 
 class AccountFieldAdapter(
     private val linkListener: LinkListener,
@@ -54,7 +55,7 @@ class AccountFieldAdapter(
             val identityProof = proofOrField.asLeft()
 
             nameTextView.text = identityProof.provider
-            valueTextView.text = LinkHelper.createClickableText(identityProof.username, identityProof.profileUrl)
+            valueTextView.text = createClickableText(identityProof.username, identityProof.profileUrl)
 
             valueTextView.movementMethod = LinkMovementMethod.getInstance()
 
@@ -65,7 +66,7 @@ class AccountFieldAdapter(
             nameTextView.text = emojifiedName
 
             val emojifiedValue = field.value.emojify(emojis, valueTextView, animateEmojis)
-            LinkHelper.setClickableText(valueTextView, emojifiedValue, null, linkListener)
+            setClickableText(valueTextView, emojifiedValue, emptyList(), null, linkListener)
 
             if (field.verifiedAt != null) {
                 valueTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_check_circle, 0)

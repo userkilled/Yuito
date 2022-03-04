@@ -77,7 +77,20 @@ import com.keylesspalace.tusky.entity.Emoji
 import com.keylesspalace.tusky.entity.NewPoll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.util.*
+import com.keylesspalace.tusky.util.ComposeTokenizer
+import com.keylesspalace.tusky.util.PickMediaFiles
+import com.keylesspalace.tusky.util.ThemeUtils
+import com.keylesspalace.tusky.util.afterTextChanged
+import com.keylesspalace.tusky.util.combineLiveData
+import com.keylesspalace.tusky.util.combineOptionalLiveData
+import com.keylesspalace.tusky.util.hide
+import com.keylesspalace.tusky.util.highlightSpans
+import com.keylesspalace.tusky.util.loadAvatar
+import com.keylesspalace.tusky.util.onTextChanged
+import com.keylesspalace.tusky.util.show
+import com.keylesspalace.tusky.util.viewBinding
+import com.keylesspalace.tusky.util.visible
+import com.keylesspalace.tusky.util.withLifecycleContext
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.iconics.utils.colorInt
@@ -115,6 +128,7 @@ class ComposeActivity :
 
     @VisibleForTesting
     var maximumTootCharacters = DEFAULT_CHARACTER_LIMIT
+    var charactersReservedPerUrl = DEFAULT_MAXIMUM_URL_LENGTH
 
     private val viewModel: ComposeViewModel by viewModels { viewModelFactory }
 
@@ -357,6 +371,7 @@ class ComposeActivity :
         withLifecycleContext {
             viewModel.instanceParams.observe { instanceData ->
                 maximumTootCharacters = instanceData.maxChars
+                charactersReservedPerUrl = instanceData.charactersReservedPerUrl
                 updateVisibleCharactersLeft()
                 binding.composeScheduleButton.visible(instanceData.supportsScheduled)
             }
@@ -715,7 +730,8 @@ class ComposeActivity :
         val instanceParams = viewModel.instanceParams.value!!
         showAddPollDialog(
             this, viewModel.poll.value, instanceParams.pollMaxOptions,
-            instanceParams.pollMaxLength, viewModel::updatePoll
+            instanceParams.pollMaxLength, instanceParams.pollMinDuration, instanceParams.pollMaxDuration,
+            viewModel::updatePoll
         )
     }
 
@@ -760,7 +776,7 @@ class ComposeActivity :
         val urlSpans = binding.composeEditField.urls
         if (urlSpans != null) {
             for (span in urlSpans) {
-                offset += max(0, span.url.length - MAXIMUM_URL_LENGTH)
+                offset += max(0, span.url.length - charactersReservedPerUrl)
             }
         }
         var length = binding.composeEditField.length() - offset
@@ -1113,10 +1129,6 @@ class ComposeActivity :
 
         internal const val COMPOSE_OPTIONS_EXTRA = "COMPOSE_OPTIONS"
         private const val PHOTO_UPLOAD_URI_KEY = "PHOTO_UPLOAD_URI"
-
-        // Mastodon only counts URLs as this long in terms of status character limits
-        @VisibleForTesting
-        const val MAXIMUM_URL_LENGTH = 23
 
         @JvmField
         val CAN_USE_UNLEAKABLE = arrayOf("itabashi.0j0.jp", "odakyu.app")

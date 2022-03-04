@@ -36,7 +36,7 @@ import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.TimelineCases
-import com.keylesspalace.tusky.util.LinkHelper
+import com.keylesspalace.tusky.util.getDomain
 import com.keylesspalace.tusky.util.inc
 import com.keylesspalace.tusky.util.toViewData
 import com.keylesspalace.tusky.viewdata.StatusViewData
@@ -67,7 +67,7 @@ class NetworkTimelineViewModel @Inject constructor(
 
     var nextKey: String? = null
 
-    @ExperimentalPagingApi
+    @OptIn(ExperimentalPagingApi::class)
     override val statuses = Pager(
         config = PagingConfig(pageSize = LOAD_AT_ONCE),
         pagingSourceFactory = {
@@ -121,7 +121,7 @@ class NetworkTimelineViewModel @Inject constructor(
     override fun removeAllByInstance(instance: String) {
         statusData.removeAll { vd ->
             val status = vd.asStatusOrNull()?.status ?: return@removeAll false
-            LinkHelper.getDomain(status.account.url) == instance
+            getDomain(status.account.url) == instance
         }
         currentSource?.invalidate()
     }

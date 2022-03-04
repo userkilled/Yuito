@@ -40,6 +40,7 @@ fun mockStatus(id: String = "100") = Status(
     visibility = Status.Visibility.PUBLIC,
     attachments = ArrayList(),
     mentions = emptyList(),
+    tags = emptyList(),
     application = Status.Application("Tusky", "https://tusky.app"),
     pinned = false,
     muted = false,
@@ -76,5 +77,14 @@ fun mockStatusEntityWithAccount(
             accountId = userId,
             gson = gson
         )
+    }
+}
+
+fun mockPlaceholderEntityWithAccount(
+    id: String,
+    userId: Long = 1,
+): TimelineStatusWithAccount {
+    return TimelineStatusWithAccount().apply {
+        status = Placeholder(id, false).toEntity(userId)
     }
 }

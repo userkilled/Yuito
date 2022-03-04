@@ -48,7 +48,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.launch
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 class ComposeViewModel @Inject constructor(
@@ -82,6 +82,9 @@ class ComposeViewModel @Inject constructor(
             maxChars = instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT,
             pollMaxOptions = instance?.maxPollOptions ?: DEFAULT_MAX_OPTION_COUNT,
             pollMaxLength = instance?.maxPollOptionLength ?: DEFAULT_MAX_OPTION_LENGTH,
+            pollMinDuration = instance?.minPollDuration ?: DEFAULT_MIN_POLL_DURATION,
+            pollMaxDuration = instance?.maxPollDuration ?: DEFAULT_MAX_POLL_DURATION,
+            charactersReservedPerUrl = instance?.charactersReservedPerUrl ?: DEFAULT_MAXIMUM_URL_LENGTH,
             supportsScheduled = instance?.version?.let { VersionUtils(it).supportsScheduledToots() } ?: false
         )
     }
@@ -107,18 +110,20 @@ class ComposeViewModel @Inject constructor(
     fun loadInstanceDataFromNetwork(loadActually: Boolean) {
         when (loadActually) {
             true -> Single.zip(
-                api.getCustomEmojis(), api.getInstance(),
-                { emojis, instance ->
-                    InstanceEntity(
-                        instance = domain,
-                        emojiList = emojis,
-                        maximumTootCharacters = instance.maxTootChars,
-                        maxPollOptions = instance.pollLimits?.maxOptions,
-                        maxPollOptionLength = instance.pollLimits?.maxOptionChars,
-                        version = instance.version
-                    )
-                }
-            )
+                api.getCustomEmojis(), api.getInstance()
+            ) { emojis, instance ->
+                InstanceEntity(
+                    instance = accountManager.activeAccount?.domain!!,
+                    emojiList = emojis,
+                    maximumTootCharacters = instance.configuration?.statuses?.maxCharacters ?: instance.maxTootChars,
+                    maxPollOptions = instance.configuration?.polls?.maxOptions ?: instance.pollConfiguration?.maxOptions,
+                    maxPollOptionLength = instance.configuration?.polls?.maxCharactersPerOption ?: instance.pollConfiguration?.maxOptionChars,
+                    minPollDuration = instance.configuration?.polls?.minExpiration ?: instance.pollConfiguration?.minExpiration,
+                    maxPollDuration = instance.configuration?.polls?.maxExpiration ?: instance.pollConfiguration?.maxExpiration,
+                    charactersReservedPerUrl = instance.configuration?.statuses?.charactersReservedPerUrl,
+                    version = instance.version
+                )
+            }
             false -> Single.error(Exception("skipped network access"))
         }
             .doOnSuccess {
@@ -192,7 +197,7 @@ class ComposeViewModel @Inject constructor(
                         is UploadEvent.ProgressEvent ->
                             item.copy(uploadPercent = event.percentage)
                         is UploadEvent.FinishedEvent ->
-                            item.copy(id = event.attachment.id, uploadPercent = -1)
+                            item.copy(id = event.mediaId, uploadPercent = -1)
                     }
                     synchronized(media) {
                         val mediaValue = media.value!!
@@ -520,7 +525,12 @@ fun <T> mutableLiveData(default: T) = MutableLiveData<T>().apply { value = defau
 
 const val DEFAULT_CHARACTER_LIMIT = 500
 private const val DEFAULT_MAX_OPTION_COUNT = 4
-private const val DEFAULT_MAX_OPTION_LENGTH = 25
+private const val DEFAULT_MAX_OPTION_LENGTH = 50
+private const val DEFAULT_MIN_POLL_DURATION = 300
+private const val DEFAULT_MAX_POLL_DURATION = 604800
+
+// Mastodon only counts URLs as this long in terms of status character limits
+const val DEFAULT_MAXIMUM_URL_LENGTH = 23
 
 val CAN_USE_QUOTE_ID = arrayOf("odakyu.app", "itabashi.0j0.jp", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com",
         "comm.cx", "fedibird.com", "qoto.org", "kurage.cc", "m.eula.dev", "otogamer.me", "sgp.hostdon.ne.jp",
@@ -530,6 +540,9 @@ data class ComposeInstanceParams(
     val maxChars: Int,
     val pollMaxOptions: Int,
     val pollMaxLength: Int,
+    val pollMinDuration: Int,
+    val pollMaxDuration: Int,
+    val charactersReservedPerUrl: Int,
     val supportsScheduled: Boolean
 )
 

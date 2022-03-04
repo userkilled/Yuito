@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import autodispose2.androidx.lifecycle.autoDispose
 import com.keylesspalace.tusky.BaseActivity
-import com.keylesspalace.tusky.MainActivity
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.ViewMediaActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity
@@ -46,15 +45,15 @@ import com.keylesspalace.tusky.viewdata.StatusViewData
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.flow.Flow
 
-class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concrete>>(), StatusActionListener {
+class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), StatusActionListener {
 
-    override val data: Flow<PagingData<Pair<Status, StatusViewData.Concrete>>>
+    override val data: Flow<PagingData<StatusViewData.Concrete>>
         get() = viewModel.notestockStatusesFlow
 
     private val searchAdapter
         get() = super.adapter as SearchStatusesAdapter
 
-    override fun createAdapter(): PagingDataAdapter<Pair<Status, StatusViewData.Concrete>, *> {
+    override fun createAdapter(): PagingDataAdapter<StatusViewData.Concrete, *> {
         val preferences = PreferenceManager.getDefaultSharedPreferences(binding.searchRecyclerView.context)
         val statusDisplayOptions = StatusDisplayOptions(
             animateAvatars = preferences.getBoolean("animateGifAvatars", false),
@@ -77,13 +76,13 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
 
 
     override fun onContentHiddenChange(isShowing: Boolean, position: Int) {
-        searchAdapter.item(position)?.let {
+        searchAdapter.peek(position)?.let {
             viewModel.contentHiddenNotestockChange(it, isShowing)
         }
     }
 
     override fun onReply(position: Int) {
-        searchAdapter.item(position)?.first?.let { status ->
+        searchAdapter.peek(position)?.status?.let { status ->
             reply(status)
         }
     }
@@ -93,25 +92,25 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
     }
 
     override fun onQuote(position: Int) {
-        searchAdapter.item(position)?.first?.let { status ->
+        searchAdapter.peek(position)?.status?.let { status ->
             quote(status)
         }
     }
 
     override fun onBookmark(bookmark: Boolean, position: Int) {
-        searchAdapter.item(position)?.let { status ->
+        searchAdapter.peek(position)?.let { status ->
             viewModel.bookmark(status, bookmark)
         }
     }
 
     override fun onMore(view: View, position: Int) {
-        searchAdapter.item(position)?.first?.let {
+        searchAdapter.peek(position)?.status?.let {
             more(it, view, position)
         }
     }
 
     override fun onViewMedia(position: Int, attachmentIndex: Int, view: View?) {
-        searchAdapter.item(position)?.first?.actionableStatus?.let { actionable ->
+        searchAdapter.peek(position)?.status?.actionableStatus?.let { actionable ->
             when (actionable.attachments[attachmentIndex].type) {
                 Attachment.Type.GIFV, Attachment.Type.VIDEO, Attachment.Type.IMAGE, Attachment.Type.AUDIO -> {
                     val attachments = AttachmentViewData.list(actionable)
@@ -140,20 +139,20 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
     }
 
     override fun onViewThread(position: Int) {
-        searchAdapter.item(position)?.first?.let { status ->
+        searchAdapter.peek(position)?.status?.let { status ->
             val actionableStatus = status.actionableStatus
             bottomSheetActivity?.viewUrl(actionableStatus.id)
         }
     }
 
     override fun onOpenReblog(position: Int) {
-        searchAdapter.item(position)?.first?.let { status ->
+        searchAdapter.peek(position)?.status?.let { status ->
             bottomSheetActivity?.viewAccount(status.account.id)
         }
     }
 
     override fun onExpandedChange(expanded: Boolean, position: Int) {
-        searchAdapter.item(position)?.let {
+        searchAdapter.peek(position)?.let {
             viewModel.expandedNotestockChange(it, expanded)
         }
     }
@@ -163,7 +162,7 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
     }
 
     override fun onContentCollapsedChange(isCollapsed: Boolean, position: Int) {
-        searchAdapter.item(position)?.let {
+        searchAdapter.peek(position)?.let {
             viewModel.collapsedNotestockChange(it, isCollapsed)
         }
     }
@@ -173,7 +172,7 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
     }
 
     fun removeItem(position: Int) {
-        searchAdapter.item(position)?.let {
+        searchAdapter.peek(position)?.let {
             viewModel.removeNotestockItem(it)
         }
     }
@@ -348,7 +347,7 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
                     return@setOnMenuItemClickListener true
                 }
                 R.id.status_mute_conversation -> {
-                    searchAdapter.item(position)?.let { foundStatus ->
+                    searchAdapter.peek(position)?.let { foundStatus ->
                         viewModel.muteConversation(foundStatus, status.muted != true)
                     }
                     return@setOnMenuItemClickListener true
@@ -420,19 +419,10 @@ class SearchNotestockFragment : SearchFragment<Pair<Status, StatusViewData.Concr
             false,
             object : AccountSelectionListener {
                 override fun onAccountSelected(account: AccountEntity) {
-                    openAsAccount(statusUrl, account)
+                    bottomSheetActivity?.openAsAccount(statusUrl, account)
                 }
             }
         )
-    }
-
-    private fun openAsAccount(statusUrl: String, account: AccountEntity) {
-        viewModel.activeAccount = account
-        val intent = Intent(context, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        intent.putExtra(MainActivity.STATUS_URL, statusUrl)
-        startActivity(intent)
-        (activity as BaseActivity).finishWithoutSlideOutAnimation()
     }
 
     private fun downloadAllMedia(status: Status) {

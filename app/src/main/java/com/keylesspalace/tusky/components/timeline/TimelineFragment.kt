@@ -38,6 +38,7 @@ import com.keylesspalace.tusky.AccountListActivity
 import com.keylesspalace.tusky.AccountListActivity.Companion.newIntent
 import com.keylesspalace.tusky.BaseActivity
 import com.keylesspalace.tusky.R
+import com.keylesspalace.tusky.adapter.StatusBaseViewHolder
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.appstore.QuickReplyEvent
@@ -102,8 +103,6 @@ class TimelineFragment :
     private lateinit var adapter: TimelinePagingAdapter
 
     private var isSwipeToRefreshEnabled = true
-
-    private var eventRegistered = false
 
     private var layoutManager: LinearLayoutManager? = null
     private var scrollListener: RecyclerView.OnScrollListener? = null
@@ -222,9 +221,11 @@ class TimelineFragment :
 
                 if (adapter.itemCount != itemCount) {
                     binding.recyclerView.post {
-                        if (isSwipeToRefreshEnabled) {
-                            binding.recyclerView.scrollBy(0, Utils.dpToPx(requireContext(), -30))
-                        } else binding.recyclerView.scrollToPosition(0)
+                        if (getView() != null) {
+                            if (isSwipeToRefreshEnabled) {
+                                binding.recyclerView.scrollBy(0, Utils.dpToPx(requireContext(), -30))
+                            } else binding.recyclerView.scrollToPosition(0)
+                        }
                     }
                 }
             }
@@ -235,36 +236,7 @@ class TimelineFragment :
                 adapter.submitData(pagingData)
             }
         }
-    }
 
-    private fun setupSwipeRefreshLayout() {
-        binding.swipeRefreshLayout.isEnabled = isSwipeToRefreshEnabled
-        binding.swipeRefreshLayout.setOnRefreshListener(this)
-        binding.swipeRefreshLayout.setColorSchemeResources(R.color.tusky_blue)
-    }
-
-    private fun setupRecyclerView() {
-        binding.recyclerView.setAccessibilityDelegateCompat(
-            ListStatusAccessibilityDelegate(binding.recyclerView, this) { pos ->
-                adapter.peek(pos)
-            }
-        )
-        binding.recyclerView.setHasFixedSize(true)
-        layoutManager = LinearLayoutManager(context)
-        binding.recyclerView.layoutManager = layoutManager
-        val divider = DividerItemDecoration(context, RecyclerView.VERTICAL)
-        binding.recyclerView.addItemDecoration(divider)
-
-        // CWs are expanded without animation, buttons animate itself, we don't need it basically
-        (binding.recyclerView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-        binding.recyclerView.adapter = adapter
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        /* This is delayed until onActivityCreated solely because MainActivity.composeButton isn't
-         * guaranteed to be set until then. */
         if (actionButtonPresent()) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(context)
             hideFab = preferences.getBoolean("fabHide", false)
@@ -288,23 +260,43 @@ class TimelineFragment :
             }
         }
 
-        if (!eventRegistered) {
-            eventHub.events
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-                .subscribe { event ->
-                    when (event) {
-                        is PreferenceChangedEvent -> {
-                            onPreferenceChanged(event.preferenceKey)
-                        }
-                        is StatusComposedEvent -> {
-                            val status = event.status
-                            handleStatusComposeEvent(status)
-                        }
+        eventHub.events
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(this, Lifecycle.Event.ON_DESTROY)
+            .subscribe { event ->
+                when (event) {
+                    is PreferenceChangedEvent -> {
+                        onPreferenceChanged(event.preferenceKey)
+                    }
+                    is StatusComposedEvent -> {
+                        val status = event.status
+                        handleStatusComposeEvent(status)
                     }
                 }
-            eventRegistered = true
-        }
+            }
+    }
+
+    private fun setupSwipeRefreshLayout() {
+        binding.swipeRefreshLayout.isEnabled = isSwipeToRefreshEnabled
+        binding.swipeRefreshLayout.setOnRefreshListener(this)
+        binding.swipeRefreshLayout.setColorSchemeResources(R.color.tusky_blue)
+    }
+
+    private fun setupRecyclerView() {
+        binding.recyclerView.setAccessibilityDelegateCompat(
+            ListStatusAccessibilityDelegate(binding.recyclerView, this) { pos ->
+                adapter.peek(pos)
+            }
+        )
+        binding.recyclerView.setHasFixedSize(true)
+        layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.layoutManager = layoutManager
+        val divider = DividerItemDecoration(context, RecyclerView.VERTICAL)
+        binding.recyclerView.addItemDecoration(divider)
+
+        // CWs are expanded without animation, buttons animate itself, we don't need it basically
+        (binding.recyclerView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+        binding.recyclerView.adapter = adapter
     }
 
     override fun onStart() {
@@ -449,7 +441,7 @@ class TimelineFragment :
                 val oldMediaPreviewEnabled = adapter.mediaPreviewEnabled
                 if (enabled != oldMediaPreviewEnabled) {
                     adapter.mediaPreviewEnabled = enabled
-                    adapter.notifyDataSetChanged()
+                    adapter.notifyItemRangeChanged(0, adapter.itemCount)
                 }
             }
         }
@@ -495,7 +487,7 @@ class TimelineFragment :
         talkBackWasEnabled = a11yManager?.isEnabled == true
         Log.d(TAG, "talkback was enabled: $wasEnabled, now $talkBackWasEnabled")
         if (talkBackWasEnabled && !wasEnabled) {
-            adapter.notifyDataSetChanged()
+            adapter.notifyItemRangeChanged(0, adapter.itemCount)
         }
         startUpdateTimestamp()
     }
@@ -513,7 +505,7 @@ class TimelineFragment :
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(this, Lifecycle.Event.ON_PAUSE)
                 .subscribe {
-                    adapter.notifyDataSetChanged()
+                    adapter.notifyItemRangeChanged(0, adapter.itemCount, listOf(StatusBaseViewHolder.Key.KEY_CREATED))
                 }
         }
     }

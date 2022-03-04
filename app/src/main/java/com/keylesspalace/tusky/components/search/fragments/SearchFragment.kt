@@ -13,10 +13,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
-import com.keylesspalace.tusky.AccountActivity
 import com.keylesspalace.tusky.BottomSheetActivity
 import com.keylesspalace.tusky.R
-import com.keylesspalace.tusky.ViewTagActivity
+import com.keylesspalace.tusky.StatusListActivity
+import com.keylesspalace.tusky.components.account.AccountActivity
 import com.keylesspalace.tusky.components.search.SearchViewModel
 import com.keylesspalace.tusky.databinding.FragmentSearchBinding
 import com.keylesspalace.tusky.di.Injectable
@@ -113,7 +113,7 @@ abstract class SearchFragment<T : Any> :
 
     override fun onViewAccount(id: String) = startActivity(AccountActivity.getIntent(requireContext(), id))
 
-    override fun onViewTag(tag: String) = startActivity(ViewTagActivity.getIntent(requireContext(), tag))
+    override fun onViewTag(tag: String) = startActivity(StatusListActivity.newHashtagIntent(requireContext(), tag))
 
     override fun onViewUrl(url: String, text: String) {
         bottomSheetActivity?.viewUrl(url, text = text)

@@ -3,15 +3,12 @@ package com.keylesspalace.tusky.appstore
 import com.google.gson.Gson
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CacheUpdater @Inject constructor(
     eventHub: EventHub,
-    accountManager: AccountManager,
+    private val accountManager: AccountManager,
     private val appDatabase: AppDatabase,
     gson: Gson
 ) {
@@ -20,11 +17,6 @@ class CacheUpdater @Inject constructor(
 
     init {
         val timelineDao = appDatabase.timelineDao()
-
-        Schedulers.io().scheduleDirect {
-            val olderThan = System.currentTimeMillis() - CLEANUP_INTERVAL
-            appDatabase.timelineDao().cleanup(olderThan)
-        }
 
         disposable = eventHub.events.subscribe { event ->
             val accountId = accountManager.activeAccount?.id ?: return@subscribe
@@ -53,16 +45,7 @@ class CacheUpdater @Inject constructor(
         this.disposable.dispose()
     }
 
-    fun clearForUser(accountId: Long) {
-        Single.fromCallable {
-            appDatabase.timelineDao().removeAllForAccount(accountId)
-            appDatabase.timelineDao().removeAllUsersForAccount(accountId)
-        }
-            .subscribeOn(Schedulers.io())
-            .subscribe()
-    }
-
-    companion object {
-        val CLEANUP_INTERVAL = TimeUnit.DAYS.toMillis(14)
+    suspend fun clearForUser(accountId: Long) {
+        appDatabase.timelineDao().removeAll(accountId)
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2017 Andrew Dawson
+/* Copyright 2022 Tusky Contributors
  *
  * This file is a part of Tusky.
  *
@@ -13,10 +13,21 @@
  * You should have received a copy of the GNU General Public License along with Tusky; if not,
  * see <http://www.gnu.org/licenses>. */
 
-package com.keylesspalace.tusky.interfaces;
+package com.keylesspalace.tusky.json
 
-public interface LinkListener {
-    void onViewTag(String tag);
-    void onViewAccount(String id);
-    void onViewUrl(String url, String text);
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import java.lang.reflect.Type
+
+class GuardedBooleanAdapter : JsonDeserializer<Boolean?> {
+    @Throws(JsonParseException::class)
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Boolean? {
+        return if (json.isJsonObject) {
+            null
+        } else {
+            json.asBoolean
+        }
+    }
 }
