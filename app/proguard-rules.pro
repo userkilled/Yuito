@@ -49,8 +49,22 @@
 
 -keepclassmembers class com.keylesspalace.tusky.components.conversation.ConversationAccountEntity { *; }
 -keepclassmembers class com.keylesspalace.tusky.db.DraftAttachment { *; }
+-keepclassmembers class net.accelf.yuito.streaming.StreamEvent { *; }
+-keepclassmembers class net.accelf.yuito.streaming.SubscribeRequest { *; }
 
 -keep enum com.keylesspalace.tusky.db.DraftAttachment$Type {
+    public *;
+}
+
+-keep enum net.accelf.yuito.streaming.StreamEvent$EventType {
+    public *;
+}
+
+-keep enum net.accelf.yuito.streaming.StreamType {
+    public *;
+}
+
+-keep enum net.accelf.yuito.streaming.SubscribeRequest$RequestType {
     public *;
 }
 
