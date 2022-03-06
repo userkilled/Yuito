@@ -1,5 +1,8 @@
 name: Build
 
+permissions:
+  contents: write
+
 on:
   push:
   pull_request:
@@ -78,29 +81,19 @@ jobs:
             fi
           done
 
-      - uses: actions/create-release@v1
-        id: draft
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.CHANGELOG_VERSION }}
-          release_name: Yuito ${{ env.CHANGELOG_VERSION }}
-          body_path: ${{ env.CHANGELOG_DIR }}whatsnew-ja-JP
-          draft: true
-
       - uses: actions/download-artifact@v1
         with:
           name: built-app
 
       - run: |
           cd ./built-app
-          echo "ARTIFACT_FILE=$(find . -type f -name "*.apk" | head -1 | gawk -F/ '{print $NF}')" >> $GITHUB_ENV
+          mv "$(find . -type f -name "*.apk" | head -1)" "Yuito-${{ env.CHANGELOG_VERSION }}.apk"
 
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.draft.outputs.upload_url }}
-          asset_path: ./built-app/${{ env.ARTIFACT_FILE }}
-          asset_name: Yuito-${{ env.CHANGELOG_VERSION }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          body_path: ${{ env.CHANGELOG_DIR }}whatsnew-ja-JP
+          draft: true
+          files: ./built-app/Yuito-${{ env.CHANGELOG_VERSION }}.apk
+          name: Yuito ${{ env.CHANGELOG_VERSION }}
+          tag_name: ${{ env.CHANGELOG_VERSION }}
+          fail_on_unmatched_files: true
