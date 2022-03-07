@@ -28,14 +28,13 @@ import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.FavoriteEvent
 import com.keylesspalace.tusky.appstore.PinEvent
 import com.keylesspalace.tusky.appstore.ReblogEvent
-import com.keylesspalace.tusky.components.timeline.Placeholder
-import com.keylesspalace.tusky.components.timeline.toEntity
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.TimelineCases
+import com.keylesspalace.tusky.util.dec
 import com.keylesspalace.tusky.util.getDomain
 import com.keylesspalace.tusky.util.inc
 import com.keylesspalace.tusky.util.toViewData
@@ -218,10 +217,7 @@ class NetworkTimelineViewModel @Inject constructor(
             val activeAccount = accountManager.activeAccount!!
 
             if (isFirstOfStreaming) {
-                val placeholderId = when (val top = statusData.first()) {
-                    is StatusViewData.Concrete -> top.id
-                    is StatusViewData.Placeholder -> top.id
-                }
+                val placeholderId = status.id.dec()
                 statusData.add(0, StatusViewData.Placeholder(placeholderId, isLoading = false))
                 isFirstOfStreaming = false
             }

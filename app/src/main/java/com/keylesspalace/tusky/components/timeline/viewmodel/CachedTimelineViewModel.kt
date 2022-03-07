@@ -221,7 +221,7 @@ class CachedTimelineViewModel @Inject constructor(
 
             db.withTransaction {
                 if (isFirstOfStreaming) {
-                    val placeholderId = (timelineDao.getTopId(activeAccount.id) ?: "0").inc()
+                    val placeholderId = status.id.dec()
                     timelineDao.insertStatus(Placeholder(placeholderId, loading = false).toEntity(activeAccount.id))
                     isFirstOfStreaming = false
                 }
@@ -231,7 +231,8 @@ class CachedTimelineViewModel @Inject constructor(
                     timelineDao.insertAccount(rebloggedAccount)
                 }
                 timelineDao.insertStatus(
-                    status.toEntity(activeAccount.id,
+                    status.toEntity(
+                        activeAccount.id,
                         gson,
                         expanded = activeAccount.alwaysOpenSpoiler,
                         contentShowing = activeAccount.alwaysShowSensitiveMedia || !status.actionableStatus.sensitive,
