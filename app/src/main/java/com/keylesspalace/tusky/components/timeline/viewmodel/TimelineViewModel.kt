@@ -20,7 +20,21 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import com.keylesspalace.tusky.appstore.*
+import com.keylesspalace.tusky.appstore.BlockEvent
+import com.keylesspalace.tusky.appstore.BookmarkEvent
+import com.keylesspalace.tusky.appstore.DomainMuteEvent
+import com.keylesspalace.tusky.appstore.Event
+import com.keylesspalace.tusky.appstore.EventHub
+import com.keylesspalace.tusky.appstore.FavoriteEvent
+import com.keylesspalace.tusky.appstore.MuteConversationEvent
+import com.keylesspalace.tusky.appstore.MuteEvent
+import com.keylesspalace.tusky.appstore.PinEvent
+import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
+import com.keylesspalace.tusky.appstore.ReblogEvent
+import com.keylesspalace.tusky.appstore.StatusDeletedEvent
+import com.keylesspalace.tusky.appstore.StreamUpdateEvent
+import com.keylesspalace.tusky.appstore.UnfollowEvent
+import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Filter
 import com.keylesspalace.tusky.entity.Poll
@@ -38,8 +52,6 @@ import kotlinx.coroutines.rx3.await
 import net.accelf.yuito.streaming.StreamType
 import net.accelf.yuito.streaming.StreamingManager
 import net.accelf.yuito.streaming.Subscription
-import retrofit2.HttpException
-import java.io.IOException
 
 abstract class TimelineViewModel(
     private val timelineCases: TimelineCases,
@@ -341,19 +353,6 @@ abstract class TimelineViewModel(
                     filterContextMatchesKind(kind, it.context)
                 }
             )
-        }
-    }
-
-    private fun isExpectedRequestException(t: Exception) = t is IOException || t is HttpException
-
-    private inline fun ifExpected(
-        t: Exception,
-        cb: () -> Unit,
-    ) {
-        if (isExpectedRequestException(t)) {
-            cb()
-        } else {
-            throw t
         }
     }
 

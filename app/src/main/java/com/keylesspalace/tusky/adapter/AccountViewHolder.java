@@ -9,7 +9,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.keylesspalace.tusky.R;
-import com.keylesspalace.tusky.entity.Account;
+import com.keylesspalace.tusky.entity.TimelineAccount;
 import com.keylesspalace.tusky.interfaces.AccountActionListener;
 import com.keylesspalace.tusky.interfaces.LinkListener;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
@@ -33,9 +33,9 @@ public class AccountViewHolder extends RecyclerView.ViewHolder {
         showBotOverlay = sharedPrefs.getBoolean("showBotOverlay", true);
     }
 
-    public void setupWithAccount(Account account, boolean animateAvatar, boolean animateEmojis) {
+    public void setupWithAccount(TimelineAccount account, boolean animateAvatar, boolean animateEmojis) {
         accountId = account.getId();
-        String format = username.getContext().getString(R.string.status_username_format);
+        String format = username.getContext().getString(R.string.post_username_format);
         String formattedUsername = String.format(format, account.getUsername());
         username.setText(formattedUsername);
         CharSequence emojifiedName = CustomEmojiHelper.emojify(account.getName(), account.getEmojis(), displayName, animateEmojis);

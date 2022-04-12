@@ -34,7 +34,7 @@ import com.keylesspalace.tusky.entity.NewPoll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.service.ServiceClient
-import com.keylesspalace.tusky.service.TootToSend
+import com.keylesspalace.tusky.service.StatusToSend
 import com.keylesspalace.tusky.util.Either
 import com.keylesspalace.tusky.util.RxAwareViewModel
 import com.keylesspalace.tusky.util.VersionUtils
@@ -315,25 +315,25 @@ class ComposeViewModel @Inject constructor(
                     mediaDescriptions.add(item.description ?: "")
                 }
 
-                    val tootToSend = TootToSend(
-                            text = content,
-                            warningText = spoilerText,
-                            visibility = statusVisibility.value!!.serverString(),
-                            sensitive = mediaUris.isNotEmpty() && (markMediaAsSensitive.value!! || showContentWarning.value!!),
-                            mediaIds = mediaIds,
-                            mediaUris = mediaUris.map { it.toString() },
-                            mediaDescriptions = mediaDescriptions,
-                            scheduledAt = scheduledAt.value,
-                            inReplyToId = inReplyToId,
-                            poll = poll.value,
-                            replyingStatusContent = null,
-                            replyingStatusAuthorUsername = null,
-                            quoteId = quoteId,
-                            accountId = accountManager.activeAccount!!.id,
-                            draftId = draftId,
-                            idempotencyKey = randomAlphanumericString(16),
-                            retries = 0
-                    )
+                val tootToSend = StatusToSend(
+                    text = content,
+                    warningText = spoilerText,
+                    visibility = statusVisibility.value!!.serverString(),
+                    sensitive = mediaUris.isNotEmpty() && (markMediaAsSensitive.value!! || showContentWarning.value!!),
+                    mediaIds = mediaIds,
+                    mediaUris = mediaUris.map { it.toString() },
+                    mediaDescriptions = mediaDescriptions,
+                    scheduledAt = scheduledAt.value,
+                    inReplyToId = inReplyToId,
+                    poll = poll.value,
+                    replyingStatusContent = null,
+                    replyingStatusAuthorUsername = null,
+                    quoteId = quoteId,
+                    accountId = accountManager.activeAccount!!.id,
+                    draftId = draftId,
+                    idempotencyKey = randomAlphanumericString(16),
+                    retries = 0
+                )
 
                 serviceClient.sendToot(tootToSend)
             }
@@ -468,7 +468,7 @@ class ComposeViewModel @Inject constructor(
 
         draftId = composeOptions?.draftId ?: 0
         scheduledTootId = composeOptions?.scheduledTootId
-        startingText = composeOptions?.tootText
+        startingText = composeOptions?.content
 
         val tootVisibility = composeOptions?.visibility ?: Status.Visibility.UNKNOWN
         if (tootVisibility.num != Status.Visibility.UNKNOWN.num) {

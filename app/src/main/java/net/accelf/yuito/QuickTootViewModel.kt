@@ -63,7 +63,7 @@ class QuickTootViewModel @Inject constructor(
 
     fun composeOptions(tootRightNow: Boolean): ComposeActivity.ComposeOptions {
         return ComposeActivity.ComposeOptions(
-                tootText = content.value,
+                content = content.value,
                 mentionedUsernames = inReplyTo.value
                         ?.let {
                             linkedSetOf(it.account.username, *(it.mentions.map { mention -> mention.username }.toTypedArray()))

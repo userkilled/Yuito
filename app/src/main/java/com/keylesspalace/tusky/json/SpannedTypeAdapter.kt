@@ -16,8 +16,10 @@
 package com.keylesspalace.tusky.json
 
 import android.text.Spanned
+import android.text.SpannedString
 import androidx.core.text.HtmlCompat
 import androidx.core.text.parseAsHtml
+import androidx.core.text.toHtml
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
@@ -32,16 +34,29 @@ import java.lang.reflect.Type
 class SpannedTypeAdapter : JsonDeserializer<Spanned>, JsonSerializer<Spanned?> {
     @Throws(JsonParseException::class)
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Spanned {
-        /* Html.fromHtml returns trailing whitespace if the html ends in a </p> tag, which
-         * all status contents do, so it should be trimmed. */
-        return Jsoup.parse(json.asString ?: "")
-                .apply {
-                    select(".quote-inline").forEach { it.remove() }
-                }
-                .html().parseAsHtml().trimTrailingWhitespace()
+        return json.asString
+            /* Mastodon uses 'white-space: pre-wrap;' so spaces are displayed as returned by the Api.
+             * We can't use CSS so we replace spaces with non-breaking-spaces to emulate the behavior.
+             */
+            ?.replace("<br> ", "<br>&nbsp;")
+            ?.replace("<br /> ", "<br />&nbsp;")
+            ?.replace("<br/> ", "<br/>&nbsp;")
+            ?.replace("  ", "&nbsp;&nbsp;")
+            ?.let { html ->
+                Jsoup.parse(html)
+                    .apply {
+                        select(".quote-inline").forEach { it.remove() }
+                    }
+                    .html()
+            }
+            ?.parseAsHtml()
+            /* Html.fromHtml returns trailing whitespace if the html ends in a </p> tag, which
+             * most status contents do, so it should be trimmed. */
+            ?.trimTrailingWhitespace()
+            ?: SpannedString("")
     }
 
     override fun serialize(src: Spanned?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
-        return JsonPrimitive(HtmlCompat.toHtml(src!!, HtmlCompat.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL))
+        return JsonPrimitive(src!!.toHtml(HtmlCompat.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL))
     }
 }

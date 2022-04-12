@@ -243,7 +243,7 @@ public abstract class SFragment extends Fragment implements Injectable {
 
         popup.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
-                case R.id.status_share_content: {
+                case R.id.post_share_content: {
                     Status statusToShare = status;
                     if (statusToShare.getReblog() != null)
                         statusToShare = statusToShare.getReblog();
@@ -257,15 +257,15 @@ public abstract class SFragment extends Fragment implements Injectable {
                     sendIntent.putExtra(Intent.EXTRA_TEXT, stringToShare);
                     sendIntent.putExtra(Intent.EXTRA_SUBJECT, statusUrl);
                     sendIntent.setType("text/plain");
-                    startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_status_content_to)));
+                    startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_post_content_to)));
                     return true;
                 }
-                case R.id.status_share_link: {
+                case R.id.post_share_link: {
                     Intent sendIntent = new Intent();
                     sendIntent.setAction(Intent.ACTION_SEND);
                     sendIntent.putExtra(Intent.EXTRA_TEXT, statusUrl);
                     sendIntent.setType("text/plain");
-                    startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_status_link_to)));
+                    startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_post_link_to)));
                     return true;
                 }
                 case R.id.status_copy_link: {
@@ -407,7 +407,7 @@ public abstract class SFragment extends Fragment implements Injectable {
 
     protected void showConfirmDeleteDialog(final String id, final int position) {
         new AlertDialog.Builder(getActivity())
-                .setMessage(R.string.dialog_delete_toot_warning)
+                .setMessage(R.string.dialog_delete_post_warning)
                 .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
                     timelineCases.delete(id)
                             .observeOn(AndroidSchedulers.mainThread())
@@ -430,7 +430,7 @@ public abstract class SFragment extends Fragment implements Injectable {
             return;
         }
         new AlertDialog.Builder(getActivity())
-                .setMessage(R.string.dialog_redraft_toot_warning)
+                .setMessage(R.string.dialog_redraft_post_warning)
                 .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
                     timelineCases.delete(id)
                             .observeOn(AndroidSchedulers.mainThread())
@@ -442,7 +442,7 @@ public abstract class SFragment extends Fragment implements Injectable {
                                             deletedStatus = status.toDeletedStatus();
                                         }
                                         ComposeOptions composeOptions = new ComposeOptions();
-                                        composeOptions.setTootText(deletedStatus.getText());
+                                        composeOptions.setContent(deletedStatus.getText());
                                         composeOptions.setInReplyToId(deletedStatus.getInReplyToId());
                                         composeOptions.setVisibility(deletedStatus.getVisibility());
                                         composeOptions.setContentWarning(deletedStatus.getSpoilerText());

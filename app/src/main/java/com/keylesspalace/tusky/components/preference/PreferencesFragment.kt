@@ -25,7 +25,14 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.ComposeOptions
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.Notification
-import com.keylesspalace.tusky.settings.*
+import com.keylesspalace.tusky.settings.AppTheme
+import com.keylesspalace.tusky.settings.PrefKeys
+import com.keylesspalace.tusky.settings.emojiPreference
+import com.keylesspalace.tusky.settings.listPreference
+import com.keylesspalace.tusky.settings.makePreferenceScreen
+import com.keylesspalace.tusky.settings.preference
+import com.keylesspalace.tusky.settings.preferenceCategory
+import com.keylesspalace.tusky.settings.switchPreference
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.deserialize
 import com.keylesspalace.tusky.util.getNonNullString
@@ -85,11 +92,11 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
 
                 listPreference {
                     setDefaultValue("medium")
-                    setEntries(R.array.status_text_size_names)
-                    setEntryValues(R.array.status_text_size_values)
+                    setEntries(R.array.post_text_size_names)
+                    setEntryValues(R.array.post_text_size_values)
                     key = PrefKeys.STATUS_TEXT_SIZE
                     setSummaryProvider { entry }
-                    setTitle(R.string.pref_status_text_size)
+                    setTitle(R.string.pref_post_text_size)
                     icon = makeIcon(GoogleMaterial.Icon.gmd_format_size)
                 }
 
@@ -138,6 +145,13 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                 }
 
                 switchPreference {
+                    setDefaultValue(false)
+                    key = PrefKeys.ANIMATE_CUSTOM_EMOJIS
+                    setTitle(R.string.pref_title_animate_custom_emojis)
+                    isSingleLineTitle = false
+                }
+
+                switchPreference {
                     setDefaultValue(true)
                     key = PrefKeys.USE_BLURHASH
                     setTitle(R.string.pref_title_gradient_for_media)
@@ -176,13 +190,6 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                     setDefaultValue(true)
                     key = PrefKeys.ENABLE_SWIPE_FOR_TABS
                     setTitle(R.string.pref_title_enable_swipe_for_tabs)
-                    isSingleLineTitle = false
-                }
-
-                switchPreference {
-                    setDefaultValue(false)
-                    key = PrefKeys.ANIMATE_CUSTOM_EMOJIS
-                    setTitle(R.string.pref_title_animate_custom_emojis)
                     isSingleLineTitle = false
                 }
 
@@ -232,7 +239,7 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
 
             preferenceCategory(R.string.pref_title_timeline_filters) {
                 preference {
-                    setTitle(R.string.pref_title_status_tabs)
+                    setTitle(R.string.pref_title_post_tabs)
                     setOnPreferenceClickListener {
                         activity?.let { activity ->
                             val intent = PreferencesActivity.newIntent(activity, PreferencesActivity.TAB_FILTER_PREFERENCES)
@@ -305,7 +312,7 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                 }
             }
 
-            preferenceManager.sharedPreferences.let { prefs ->
+            preferenceManager.sharedPreferences?.let { prefs ->
                 prefs.getString(PrefKeys.STACK_TRACE, null)?.let { stackTrace ->
                     preferenceCategory(R.string.pref_title_stacktrace) {
                         preference {
@@ -313,7 +320,7 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                             setOnPreferenceClickListener {
                                 activity?.let { activity ->
                                     val intent = ComposeActivity.startIntent(activity, ComposeOptions(
-                                            tootText = "@ars42525@odakyu.app $stackTrace".substring(0, 400),
+                                            content = "@ars42525@odakyu.app $stackTrace".substring(0, 400),
                                             contentWarning = "Yuito StackTrace"
                                     ))
                                     activity.startActivity(intent)
@@ -350,23 +357,24 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
     }
 
     private fun updateHttpProxySummary() {
-        val sharedPreferences = preferenceManager.sharedPreferences
-        val httpProxyEnabled = sharedPreferences.getBoolean(PrefKeys.HTTP_PROXY_ENABLED, false)
-        val httpServer = sharedPreferences.getNonNullString(PrefKeys.HTTP_PROXY_SERVER, "")
+        preferenceManager.sharedPreferences?.let { sharedPreferences ->
+            val httpProxyEnabled = sharedPreferences.getBoolean(PrefKeys.HTTP_PROXY_ENABLED, false)
+            val httpServer = sharedPreferences.getNonNullString(PrefKeys.HTTP_PROXY_SERVER, "")
 
-        try {
-            val httpPort = sharedPreferences.getNonNullString(PrefKeys.HTTP_PROXY_PORT, "-1")
-                .toInt()
+            try {
+                val httpPort = sharedPreferences.getNonNullString(PrefKeys.HTTP_PROXY_PORT, "-1")
+                    .toInt()
 
-            if (httpProxyEnabled && httpServer.isNotBlank() && httpPort > 0 && httpPort < 65535) {
-                httpProxyPref?.summary = "$httpServer:$httpPort"
-                return
+                if (httpProxyEnabled && httpServer.isNotBlank() && httpPort > 0 && httpPort < 65535) {
+                    httpProxyPref?.summary = "$httpServer:$httpPort"
+                    return
+                }
+            } catch (e: NumberFormatException) {
+                // user has entered wrong port, fall back to empty summary
             }
-        } catch (e: NumberFormatException) {
-            // user has entered wrong port, fall back to empty summary
-        }
 
-        httpProxyPref?.summary = ""
+            httpProxyPref?.summary = ""
+        }
     }
 
     companion object {

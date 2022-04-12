@@ -23,13 +23,13 @@ import androidx.room.withTransaction
 import com.google.gson.Gson
 import com.keylesspalace.tusky.components.timeline.Placeholder
 import com.keylesspalace.tusky.components.timeline.toEntity
+import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
 import com.keylesspalace.tusky.db.TimelineStatusEntity
 import com.keylesspalace.tusky.db.TimelineStatusWithAccount
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
-import com.keylesspalace.tusky.util.dec
 import kotlinx.coroutines.rx3.await
 import retrofit2.HttpException
 
@@ -101,15 +101,22 @@ class CachedTimelineRemoteMediator(
             db.withTransaction {
                 val overlappedStatuses = replaceStatusRange(statuses, state)
 
-                if (loadType == LoadType.REFRESH && overlappedStatuses == 0 && statuses.isNotEmpty() && !dbEmpty) {
+                /* In case we loaded a whole page and there was no overlap with existing statuses,
+                   we insert a placeholder because there might be even more unknown statuses */
+                if (loadType == LoadType.REFRESH && overlappedStatuses == 0 && statuses.size == state.config.pageSize && !dbEmpty) {
+                    /* This overrides the last of the newly loaded statuses with a placeholder
+                       to guarantee the placeholder has an id that exists on the server as not all
+                       servers handle client generated ids as expected */
                     timelineDao.insertStatus(
-                        Placeholder(statuses.last().id.dec(), loading = false).toEntity(activeAccount.id)
+                        Placeholder(statuses.last().id, loading = false).toEntity(activeAccount.id)
                     )
                 }
             }
             return MediatorResult.Success(endOfPaginationReached = statuses.isEmpty())
         } catch (e: Exception) {
-            return MediatorResult.Error(e)
+            return ifExpected(e) {
+                MediatorResult.Error(e)
+            }
         }
     }
 

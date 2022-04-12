@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_view_thread">Публикация</string>
-    <string name="drafts_toot_reply_removed">Публикацията, на която сте изготвили отговор, е премахната</string>
+    <string name="drafts_post_reply_removed">Публикацията, на която сте изготвили отговор, е премахната</string>
     <string name="duration_1_hour">1 час</string>
     <string name="duration_30_min">30 минути</string>
     <string name="duration_5_min">5 минути</string>
@@ -14,7 +14,7 @@
     <string name="title_accounts">Акаунти</string>
     <string name="report_description_remote_instance">Акаунтът е от друг сървър. Да изпратите ли и там анонимно копие на доклада\?</string>
     <string name="report_description_1">Докладът ще бъде изпратен на модератора на вашия сървър. Можете да предоставите обяснение защо докладвате този акаунт по-долу:</string>
-    <string name="failed_fetch_statuses">Извличането на състояния бе неуспешно</string>
+    <string name="failed_fetch_posts">Извличането на състояния бе неуспешно</string>
     <string name="failed_report">Докладването бе неуспешно</string>
     <string name="report_remote_instance">Препращане към %s</string>
     <string name="hint_additional_info">Допълнителни коментари</string>
@@ -70,12 +70,12 @@
     <string name="description_visiblity_direct">Директно</string>
     <string name="description_visiblity_private">Последователи</string>
     <string name="description_visiblity_public">Публично</string>
-    <string name="description_status_bookmarked">Отметнато</string>
-    <string name="description_status_favourited">Поставено в любими</string>
-    <string name="description_status_reblogged">Реблог</string>
-    <string name="description_status_media_no_description_placeholder">Без описание</string>
-    <string name="description_status_cw">Предупреждение за съдържание: %s</string>
-    <string name="description_status_media">Мултимедия: %s</string>
+    <string name="description_post_bookmarked">Отметнато</string>
+    <string name="description_post_favourited">Поставено в любими</string>
+    <string name="description_post_reblogged">Реблог</string>
+    <string name="description_post_media_no_description_placeholder">Без описание</string>
+    <string name="description_post_cw">Предупреждение за съдържание: %s</string>
+    <string name="description_post_media">Мултимедия: %s</string>
     <plurals name="max_tab_number_reached">
         <item quantity="other">достигнати са максималните %1$d раздела</item>
     </plurals>
@@ -118,19 +118,19 @@
     <string name="later">По-късно</string>
     <string name="restart_emoji">Ще трябва да рестартирате Tusky, за да приложите тези промени</string>
     <string name="restart_required">Изисква се рестартиране на приложението</string>
-    <string name="action_open_toot">Отваряне на публикация</string>
-    <string name="expand_collapse_all_statuses">Разгъване/свиване на всички състояния</string>
+    <string name="action_open_post">Отваряне на публикация</string>
+    <string name="expand_collapse_all_posts">Разгъване/свиване на всички състояния</string>
     <string name="performing_lookup_title">Извършва се търсене…</string>
     <string name="system_default">По подразбиране от системата</string>
     <string name="emoji_style">Стил на емоджи</string>
     <string name="copy_to_clipboard_success">Копирано в клипборда</string>
     <string name="error_no_custom_emojis">Инстанцията ви %s няма персонализирани емоджита</string>
     <string name="action_compose_shortcut">Композиране</string>
-    <string name="send_toot_notification_saved_content">Копие от публикацията е запазено във вашите чернови</string>
-    <string name="send_toot_notification_cancel_title">Изпращането е отменено</string>
-    <string name="send_toot_notification_channel_name">Изпращане на публикации</string>
-    <string name="send_toot_notification_error_title">Грешка при изпращане на публикация</string>
-    <string name="send_toot_notification_title">Изпращане на публикация…</string>
+    <string name="send_post_notification_saved_content">Копие от публикацията е запазено във вашите чернови</string>
+    <string name="send_post_notification_cancel_title">Изпращането е отменено</string>
+    <string name="send_post_notification_channel_name">Изпращане на публикации</string>
+    <string name="send_post_notification_error_title">Грешка при изпращане на публикация</string>
+    <string name="send_post_notification_title">Изпращане на публикация…</string>
     <string name="compose_save_draft">Запазване на чернова\?</string>
     <string name="lock_account_label_description">Изисква ръчно одобряване на последователи</string>
     <string name="lock_account_label">Заключване на акаунт</string>
@@ -183,12 +183,12 @@
     <string name="abbreviated_in_years">след %dг</string>
     <string name="abbreviated_in_days">след %dд</string>
     <string name="state_follow_requested">Заявено последване</string>
-    <string name="status_media_attachments">Прикачени файлове</string>
-    <string name="status_media_audio">Аудио</string>
-    <string name="status_media_video">Видео</string>
-    <string name="status_media_images">Изображения</string>
-    <string name="status_share_link">Споделяне на връзка към публикация</string>
-    <string name="status_share_content">Споделяне на съдържание на публикация</string>
+    <string name="post_media_attachments">Прикачени файлове</string>
+    <string name="post_media_audio">Аудио</string>
+    <string name="post_media_video">Видео</string>
+    <string name="post_media_images">Изображения</string>
+    <string name="post_share_link">Споделяне на връзка към публикация</string>
+    <string name="post_share_content">Споделяне на съдържание на публикация</string>
     <string name="about_tusky_account">Профилът на Tusky</string>
     <string name="about_bug_feature_request_site">Доклади за грешки и заявки за функции:
 \n https://github.com/tuskyapp/Tusky/issues</string>
@@ -213,10 +213,10 @@
     <string name="notification_favourite_description">Известия, когато публикациите ви бъдат означени като любими</string>
     <string name="notification_favourite_name">Любими</string>
     <string name="notification_boost_description">Известия, когато публикациите ви се споделят</string>
-    <string name="status_text_size_smallest">Най-малък</string>
+    <string name="post_text_size_smallest">Най-малък</string>
     <string name="description_visiblity_unlisted">Скрито</string>
-    <string name="pref_title_status_tabs">Раздели</string>
-    <string name="pref_title_status_filter">Филтриране на емисия</string>
+    <string name="pref_title_post_tabs">Раздели</string>
+    <string name="pref_title_post_filter">Филтриране на емисия</string>
     <string name="pref_title_animate_custom_emojis">Анимиране на персонализирани емоджита</string>
     <string name="pref_title_gradient_for_media">Показване на цветни градиенти за скрита мултимедия</string>
     <string name="pref_title_animate_gif_avatars">Анимиране на GIF аватари</string>
@@ -256,26 +256,26 @@
     <string name="dialog_block_warning">Блокиране на @%s\?</string>
     <string name="mute_domain_warning_dialog_ok">Скриване на целия домейн</string>
     <string name="mute_domain_warning">Сигурни ли сте, че искате да блокирате всички от %s\? Няма да виждате съдържание от този домейн в нито една публична емисия или във вашите известия. Последователите ви от този домейн ще бъдат премахнати.</string>
-    <string name="dialog_redraft_toot_warning">Изтриване и преработване на тази публикация\?</string>
-    <string name="dialog_delete_toot_warning">Изтриване на тази публикация\?</string>
+    <string name="dialog_redraft_post_warning">Изтриване и преработване на тази публикация\?</string>
+    <string name="dialog_delete_post_warning">Изтриване на тази публикация\?</string>
     <string name="dialog_unfollow_warning">Отследване на този акаунт\?</string>
     <string name="dialog_message_cancel_follow_request">Отмяна на заявката за последване\?</string>
     <string name="dialog_download_image">Изтегляне</string>
     <string name="dialog_message_uploading_media">Качване…</string>
     <string name="dialog_title_finishing_media_upload">Завършване на мултимедийно качване</string>
-    <string name="dialog_whats_an_instance">"Тук може да се въведе адресът или домейнът на която и да е инстанция, като mastodon.social, icosahedron.website, social.tchncs.de и &lt;a href=\"https://instances.social\"&gt;други!&lt;/a&gt;
+    <string name="dialog_whats_an_instance">Тук може да се въведе адресът или домейнът на която и да е инстанция, като mastodon.social, icosahedron.website, social.tchncs.de и &lt;a href=\"https://instances.social\"&gt;други!&lt;/a&gt;
 \n
 \nАко все още нямате акаунт, можете да въведете името на инстанцията, към който искате да се присъедините, и да създадете акаунт там.
 \n
 \nИнстанцията е единично място, където се хоства акаунтът ви, но можете лесно да комуникирате и да следвате хора в други инстанции, сякаш сте на същия сайт.
 \n
-\nПовече информация можете да намерите на &lt;a href=\"https://joinmastodon.org\"&gt;joinmastodon.org&lt;/a&gt;. "<a href="https://instances.social">more!</a>
-        \n\nIf you don\'t yet have an account, you can enter the name of the instance you\'d like to
-        join and create an account there.\n\nAn instance is a single place where your account is
-        hosted, but you can easily communicate with and follow folks on other instances as though
-        you were on the same site.
-        \n\nMore info can be found at <a href="https://joinmastodon.org">joinmastodon.org</a>.
-    </string>
+\nПовече информация можете да намерите на &lt;a href=\"https://joinmastodon.org\"&gt;joinmastodon.org&lt;/a&gt;. <a href="https://instances.social">more!</a>
+\n
+\nIf you don\'t yet have an account, you can enter the name of the instance you\'d like to join and create an account there.
+\n
+\nAn instance is a single place where your account is hosted, but you can easily communicate with and follow folks on other instances as though you were on the same site.
+\n
+\nMore info can be found at <a href="https://joinmastodon.org">joinmastodon.org</a>. </string>
     <string name="login_connection">Свързване…</string>
     <string name="link_whats_an_instance">Какво е инстанция\?</string>
     <string name="label_header">Заглавна част</string>
@@ -288,15 +288,15 @@
     <string name="hint_content_warning">Предупреждение за съдържание</string>
     <string name="hint_compose">Какво се случва\?</string>
     <string name="hint_domain">Коя инстанция\?</string>
-    <string name="status_sent_long">Отговорът е изпратен успешно.</string>
-    <string name="status_sent">Изпратено!</string>
+    <string name="post_sent_long">Отговорът е изпратен успешно.</string>
+    <string name="post_sent">Изпратено!</string>
     <string name="confirmation_domain_unmuted">%s е разкрит</string>
     <string name="confirmation_unmuted">Потребителят е раззаглушен</string>
     <string name="confirmation_unblocked">Потребителят е деблокиран</string>
     <string name="confirmation_reported">Изпратено!</string>
     <string name="send_media_to">Споделяне на мултимедия в…</string>
-    <string name="send_status_content_to">Споделяне на публикация в…</string>
-    <string name="send_status_link_to">Споделяне на URL адреса на публикацията в…</string>
+    <string name="send_post_content_to">Споделяне на публикация в…</string>
+    <string name="send_post_link_to">Споделяне на URL адреса на публикацията в…</string>
     <string name="downloading_media">Теглене на мултимедия</string>
     <string name="download_media">Изтегляне на мултимедия</string>
     <string name="action_share_as">Споделяне като …</string>
@@ -315,11 +315,11 @@
     <string name="action_links">Връзки</string>
     <string name="action_add_tab">Добавяне на раздел</string>
     <string name="action_reset_schedule">Нулиране</string>
-    <string name="action_schedule_toot">Планиране на публикация</string>
+    <string name="action_schedule_post">Планиране на публикация</string>
     <string name="action_emoji_keyboard">Емоджи клавиатура</string>
     <string name="action_content_warning">Предупреждение за съдържание</string>
     <string name="action_toggle_visibility">Видимост на публикация</string>
-    <string name="action_access_scheduled_toot">Планирани публикации</string>
+    <string name="action_access_scheduled_posts">Планирани публикации</string>
     <string name="action_access_drafts">Чернови</string>
     <string name="action_search">Търсене</string>
     <string name="action_reject">Отхвърляне</string>
@@ -390,18 +390,18 @@
     <string name="notification_reblog_format">%s сподели вашата публикация</string>
     <string name="footer_empty">Нищо тук. Дръпнете надолу, за да опресните!</string>
     <string name="message_empty">Нищо тук.</string>
-    <string name="status_content_show_less">Свиване</string>
-    <string name="status_content_show_more">Разгъване</string>
-    <string name="status_content_warning_show_less">Покажи по-малко</string>
-    <string name="status_content_warning_show_more">Покажи повече</string>
-    <string name="status_sensitive_media_directions">Щракнете за преглед</string>
-    <string name="status_media_hidden_title">Мултимедията е скрита</string>
-    <string name="status_sensitive_media_title">Деликатно съдържание</string>
-    <string name="status_boosted_format">%s сподели</string>
-    <string name="status_username_format">\@%s</string>
+    <string name="post_content_show_less">Свиване</string>
+    <string name="post_content_show_more">Разгъване</string>
+    <string name="post_content_warning_show_less">Покажи по-малко</string>
+    <string name="post_content_warning_show_more">Покажи повече</string>
+    <string name="post_sensitive_media_directions">Щракнете за преглед</string>
+    <string name="post_media_hidden_title">Мултимедията е скрита</string>
+    <string name="post_sensitive_media_title">Деликатно съдържание</string>
+    <string name="post_boosted_format">%s сподели</string>
+    <string name="post_username_format">\@%s</string>
     <string name="title_licenses">Лицензи</string>
     <string name="title_announcements">Оповестявания</string>
-    <string name="title_scheduled_toot">Планирани публикации</string>
+    <string name="title_scheduled_posts">Планирани публикации</string>
     <string name="title_drafts">Чернови</string>
     <string name="title_edit_profile">Редакция на профила ви</string>
     <string name="title_follow_requests">Заявки за последване</string>
@@ -412,9 +412,9 @@
     <string name="title_favourites">Любими</string>
     <string name="title_followers">Последователи</string>
     <string name="title_follows">Последвани</string>
-    <string name="title_statuses_pinned">Закачени</string>
-    <string name="title_statuses_with_replies">С отговори</string>
-    <string name="title_statuses">Публикации</string>
+    <string name="title_posts_pinned">Закачени</string>
+    <string name="title_posts_with_replies">С отговори</string>
+    <string name="title_posts">Публикации</string>
     <string name="title_tab_preferences">Раздели</string>
     <string name="title_direct_messages">Директни съобщения</string>
     <string name="title_public_local">Локално</string>
@@ -442,7 +442,7 @@
     <string name="error_generic">Възникна грешка.</string>
     <string name="draft_deleted">Черновата е изтрита</string>
     <string name="drafts_failed_loading_reply">Неуспешно зареждане на информация за отговор</string>
-    <string name="drafts_toot_failed_to_send">Тази публикация не успя да се изпрати!</string>
+    <string name="drafts_post_failed_to_send">Тази публикация не успя да се изпрати!</string>
     <string name="dialog_delete_list_warning">Наистина ли искате да изтриете списъка %s\?</string>
     <plurals name="error_upload_max_media_reached">
         <item quantity="other">Не можете да качите повече от %1$d мултимедийни прикачени файлове.</item>
@@ -466,7 +466,7 @@
     <string name="pref_title_show_cards_in_timelines">Показване на визуализации на връзки в емисии</string>
     <string name="warning_scheduling_interval">Mastodon има минимален интервал за планиране от 5 минути.</string>
     <string name="no_announcements">Няма оповестявания.</string>
-    <string name="no_scheduled_status">Нямате планирани състояния.</string>
+    <string name="no_scheduled_posts">Нямате планирани състояния.</string>
     <string name="no_drafts">Нямате чернови.</string>
     <string name="post_lookup_error_format">Грешка при търсенето на публикация %s</string>
     <string name="edit_poll">Редакция</string>
@@ -484,12 +484,12 @@
     <string name="notification_follow_name">Нови последователи</string>
     <string name="notification_mention_descriptions">Известия за нови споменавания</string>
     <string name="notification_mention_name">Нови споменавания</string>
-    <string name="status_text_size_largest">Най-голям</string>
-    <string name="status_text_size_large">Голям</string>
-    <string name="status_text_size_medium">Среден</string>
-    <string name="status_text_size_small">Малък</string>
+    <string name="post_text_size_largest">Най-голям</string>
+    <string name="post_text_size_large">Голям</string>
+    <string name="post_text_size_medium">Среден</string>
+    <string name="post_text_size_small">Малък</string>
     <string name="visibility_unlisted">Скрито: Не се показва в публични емисии</string>
-    <string name="pref_status_text_size">Размер на текста на състоянието</string>
+    <string name="pref_post_text_size">Размер на текста на състоянието</string>
     <string name="post_privacy_followers_only">Само за последователи</string>
     <string name="post_privacy_unlisted">Скрито</string>
     <string name="post_privacy_public">Публично</string>

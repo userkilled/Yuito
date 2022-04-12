@@ -44,6 +44,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.EmojiCompat.InitCallback
 import androidx.lifecycle.Lifecycle
@@ -74,9 +75,10 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.canH
 import com.keylesspalace.tusky.components.conversation.ConversationsRepository
 import com.keylesspalace.tusky.components.drafts.DraftHelper
 import com.keylesspalace.tusky.components.drafts.DraftsActivity
+import com.keylesspalace.tusky.components.login.LoginActivity
 import com.keylesspalace.tusky.components.notifications.NotificationHelper
 import com.keylesspalace.tusky.components.preference.PreferencesActivity
-import com.keylesspalace.tusky.components.scheduled.ScheduledTootActivity
+import com.keylesspalace.tusky.components.scheduled.ScheduledStatusActivity
 import com.keylesspalace.tusky.components.search.SearchActivity
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
 import com.keylesspalace.tusky.databinding.ActivityMainBinding
@@ -132,6 +134,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
+import net.accelf.yuito.CustomUncaughtExceptionHandler
 import net.accelf.yuito.FooterDrawerItem
 import net.accelf.yuito.QuickTootViewModel
 import net.accelf.yuito.streaming.StreamingManager
@@ -185,7 +188,13 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Thread.setDefaultUncaughtExceptionHandler(CustomUncaughtExceptionHandler(applicationContext))
+
+        installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // delete old notification channels
+        NotificationHelper.deleteLegacyNotificationChannels(this, accountManager)
 
         val activeAccount = accountManager.activeAccount
             ?: return // will be redirected to LoginActivity by BaseActivity
@@ -515,10 +524,10 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     }
                 },
                 primaryDrawerItem {
-                    nameRes = R.string.action_access_scheduled_toot
+                    nameRes = R.string.action_access_scheduled_posts
                     iconRes = R.drawable.ic_access_time
                     onClick = {
-                        startActivityWithSlideInAnimation(ScheduledTootActivity.newIntent(context))
+                        startActivityWithSlideInAnimation(ScheduledStatusActivity.newIntent(context))
                     }
                 },
                 primaryDrawerItem {

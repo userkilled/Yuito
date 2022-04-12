@@ -22,7 +22,7 @@ import android.text.style.StyleSpan
 import androidx.recyclerview.widget.RecyclerView
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.databinding.ItemFollowRequestBinding
-import com.keylesspalace.tusky.entity.Account
+import com.keylesspalace.tusky.entity.TimelineAccount
 import com.keylesspalace.tusky.interfaces.AccountActionListener
 import com.keylesspalace.tusky.util.emojify
 import com.keylesspalace.tusky.util.loadAvatar
@@ -34,7 +34,7 @@ class FollowRequestViewHolder(
     private val showHeader: Boolean
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    fun setupWithAccount(account: Account, animateAvatar: Boolean, animateEmojis: Boolean) {
+    fun setupWithAccount(account: TimelineAccount, animateAvatar: Boolean, animateEmojis: Boolean) {
         val wrappedName = account.name.unicodeWrap()
         val emojifiedName: CharSequence = wrappedName.emojify(account.emojis, itemView, animateEmojis)
         binding.displayNameTextView.text = emojifiedName
@@ -45,7 +45,7 @@ class FollowRequestViewHolder(
             }.emojify(account.emojis, itemView, animateEmojis)
         }
         binding.notificationTextView.visible(showHeader)
-        val format = itemView.context.getString(R.string.status_username_format)
+        val format = itemView.context.getString(R.string.post_username_format)
         val formattedUsername = String.format(format, account.username)
         binding.usernameTextView.text = formattedUsername
         val avatarRadius = binding.avatar.context.resources.getDimensionPixelSize(R.dimen.avatar_radius_48dp)

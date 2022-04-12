@@ -10,10 +10,10 @@ import androidx.annotation.Px;
 
 import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
-import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.HashTag;
 import com.keylesspalace.tusky.entity.Status;
+import com.keylesspalace.tusky.entity.TimelineAccount;
 import com.keylesspalace.tusky.interfaces.LinkListener;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
 import com.keylesspalace.tusky.util.ImageLoadingHelper;
@@ -23,21 +23,21 @@ import com.keylesspalace.tusky.util.StatusDisplayOptions;
 import java.util.List;
 
 public class QuoteInlineHelper {
-    private Status quoteStatus;
+    private final Status quoteStatus;
 
-    private View quoteContainer;
-    private ImageView quoteAvatar;
-    private TextView quoteDisplayName;
-    private TextView quoteUsername;
-    private TextView quoteContentWarningDescription;
-    private MaterialButton quoteContentWarningButton;
-    private TextView quoteContent;
-    private TextView quoteMedia;
+    private final View quoteContainer;
+    private final ImageView quoteAvatar;
+    private final TextView quoteDisplayName;
+    private final TextView quoteUsername;
+    private final TextView quoteContentWarningDescription;
+    private final MaterialButton quoteContentWarningButton;
+    private final TextView quoteContent;
+    private final TextView quoteMedia;
 
-    private LinkListener listener;
+    private final LinkListener listener;
     @Px
-    private int avatarRadius24dp;
-    private StatusDisplayOptions statusDisplayOptions;
+    private final int avatarRadius24dp;
+    private final StatusDisplayOptions statusDisplayOptions;
 
     public QuoteInlineHelper(Status status, View container, LinkListener listener,
                              @Px int avatarRadius24dp, StatusDisplayOptions statusDisplayOptions) {
@@ -62,7 +62,7 @@ public class QuoteInlineHelper {
 
     private void setUsername(String name) {
         Context context = quoteUsername.getContext();
-        String format = context.getString(R.string.status_username_format);
+        String format = context.getString(R.string.post_username_format);
         String usernameText = String.format(format, name);
         quoteUsername.setText(usernameText);
     }
@@ -97,10 +97,10 @@ public class QuoteInlineHelper {
     private void setContentVisibility(boolean show) {
         if (show) {
             quoteContent.setVisibility(View.VISIBLE);
-            quoteContentWarningButton.setText(R.string.status_content_warning_show_less);
+            quoteContentWarningButton.setText(R.string.post_content_warning_show_less);
         } else {
             quoteContent.setVisibility(View.GONE);
-            quoteContentWarningButton.setText(R.string.status_content_warning_show_more);
+            quoteContentWarningButton.setText(R.string.post_content_warning_show_more);
         }
     }
 
@@ -120,7 +120,7 @@ public class QuoteInlineHelper {
     }
 
     public void setupQuoteContainer() {
-        Account account = quoteStatus.getAccount();
+        TimelineAccount account = quoteStatus.getAccount();
         setDisplayName(account.getName(), account.getEmojis());
         setUsername(account.getUsername());
         setContent(

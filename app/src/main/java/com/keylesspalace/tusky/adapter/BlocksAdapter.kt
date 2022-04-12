@@ -22,7 +22,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.keylesspalace.tusky.R
-import com.keylesspalace.tusky.entity.Account
+import com.keylesspalace.tusky.entity.TimelineAccount
 import com.keylesspalace.tusky.interfaces.AccountActionListener
 import com.keylesspalace.tusky.util.emojify
 import com.keylesspalace.tusky.util.loadAvatar
@@ -55,11 +55,11 @@ class BlocksAdapter(
         private val unblock: ImageButton = itemView.findViewById(R.id.blocked_user_unblock)
         private var id: String? = null
 
-        fun setupWithAccount(account: Account, animateAvatar: Boolean, animateEmojis: Boolean) {
+        fun setupWithAccount(account: TimelineAccount, animateAvatar: Boolean, animateEmojis: Boolean) {
             id = account.id
             val emojifiedName = account.name.emojify(account.emojis, displayName, animateEmojis)
             displayName.text = emojifiedName
-            val format = username.context.getString(R.string.status_username_format)
+            val format = username.context.getString(R.string.post_username_format)
             val formattedUsername = String.format(format, account.username)
             username.text = formattedUsername
             val avatarRadius = avatar.context.resources

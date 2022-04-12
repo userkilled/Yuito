@@ -28,15 +28,16 @@ import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.FavoriteEvent
 import com.keylesspalace.tusky.appstore.PinEvent
 import com.keylesspalace.tusky.appstore.ReblogEvent
+import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.TimelineCases
-import com.keylesspalace.tusky.util.dec
 import com.keylesspalace.tusky.util.getDomain
-import com.keylesspalace.tusky.util.inc
+import com.keylesspalace.tusky.util.isLessThan
+import com.keylesspalace.tusky.util.isLessThanOrEqual
 import com.keylesspalace.tusky.util.toViewData
 import com.keylesspalace.tusky.viewdata.StatusViewData
 import kotlinx.coroutines.flow.map
@@ -45,6 +46,7 @@ import kotlinx.coroutines.rx3.await
 import net.accelf.yuito.streaming.StreamingManager
 import retrofit2.HttpException
 import retrofit2.Response
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -140,8 +142,10 @@ class NetworkTimelineViewModel @Inject constructor(
                     statusData.indexOfFirst { it is StatusViewData.Placeholder && it.id == placeholderId }
                 statusData[placeholderIndex] = StatusViewData.Placeholder(placeholderId, isLoading = true)
 
+                val idAbovePlaceholder = statusData.getOrNull(placeholderIndex - 1)?.id
+
                 val statusResponse = fetchStatusesForKind(
-                    fromId = placeholderId.inc(),
+                    fromId = idAbovePlaceholder,
                     uptoId = null,
                     limit = 20
                 )
@@ -155,7 +159,7 @@ class NetworkTimelineViewModel @Inject constructor(
                 statusData.removeAt(placeholderIndex)
 
                 val activeAccount = accountManager.activeAccount!!
-                val data = statuses.map { status ->
+                val data: MutableList<StatusViewData> = statuses.map { status ->
                     status.toViewData(
                         isShowingContent = activeAccount.alwaysShowSensitiveMedia || !status.actionableStatus.sensitive,
                         isExpanded = activeAccount.alwaysOpenSpoiler,
@@ -164,30 +168,31 @@ class NetworkTimelineViewModel @Inject constructor(
                 }.toMutableList()
 
                 if (statuses.isNotEmpty()) {
-                    val firstId = statuses.first().id.hashCode().toLong()
-                    val lastId = statuses.last().id.hashCode().toLong()
-                    val overlappedFrom = statusData.indexOfFirst { it.viewDataId <= firstId }
-                    val overlappedTo = statusData.indexOfFirst { it.viewDataId < lastId }
+                    val firstId = statuses.first().id
+                    val lastId = statuses.last().id
+                    val overlappedFrom = statusData.indexOfFirst { it.asStatusOrNull()?.id?.isLessThanOrEqual(firstId) ?: false }
+                    val overlappedTo = statusData.indexOfFirst { it.asStatusOrNull()?.id?.isLessThan(lastId) ?: false }
 
                     if (overlappedFrom < overlappedTo) {
-                        repeat(overlappedTo - overlappedFrom) {
-                            statusData[overlappedFrom].asStatusOrNull()?.let { oldStatus ->
-                                val dataIndex = statuses.indexOfFirst { it.id == oldStatus.id }
-                                if (dataIndex == -1) {
-                                    return@let
-                                }
-                                data[dataIndex] = data[dataIndex]
+                        data.mapIndexed { i, status -> i to statusData.firstOrNull { it.asStatusOrNull()?.id == status.id }?.asStatusOrNull() }
+                            .filter { (_, oldStatus) -> oldStatus != null }
+                            .forEach { (i, oldStatus) ->
+                                data[i] = data[i].asStatusOrNull()!!
                                     .copy(
-                                        isShowingContent = oldStatus.isShowingContent,
+                                        isShowingContent = oldStatus!!.isShowingContent,
                                         isExpanded = oldStatus.isExpanded,
                                         isCollapsed = oldStatus.isCollapsed,
                                     )
                             }
 
-                            statusData.removeAt(overlappedFrom)
+                        statusData.removeAll { status ->
+                            when (status) {
+                                is StatusViewData.Placeholder -> lastId.isLessThan(status.id) && status.id.isLessThanOrEqual(firstId)
+                                is StatusViewData.Concrete -> lastId.isLessThan(status.id) && status.id.isLessThanOrEqual(firstId)
+                            }
                         }
                     } else {
-                        statusData.add(overlappedFrom, StatusViewData.Placeholder(statuses.last().id.dec(), isLoading = false))
+                        data[data.size - 1] = StatusViewData.Placeholder(statuses.last().id, isLoading = false)
                     }
                 }
 
@@ -195,7 +200,9 @@ class NetworkTimelineViewModel @Inject constructor(
 
                 currentSource?.invalidate()
             } catch (e: Exception) {
-                loadMoreFailed(placeholderId, e)
+                ifExpected(e) {
+                    loadMoreFailed(placeholderId, e)
+                }
             }
         }
     }
@@ -239,27 +246,27 @@ class NetworkTimelineViewModel @Inject constructor(
             val activeAccount = accountManager.activeAccount!!
 
             if (isFirstOfStreaming) {
-                val placeholderId = status.id.dec()
-                statusData.add(0, StatusViewData.Placeholder(placeholderId, isLoading = false))
+                statusData.add(0, StatusViewData.Placeholder(status.id, isLoading = false))
                 isFirstOfStreaming = false
+            } else {
+                statusData.add(0, status.toViewData(
+                    isShowingContent = activeAccount.alwaysShowSensitiveMedia,
+                    isExpanded = activeAccount.alwaysOpenSpoiler,
+                    isCollapsed = true,
+                ))
             }
-
-            statusData.add(0, status.toViewData(
-                isShowingContent = activeAccount.alwaysShowSensitiveMedia,
-                isExpanded = activeAccount.alwaysOpenSpoiler,
-                isCollapsed = true,
-            ))
 
             currentSource?.invalidate()
         }
     }
 
     override fun fullReload() {
-        nextKey = statusData.firstOrNull { it is StatusViewData.Concrete }?.asStatusOrNull()?.id?.inc()
+        nextKey = statusData.firstOrNull { it is StatusViewData.Concrete }?.asStatusOrNull()?.id
         statusData.clear()
         currentSource?.invalidate()
     }
 
+    @Throws(IOException::class, HttpException::class)
     suspend fun fetchStatusesForKind(
         fromId: String?,
         uptoId: String?,

@@ -16,7 +16,9 @@
 package com.keylesspalace.tusky.components.compose
 
 import android.Manifest
+import android.app.NotificationManager
 import android.app.ProgressDialog
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -46,8 +48,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.inputmethod.InputConnectionCompat
-import androidx.core.view.inputmethod.InputContentInfoCompat
+import androidx.core.view.ContentInfoCompat
+import androidx.core.view.OnReceiveContentListener
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -109,7 +111,7 @@ class ComposeActivity :
     ComposeAutoCompleteAdapter.AutocompletionProvider,
     OnEmojiSelectedListener,
     Injectable,
-    InputConnectionCompat.OnCommitContentListener,
+    OnReceiveContentListener,
     ComposeScheduleView.OnTimeSetListener {
 
     @Inject
@@ -155,6 +157,18 @@ class ComposeActivity :
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val notificationId = intent.getIntExtra(NOTIFICATION_ID_EXTRA, -1)
+        if (notificationId != -1) {
+            // ComposeActivity was opened from a notification, delete the notification
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(notificationId)
+        }
+
+        val accountId = intent.getLongExtra(ACCOUNT_ID_EXTRA, -1)
+        if (accountId != -1L) {
+            accountManager.setActiveAccount(accountId)
+        }
+
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         val theme = preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT)
         if (theme == "black") {
@@ -194,9 +208,9 @@ class ComposeActivity :
         viewModel.setup(composeOptions)
         setupReplyViews(composeOptions?.replyingStatusAuthor, composeOptions?.replyingStatusContent)
         setupQuoteView(composeOptions?.quoteStatusAuthor, composeOptions?.quoteStatusContent)
-        val tootText = composeOptions?.tootText
-        if (!tootText.isNullOrEmpty()) {
-            binding.composeEditField.setText(tootText)
+        val statusContent = composeOptions?.content
+        if (!statusContent.isNullOrEmpty()) {
+            binding.composeEditField.setText(statusContent)
         }
 
         viewModel.loadInstanceDataFromNetwork(loadInstanceData(preferences, composeOptions?.tootRightNow == true))
@@ -249,26 +263,25 @@ class ComposeActivity :
                             }
                         }
                     }
-                } else if (type == "text/plain" && intent.action == Intent.ACTION_SEND) {
+                }
 
-                    val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
-                    val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
-                    val shareBody = if (!subject.isNullOrBlank() && subject !in text) {
-                        subject + '\n' + text
-                    } else {
-                        text
-                    }
+                val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
+                val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+                val shareBody = if (!subject.isNullOrBlank() && subject !in text) {
+                    subject + '\n' + text
+                } else {
+                    text
+                }
 
-                    if (shareBody.isNotBlank()) {
-                        val start = binding.composeEditField.selectionStart.coerceAtLeast(0)
-                        val end = binding.composeEditField.selectionEnd.coerceAtLeast(0)
-                        val left = min(start, end)
-                        val right = max(start, end)
-                        binding.composeEditField.text.replace(left, right, shareBody, 0, shareBody.length)
-                        // move edittext cursor to first when shareBody parsed
-                        binding.composeEditField.text.insert(0, "\n")
-                        binding.composeEditField.setSelection(0)
-                    }
+                if (shareBody.isNotBlank()) {
+                    val start = binding.composeEditField.selectionStart.coerceAtLeast(0)
+                    val end = binding.composeEditField.selectionEnd.coerceAtLeast(0)
+                    val left = min(start, end)
+                    val right = max(start, end)
+                    binding.composeEditField.text.replace(left, right, shareBody, 0, shareBody.length)
+                    // move edittext cursor to first when shareBody parsed
+                    binding.composeEditField.text.insert(0, "\n")
+                    binding.composeEditField.setSelection(0)
                 }
             }
         }
@@ -336,7 +349,7 @@ class ComposeActivity :
     }
 
     private fun setupComposeField(preferences: SharedPreferences, startingText: String?) {
-        binding.composeEditField.setOnCommitContentListener(this)
+        binding.composeEditField.setOnReceiveContentListener(this)
 
         binding.composeEditField.setOnKeyListener { _, keyCode, event -> this.onKeyDown(keyCode, event) }
 
@@ -776,7 +789,9 @@ class ComposeActivity :
         val urlSpans = binding.composeEditField.urls
         if (urlSpans != null) {
             for (span in urlSpans) {
-                offset += max(0, span.url.length - charactersReservedPerUrl)
+                // it's expected that this will be negative
+                // when the url length is less than the reserved character count
+                offset += (span.url.length - charactersReservedPerUrl)
             }
         }
         var length = binding.composeEditField.length() - offset
@@ -819,26 +834,18 @@ class ComposeActivity :
         }
     }
 
-    /** This is for the fancy keyboards which can insert images and stuff. */
-    override fun onCommitContent(inputContentInfo: InputContentInfoCompat, flags: Int, opts: Bundle?): Boolean {
-        // Verify the returned content's type is of the correct MIME type
-        val supported = inputContentInfo.description.hasMimeType("image/*")
-
-        if (supported) {
-            val lacksPermission = (flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0
-            if (lacksPermission) {
-                try {
-                    inputContentInfo.requestPermission()
-                } catch (e: Exception) {
-                    Log.e(TAG, "InputContentInfoCompat#requestPermission() failed." + e.message)
-                    return false
+    /** This is for the fancy keyboards which can insert images and stuff, and drag&drop etc */
+    override fun onReceiveContent(view: View, contentInfo: ContentInfoCompat): ContentInfoCompat? {
+        if (contentInfo.clip.description.hasMimeType("image/*")) {
+            val split = contentInfo.partition { item: ClipData.Item -> item.uri != null }
+            split.first?.let { content ->
+                for (i in 0 until content.clip.itemCount) {
+                    pickMedia(content.clip.getItemAt(i).uri)
                 }
             }
-            pickMedia(inputContentInfo.contentUri, inputContentInfo)
-            return true
+            return split.second
         }
-
-        return false
+        return contentInfo
     }
 
     private fun sendStatus() {
@@ -865,12 +872,11 @@ class ComposeActivity :
             }
 
             viewModel.sendStatus(contentText, spoilerText).observe(
-                this,
-                {
-                    finishingUploadDialog?.dismiss()
-                    deleteDraftAndFinish()
-                }
-            )
+                this
+            ) {
+                finishingUploadDialog?.dismiss()
+                deleteDraftAndFinish()
+            }
         } else {
             binding.composeEditField.error = getString(R.string.error_compose_character_limit)
             enableButtons(true)
@@ -940,12 +946,9 @@ class ComposeActivity :
         viewModel.removeMediaFromQueue(item)
     }
 
-    private fun pickMedia(uri: Uri, contentInfoCompat: InputContentInfoCompat? = null) {
+    private fun pickMedia(uri: Uri) {
         withLifecycleContext {
             viewModel.pickMedia(uri).observe { exceptionOrItem ->
-
-                contentInfoCompat?.releasePermission()
-
                 exceptionOrItem.asLeftOrNull()?.let {
                     val errorId = when (it) {
                         is VideoSizeException -> {
@@ -1098,29 +1101,29 @@ class ComposeActivity :
 
     @Parcelize
     data class ComposeOptions(
-            // Let's keep fields var until all consumers are Kotlin
-            var scheduledTootId: String? = null,
-            var draftId: Int? = null,
-            var tootText: String? = null,
-            var mediaUrls: List<String>? = null,
-            var mediaDescriptions: List<String>? = null,
-            var mentionedUsernames: Set<String>? = null,
-            var inReplyToId: String? = null,
-            var quoteId: String? = null,
-            var quoteStatusAuthor: String? = null,
-            var quoteStatusContent: String? = null,
-            var replyVisibility: Status.Visibility? = null,
-            var visibility: Status.Visibility? = null,
-            var contentWarning: String? = null,
-            var replyingStatusAuthor: String? = null,
-            var replyingStatusContent: String? = null,
-            var mediaAttachments: List<Attachment>? = null,
-            var draftAttachments: List<DraftAttachment>? = null,
-            var scheduledAt: String? = null,
-            var sensitive: Boolean? = null,
-            var poll: NewPoll? = null,
-            var modifiedInitialState: Boolean? = null,
-            var tootRightNow: Boolean? = null
+        // Let's keep fields var until all consumers are Kotlin
+        var scheduledTootId: String? = null,
+        var draftId: Int? = null,
+        var content: String? = null,
+        var mediaUrls: List<String>? = null,
+        var mediaDescriptions: List<String>? = null,
+        var mentionedUsernames: Set<String>? = null,
+        var inReplyToId: String? = null,
+        var quoteId: String? = null,
+        var quoteStatusAuthor: String? = null,
+        var quoteStatusContent: String? = null,
+        var replyVisibility: Status.Visibility? = null,
+        var visibility: Status.Visibility? = null,
+        var contentWarning: String? = null,
+        var replyingStatusAuthor: String? = null,
+        var replyingStatusContent: String? = null,
+        var mediaAttachments: List<Attachment>? = null,
+        var draftAttachments: List<DraftAttachment>? = null,
+        var scheduledAt: String? = null,
+        var sensitive: Boolean? = null,
+        var poll: NewPoll? = null,
+        var modifiedInitialState: Boolean? = null,
+        var tootRightNow: Boolean? = null,
     ) : Parcelable
 
     companion object {
@@ -1128,6 +1131,8 @@ class ComposeActivity :
         private const val PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1
 
         internal const val COMPOSE_OPTIONS_EXTRA = "COMPOSE_OPTIONS"
+        private const val NOTIFICATION_ID_EXTRA = "NOTIFICATION_ID"
+        private const val ACCOUNT_ID_EXTRA = "ACCOUNT_ID"
         private const val PHOTO_UPLOAD_URI_KEY = "PHOTO_UPLOAD_URI"
 
         @JvmField
@@ -1136,10 +1141,28 @@ class ComposeActivity :
         const val PREF_DEFAULT_TAG = "default_tag"
         const val PREF_USE_DEFAULT_TAG = "use_default_tag"
 
+        /**
+         * @param options ComposeOptions to configure the ComposeActivity
+         * @param notificationId the id of the notification that starts the Activity
+         * @param accountId the id of the account to compose with, null for the current account
+         * @return an Intent to start the ComposeActivity
+         */
         @JvmStatic
-        fun startIntent(context: Context, options: ComposeOptions): Intent {
+        @JvmOverloads
+        fun startIntent(
+            context: Context,
+            options: ComposeOptions,
+            notificationId: Int? = null,
+            accountId: Long? = null
+        ): Intent {
             return Intent(context, ComposeActivity::class.java).apply {
                 putExtra(COMPOSE_OPTIONS_EXTRA, options)
+                if (notificationId != null) {
+                    putExtra(NOTIFICATION_ID_EXTRA, notificationId)
+                }
+                if (accountId != null) {
+                    putExtra(ACCOUNT_ID_EXTRA, accountId)
+                }
             }
         }
 

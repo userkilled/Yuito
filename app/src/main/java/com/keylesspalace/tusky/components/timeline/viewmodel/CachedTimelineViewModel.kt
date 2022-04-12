@@ -34,6 +34,7 @@ import com.keylesspalace.tusky.appstore.ReblogEvent
 import com.keylesspalace.tusky.components.timeline.Placeholder
 import com.keylesspalace.tusky.components.timeline.toEntity
 import com.keylesspalace.tusky.components.timeline.toViewData
+import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.db.AppDatabase
 import com.keylesspalace.tusky.entity.Poll
@@ -41,8 +42,6 @@ import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.TimelineCases
-import com.keylesspalace.tusky.util.dec
-import com.keylesspalace.tusky.util.inc
 import com.keylesspalace.tusky.viewdata.StatusViewData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -151,9 +150,11 @@ class CachedTimelineViewModel @Inject constructor(
 
                 timelineDao.insertStatus(Placeholder(placeholderId, loading = true).toEntity(activeAccount.id))
 
-                val nextPlaceholderId = timelineDao.getNextPlaceholderIdAfter(activeAccount.id, placeholderId)
-
-                val response = api.homeTimeline(maxId = placeholderId.inc(), sinceId = nextPlaceholderId, limit = LOAD_AT_ONCE).await()
+                val response = db.withTransaction {
+                    val idAbovePlaceholder = timelineDao.getIdAbove(activeAccount.id, placeholderId)
+                    val nextPlaceholderId = timelineDao.getNextPlaceholderIdAfter(activeAccount.id, placeholderId)
+                    api.homeTimeline(maxId = idAbovePlaceholder, sinceId = nextPlaceholderId, limit = LOAD_AT_ONCE)
+                }.await()
 
                 val statuses = response.body()
                 if (!response.isSuccessful || statuses == null) {
@@ -187,14 +188,21 @@ class CachedTimelineViewModel @Inject constructor(
                         )
                     }
 
-                    if (overlappedStatuses == 0 && statuses.isNotEmpty()) {
+                    /* In case we loaded a whole page and there was no overlap with existing statuses,
+                       we insert a placeholder because there might be even more unknown statuses */
+                    if (overlappedStatuses == 0 && statuses.size == LOAD_AT_ONCE) {
+                        /* This overrides the last of the newly loaded statuses with a placeholder
+                           to guarantee the placeholder has an id that exists on the server as not all
+                           servers handle client generated ids as expected */
                         timelineDao.insertStatus(
-                            Placeholder(statuses.last().id.dec(), loading = false).toEntity(activeAccount.id)
+                            Placeholder(statuses.last().id, loading = false).toEntity(activeAccount.id)
                         )
                     }
                 }
             } catch (e: Exception) {
-                loadMoreFailed(placeholderId, e)
+                ifExpected(e) {
+                    loadMoreFailed(placeholderId, e)
+                }
             }
         }
     }
@@ -228,9 +236,9 @@ class CachedTimelineViewModel @Inject constructor(
 
             db.withTransaction {
                 if (isFirstOfStreaming) {
-                    val placeholderId = status.id.dec()
-                    timelineDao.insertStatus(Placeholder(placeholderId, loading = false).toEntity(activeAccount.id))
+                    timelineDao.insertStatus(Placeholder(status.id, loading = false).toEntity(activeAccount.id))
                     isFirstOfStreaming = false
+                    return@withTransaction
                 }
 
                 timelineDao.insertAccount(status.account.toEntity(activeAccount.id, gson))
