@@ -91,7 +91,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v1
         with:
-          body_path: ${{ env.CHANGELOG_DIR }}whatsnew-ja-JP
+          body_path: ${{ env.CHANGELOG_DIR }}whatsnew-en-US
           draft: true
           files: ./built-app/Yuito-${{ env.CHANGELOG_VERSION }}.apk
           name: Yuito ${{ env.CHANGELOG_VERSION }}
