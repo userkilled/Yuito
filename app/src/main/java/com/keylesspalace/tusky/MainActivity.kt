@@ -44,7 +44,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.EmojiCompat.InitCallback
 import androidx.lifecycle.Lifecycle
@@ -134,7 +133,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
-import net.accelf.yuito.CustomUncaughtExceptionHandler
 import net.accelf.yuito.FooterDrawerItem
 import net.accelf.yuito.QuickTootViewModel
 import net.accelf.yuito.streaming.StreamingManager
@@ -188,13 +186,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Thread.setDefaultUncaughtExceptionHandler(CustomUncaughtExceptionHandler(applicationContext))
-
-        installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        // delete old notification channels
-        NotificationHelper.deleteLegacyNotificationChannels(this, accountManager)
 
         val activeAccount = accountManager.activeAccount
             ?: return // will be redirected to LoginActivity by BaseActivity
@@ -573,15 +565,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     onClick = ::logout
                 }
             )
-            addStickyDrawerItems(
-                    FooterDrawerItem().apply {
-                        setSubscribeProxy(
-                                mastodonApi.getInstance()
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .autoDispose(this@MainActivity, Lifecycle.Event.ON_DESTROY)
-                        )
-                    }
-            )
+            val footer = FooterDrawerItem()
+            addStickyDrawerItems(footer)
+            lifecycleScope.launch {
+                footer.setInstance(mastodonApi.getInstance())
+            }
 
             if (addSearchButton) {
                 binding.mainDrawer.addItemsAtPosition(
@@ -877,18 +865,15 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
     }
 
-    private fun fetchUserInfo() {
-        mastodonApi.accountVerifyCredentials()
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-            .subscribe(
-                { userInfo ->
-                    onFetchUserInfoSuccess(userInfo)
-                },
-                { throwable ->
-                    Log.e(TAG, "Failed to fetch user info. " + throwable.message)
-                }
-            )
+    private fun fetchUserInfo() = lifecycleScope.launch {
+        mastodonApi.accountVerifyCredentials().fold(
+            { userInfo ->
+                onFetchUserInfoSuccess(userInfo)
+            },
+            { throwable ->
+                Log.e(TAG, "Failed to fetch user info. " + throwable.message)
+            }
+        )
     }
 
     private fun onFetchUserInfoSuccess(me: Account) {

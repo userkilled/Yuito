@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import autodispose2.SingleSubscribeProxy
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.databinding.ItemDrawerFooterBinding
 import com.keylesspalace.tusky.entity.Instance
@@ -35,14 +34,13 @@ class FooterDrawerItem : AbstractDrawerItem<FooterDrawerItem, BindingHolder<Item
 
     override fun getViewHolder(v: View): BindingHolder<ItemDrawerFooterBinding> = throw UnsupportedOperationException()
 
-    fun setSubscribeProxy(subscribeProxy: SingleSubscribeProxy<Instance>) {
-        subscribeProxy.subscribe(
-                { instance ->
-                    binding.instanceData.text = String.format("%s\n%s\n%s", instance.title, instance.uri, instance.version)
-                },
-                {
-                    binding.instanceData.text = binding.root.context.getString(R.string.instance_data_failed)
-                }
-        )
+    fun setInstance(instance: Result<Instance>) {
+        instance
+            .onSuccess {
+                binding.instanceData.text = String.format("%s\n%s\n%s", it.title, it.uri, it.version)
+            }
+            .onFailure {
+                binding.instanceData.text = binding.root.context.getString(R.string.instance_data_failed)
+            }
     }
 }

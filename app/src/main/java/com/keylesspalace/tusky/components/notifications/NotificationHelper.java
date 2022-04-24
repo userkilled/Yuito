@@ -16,6 +16,9 @@
 
 package com.keylesspalace.tusky.components.notifications;
 
+import static com.keylesspalace.tusky.util.StatusParsingHelper.parseAsMastodonHtml;
+import static com.keylesspalace.tusky.viewdata.PollViewDataKt.buildDescription;
+
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
@@ -73,8 +76,6 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-import static com.keylesspalace.tusky.viewdata.PollViewDataKt.buildDescription;
-
 public class NotificationHelper {
 
     private static int notificationId = 0;
@@ -116,6 +117,7 @@ public class NotificationHelper {
     public static final String CHANNEL_FAVOURITE = "CHANNEL_FAVOURITE";
     public static final String CHANNEL_POLL = "CHANNEL_POLL";
     public static final String CHANNEL_SUBSCRIPTIONS = "CHANNEL_SUBSCRIPTIONS";
+    public static final String CHANNEL_SIGN_UP = "CHANNEL_SIGN_UP";
 
     /**
      * WorkManager Tag
@@ -340,7 +342,7 @@ public class NotificationHelper {
         Status status = body.getStatus();
 
         String citedLocalAuthor = status.getAccount().getLocalUsername();
-        String citedText = status.getContent().toString();
+        String citedText = parseAsMastodonHtml(status.getContent()).toString();
         String inReplyToId = status.getId();
         Status actionableStatus = status.getActionableStatus();
         Status.Visibility replyVisibility = actionableStatus.getVisibility();
@@ -392,6 +394,7 @@ public class NotificationHelper {
                     CHANNEL_FAVOURITE + account.getIdentifier(),
                     CHANNEL_POLL + account.getIdentifier(),
                     CHANNEL_SUBSCRIPTIONS + account.getIdentifier(),
+                    CHANNEL_SIGN_UP + account.getIdentifier(),
             };
             int[] channelNames = {
                     R.string.notification_mention_name,
@@ -401,6 +404,7 @@ public class NotificationHelper {
                     R.string.notification_favourite_name,
                     R.string.notification_poll_name,
                     R.string.notification_subscription_name,
+                    R.string.notification_sign_up_name,
             };
             int[] channelDescriptions = {
                     R.string.notification_mention_descriptions,
@@ -410,6 +414,7 @@ public class NotificationHelper {
                     R.string.notification_favourite_description,
                     R.string.notification_poll_description,
                     R.string.notification_subscription_description,
+                    R.string.notification_sign_up_description,
             };
 
             List<NotificationChannel> channels = new ArrayList<>(6);
@@ -560,6 +565,8 @@ public class NotificationHelper {
                 return account.getNotificationsFavorited();
             case POLL:
                 return account.getNotificationsPolls();
+            case SIGN_UP:
+                return account.getNotificationsSignUps();
             default:
                 return false;
         }
@@ -582,6 +589,8 @@ public class NotificationHelper {
                 return CHANNEL_FAVOURITE + account.getIdentifier();
             case POLL:
                 return CHANNEL_POLL + account.getIdentifier();
+            case SIGN_UP:
+                return CHANNEL_SIGN_UP + account.getIdentifier();
             default:
                 return null;
         }
@@ -663,6 +672,8 @@ public class NotificationHelper {
                 } else {
                     return context.getString(R.string.poll_ended_voted);
                 }
+            case SIGN_UP:
+                return String.format(context.getString(R.string.notification_sign_up_format), accountName);
         }
         return null;
     }
@@ -671,6 +682,7 @@ public class NotificationHelper {
         switch (notification.getType()) {
             case FOLLOW:
             case FOLLOW_REQUEST:
+            case SIGN_UP:
                 return "@" + notification.getAccount().getUsername();
             case MENTION:
             case FAVOURITE:
@@ -679,13 +691,13 @@ public class NotificationHelper {
                 if (!TextUtils.isEmpty(notification.getStatus().getSpoilerText())) {
                     return notification.getStatus().getSpoilerText();
                 } else {
-                    return notification.getStatus().getContent().toString();
+                    return parseAsMastodonHtml(notification.getStatus().getContent()).toString();
                 }
             case POLL:
                 if (!TextUtils.isEmpty(notification.getStatus().getSpoilerText())) {
                     return notification.getStatus().getSpoilerText();
                 } else {
-                    StringBuilder builder = new StringBuilder(notification.getStatus().getContent());
+                    StringBuilder builder = new StringBuilder(parseAsMastodonHtml(notification.getStatus().getContent()));
                     builder.append('\n');
                     Poll poll = notification.getStatus().getPoll();
                     List<PollOption> options = poll.getOptions();

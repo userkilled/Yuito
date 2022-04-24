@@ -33,6 +33,7 @@ import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.google.android.material.button.MaterialButton;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.ViewMediaActivity;
+import com.keylesspalace.tusky.databinding.ViewQuoteInlineBinding;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Attachment.Focus;
 import com.keylesspalace.tusky.entity.Attachment.MetaData;
@@ -480,10 +481,11 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         favouriteButton.setChecked(favourited);
     }
 
-    private void setQuoteContainer(Status status, final StatusActionListener listener, StatusDisplayOptions statusDisplayOptions) {
-        if (status != null) {
+    private void setQuoteContainer(StatusViewData.Concrete quote, final StatusActionListener listener, StatusDisplayOptions statusDisplayOptions) {
+        if (quote != null) {
             quoteContainer.setVisibility(View.VISIBLE);
-            new QuoteInlineHelper(status, quoteContainer, listener, avatarRadius24dp, statusDisplayOptions).setupQuoteContainer();
+            ViewQuoteInlineBinding binding = ViewQuoteInlineBinding.bind(quoteContainer);
+            new QuoteInlineHelper(binding, listener, avatarRadius24dp, statusDisplayOptions).setupQuoteContainer(quote);
         } else {
             quoteContainer.setVisibility(View.GONE);
         }
@@ -857,7 +859,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                     actionable.getAccount().getBot(), statusDisplayOptions);
             setReblogged(actionable.getReblogged());
             setFavourited(actionable.getFavourited());
-            setQuoteContainer(actionable.getQuote(), listener, statusDisplayOptions);
+            setQuoteContainer(status.getQuoteViewData(), listener, statusDisplayOptions);
             setBookmarked(actionable.getBookmarked());
             List<Attachment> attachments = actionable.getAttachments();
             boolean sensitive = actionable.getSensitive();
@@ -1152,9 +1154,11 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             StatusDisplayOptions statusDisplayOptions,
             final StatusActionListener listener
     ) {
-        final Card card = status.getActionable().getCard();
+        final Status actionable = status.getActionable();
+        final Card card = actionable.getCard();
         if (cardViewMode != CardViewMode.NONE &&
-                status.getActionable().getAttachments().size() == 0 &&
+                actionable.getAttachments().size() == 0 &&
+                actionable.getPoll() == null &&
                 card != null &&
                 !TextUtils.isEmpty(card.getUrl()) &&
                 (!status.isCollapsible() || !status.isCollapsed())) {
@@ -1176,7 +1180,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             // Statuses from other activitypub sources can be marked sensitive even if there's no media,
             // so let's blur the preview in that case
             // If media previews are disabled, show placeholder for cards as well
-            if (statusDisplayOptions.mediaPreviewEnabled() && !status.getActionable().getSensitive() && !TextUtils.isEmpty(card.getImage())) {
+            if (statusDisplayOptions.mediaPreviewEnabled() && !actionable.getSensitive() && !TextUtils.isEmpty(card.getImage())) {
 
                 int topLeftRadius = 0;
                 int topRightRadius = 0;
