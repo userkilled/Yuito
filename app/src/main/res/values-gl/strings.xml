@@ -247,7 +247,6 @@
     <string name="download_fonts">Deberás descargar primeiro estos conxuntos de emojis</string>
     <string name="system_default">Por defecto no sistema</string>
     <string name="emoji_style">Estilo dos emoji</string>
-    <string name="copy_to_clipboard_success">Copiado ao portapapeis</string>
     <string name="error_no_custom_emojis">A túa instancia %s non ten emojis personalizados</string>
     <string name="action_compose_shortcut">Redactar</string>
     <string name="send_post_notification_saved_content">Gardouse unha copia do toot nos borradores</string>
@@ -519,4 +518,8 @@
     <string name="duration_180_days">180 días</string>
     <string name="duration_365_days">365 días</string>
     <string name="tusky_compose_post_quicksetting_label">Redactar publicación</string>
+    <string name="notification_sign_up_format">%s rexistrouse</string>
+    <string name="pref_title_notification_filter_sign_ups">hai unha nova usuaria</string>
+    <string name="notification_sign_up_name">Rexistros</string>
+    <string name="notification_sign_up_description">Notificacións sobre novas usuarias</string>
 </resources>

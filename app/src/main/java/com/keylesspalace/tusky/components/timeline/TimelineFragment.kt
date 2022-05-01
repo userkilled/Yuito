@@ -43,7 +43,7 @@ import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.appstore.QuickReplyEvent
 import com.keylesspalace.tusky.appstore.StatusComposedEvent
-import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
+import com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository.Companion.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.components.timeline.viewmodel.CachedTimelineViewModel
 import com.keylesspalace.tusky.components.timeline.viewmodel.NetworkTimelineViewModel
 import com.keylesspalace.tusky.components.timeline.viewmodel.TimelineViewModel
@@ -53,7 +53,11 @@ import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.fragment.SFragment
-import com.keylesspalace.tusky.interfaces.*
+import com.keylesspalace.tusky.interfaces.ActionButtonActivity
+import com.keylesspalace.tusky.interfaces.RefreshableFragment
+import com.keylesspalace.tusky.interfaces.ReselectableFragment
+import com.keylesspalace.tusky.interfaces.ResettableFragment
+import com.keylesspalace.tusky.interfaces.StatusActionListener
 import com.keylesspalace.tusky.settings.PrefKeys
 import com.keylesspalace.tusky.util.CardViewMode
 import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate
@@ -177,7 +181,7 @@ class TimelineFragment :
         setupRecyclerView()
 
         adapter.addLoadStateListener { loadState ->
-            if (loadState.refresh != LoadState.Loading) {
+            if (loadState.refresh != LoadState.Loading && loadState.source.refresh != LoadState.Loading) {
                 binding.swipeRefreshLayout.isRefreshing = false
             }
 

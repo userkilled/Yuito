@@ -243,7 +243,6 @@
     <string name="send_post_notification_saved_content">Una còpia del tut es estat salvat dins los borrolhons</string>
     <string name="action_compose_shortcut">Redactar</string>
     <string name="error_no_custom_emojis">L’instància %s es pas compatibla amb los emoji personalizats</string>
-    <string name="copy_to_clipboard_success">Copiat al quichapapièr</string>
     <string name="emoji_style">Estil dels Emoji</string>
     <string name="system_default">Çò del sistèma</string>
     <string name="download_fonts">D’en primièr vos cal telecargar los emojis seguents</string>
@@ -337,8 +336,8 @@
         <item quantity="other"><b>%1$s</b> Favorits</item>
     </plurals>
     <plurals name="reblogs">
-        <item quantity="one"><b>%s</b> partatge</item>
-        <item quantity="other"><b>%s</b> partatges</item>
+        <item quantity="one"><b>%s</b> Partatge</item>
+        <item quantity="other"><b>%s</b> Partatges</item>
     </plurals>
     <string name="title_reblogged_by">Partejat per</string>
     <string name="title_favourited_by">Aimat per</string>

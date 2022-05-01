@@ -15,6 +15,7 @@
 
 package com.keylesspalace.tusky.fragment;
 
+import static com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository.CAN_USE_QUOTE_ID;
 import static com.keylesspalace.tusky.util.StringUtils.isLessThan;
 import static autodispose2.AutoDispose.autoDisposable;
 import static autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider.from;
@@ -66,7 +67,6 @@ import com.keylesspalace.tusky.appstore.PinEvent;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
-import com.keylesspalace.tusky.components.compose.ComposeViewModelKt;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
@@ -264,7 +264,7 @@ public class NotificationsFragment extends SFragment implements
                 preferences.getBoolean("confirmFavourites", false),
                 preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false),
                 preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false),
-                Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
+                Arrays.asList(CAN_USE_QUOTE_ID).contains(accountManager.getActiveAccount().getDomain())
         );
 
         adapter = new NotificationsAdapter(accountManager.getActiveAccount().getAccountId(),
@@ -718,6 +718,8 @@ public class NotificationsFragment extends SFragment implements
                 return getString(R.string.notification_subscription_name);
             case SIGN_UP:
                 return getString(R.string.notification_sign_up_name);
+            case UPDATE:
+                return getString(R.string.notification_update_name);
             default:
                 return "Unknown";
         }

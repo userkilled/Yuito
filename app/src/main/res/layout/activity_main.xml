@@ -64,6 +64,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     app:tabIndicator="@null"
+                    app:tabGravity="fill"
                     app:tabMode="fixed" />
 
             </com.google.android.material.bottomappbar.BottomAppBar>
@@ -98,4 +99,3 @@
         android:fitsSystemWindows="true" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
-

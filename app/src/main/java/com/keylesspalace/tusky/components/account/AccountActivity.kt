@@ -20,8 +20,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
 import android.text.Editable
 import android.view.Menu
@@ -39,7 +37,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.updatePadding
-import androidx.emoji.text.EmojiCompat
+import androidx.emoji2.text.EmojiCompat
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.MarginPageTransformer
@@ -379,12 +377,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
                     .show()
             }
         }
-        viewModel.accountFieldData.observe(
-            this
-        ) {
-            accountFieldAdapter.fields = it
-            accountFieldAdapter.notifyDataSetChanged()
-        }
         viewModel.noteSaved.observe(this) {
             binding.saveNoteInfo.visible(it, View.INVISIBLE)
         }
@@ -416,7 +408,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
         val emojifiedNote = account.note.parseAsMastodonHtml().emojify(account.emojis, binding.accountNoteTextView, animateEmojis)
         setClickableText(binding.accountNoteTextView, emojifiedNote, emptyList(), null, this)
 
-        // accountFieldAdapter.fields = account.fields ?: emptyList()
+        accountFieldAdapter.fields = account.fields ?: emptyList()
         accountFieldAdapter.emojis = account.emojis ?: emptyList()
         accountFieldAdapter.notifyDataSetChanged()
 
@@ -504,13 +496,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidI
             loadAvatar(movedAccount.avatar, binding.accountMovedAvatar, avatarRadius, animateAvatar)
 
             binding.accountMovedText.text = getString(R.string.account_moved_description, movedAccount.name)
-
-            // this is necessary because API 19 can't handle vector compound drawables
-            val movedIcon = ContextCompat.getDrawable(this, R.drawable.ic_briefcase)?.mutate()
-            val textColor = ThemeUtils.getColor(this, android.R.attr.textColorTertiary)
-            movedIcon?.colorFilter = PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN)
-
-            binding.accountMovedText.setCompoundDrawablesRelativeWithIntrinsicBounds(movedIcon, null, null, null)
         }
     }
 

@@ -20,7 +20,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
+import com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository.Companion.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.components.search.adapter.SearchNotestockPagingSourceFactory
 import com.keylesspalace.tusky.components.search.adapter.SearchPagingSourceFactory
 import com.keylesspalace.tusky.db.AccountEntity

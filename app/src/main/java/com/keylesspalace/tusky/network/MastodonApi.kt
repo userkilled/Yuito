@@ -24,7 +24,6 @@ import com.keylesspalace.tusky.entity.Conversation
 import com.keylesspalace.tusky.entity.DeletedStatus
 import com.keylesspalace.tusky.entity.Emoji
 import com.keylesspalace.tusky.entity.Filter
-import com.keylesspalace.tusky.entity.IdentityProof
 import com.keylesspalace.tusky.entity.Instance
 import com.keylesspalace.tusky.entity.Marker
 import com.keylesspalace.tusky.entity.MastoList
@@ -77,7 +76,7 @@ interface MastodonApi {
     fun getLists(): Single<List<MastoList>>
 
     @GET("/api/v1/custom_emojis")
-    fun getCustomEmojis(): Single<List<Emoji>>
+    suspend fun getCustomEmojis(): Result<List<Emoji>>
 
     @GET("api/v1/instance")
     suspend fun getInstance(): Result<Instance>
@@ -145,25 +144,30 @@ interface MastodonApi {
 
     @Multipart
     @POST("api/v2/media")
-    fun uploadMedia(
+    suspend fun uploadMedia(
         @Part file: MultipartBody.Part,
         @Part description: MultipartBody.Part? = null
-    ): Single<MediaUploadResult>
+    ): Result<MediaUploadResult>
 
     @FormUrlEncoded
     @PUT("api/v1/media/{mediaId}")
-    fun updateMedia(
+    suspend fun updateMedia(
         @Path("mediaId") mediaId: String,
         @Field("description") description: String
-    ): Single<Attachment>
+    ): Result<Attachment>
+
+    @GET("api/v1/media/{mediaId}")
+    suspend fun getMedia(
+        @Path("mediaId") mediaId: String
+    ): Response<MediaUploadResult>
 
     @POST("api/v1/statuses")
-    fun createStatus(
+    suspend fun createStatus(
         @Header("Authorization") auth: String,
         @Header(DOMAIN_HEADER) domain: String,
         @Header("Idempotency-Key") idempotencyKey: String,
         @Body status: NewStatus
-    ): Call<Status>
+    ): Result<Status>
 
     @GET("api/v1/statuses/{id}")
     fun status(
@@ -367,11 +371,6 @@ interface MastodonApi {
         @Query("id[]") accountIds: List<String>
     ): Single<List<Relationship>>
 
-    @GET("api/v1/accounts/{id}/identity_proofs")
-    fun identityProofs(
-        @Path("id") accountId: String
-    ): Single<List<IdentityProof>>
-
     @POST("api/v1/pleroma/accounts/{id}/subscribe")
     fun subscribeAccount(
         @Path("id") accountId: String
@@ -544,26 +543,26 @@ interface MastodonApi {
     ): Single<Poll>
 
     @GET("api/v1/announcements")
-    fun listAnnouncements(
+    suspend fun listAnnouncements(
         @Query("with_dismissed") withDismissed: Boolean = true
-    ): Single<List<Announcement>>
+    ): Result<List<Announcement>>
 
     @POST("api/v1/announcements/{id}/dismiss")
-    fun dismissAnnouncement(
+    suspend fun dismissAnnouncement(
         @Path("id") announcementId: String
-    ): Single<ResponseBody>
+    ): Result<ResponseBody>
 
     @PUT("api/v1/announcements/{id}/reactions/{name}")
-    fun addAnnouncementReaction(
+    suspend fun addAnnouncementReaction(
         @Path("id") announcementId: String,
         @Path("name") name: String
-    ): Single<ResponseBody>
+    ): Result<ResponseBody>
 
     @DELETE("api/v1/announcements/{id}/reactions/{name}")
-    fun removeAnnouncementReaction(
+    suspend fun removeAnnouncementReaction(
         @Path("id") announcementId: String,
         @Path("name") name: String
-    ): Single<ResponseBody>
+    ): Result<ResponseBody>
 
     @FormUrlEncoded
     @POST("api/v1/reports")

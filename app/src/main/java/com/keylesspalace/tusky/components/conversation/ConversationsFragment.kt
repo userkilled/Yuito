@@ -32,7 +32,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.StatusListActivity
 import com.keylesspalace.tusky.components.account.AccountActivity
-import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
+import com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository.Companion.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.databinding.FragmentTimelineBinding
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.di.ViewModelFactory

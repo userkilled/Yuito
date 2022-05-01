@@ -181,7 +181,6 @@
     <string name="download_fonts">Спочатку потрібно буде завантажити ці набори емодзі</string>
     <string name="system_default">Типовий системний</string>
     <string name="emoji_style">Стиль емодзі</string>
-    <string name="copy_to_clipboard_success">Скопійовано до буфера обміну</string>
     <string name="error_no_custom_emojis">Ваш сервер %s не має власних емодзі</string>
     <string name="compose_save_draft">Зберегти чернетку\?</string>
     <string name="lock_account_label_description">Вимагає затвердження підписників власноруч</string>
@@ -541,4 +540,13 @@
     <string name="duration_180_days">180 днів</string>
     <string name="duration_365_days">365 днів</string>
     <string name="tusky_compose_post_quicksetting_label">Створити допис</string>
+    <string name="notification_sign_up_format">%s реєструється</string>
+    <string name="pref_title_notification_filter_sign_ups">хтось реєструється</string>
+    <string name="notification_sign_up_name">Реєстрації</string>
+    <string name="notification_sign_up_description">Сповіщення про нових користувачів</string>
+    <string name="notification_update_format">%s редагує свій допис</string>
+    <string name="pref_title_notification_filter_updates">допис, з яким у мене була взаємодія, відредаговано</string>
+    <string name="notification_update_description">Сповіщення, коли редагується повідомлення, з яким ви взаємодіяли</string>
+    <string name="notification_update_name">Редакції допису</string>
+    <string name="title_login">Вхід</string>
 </resources>

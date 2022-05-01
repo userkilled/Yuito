@@ -32,7 +32,7 @@ import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.StatusListActivity
 import com.keylesspalace.tusky.ViewMediaActivity
 import com.keylesspalace.tusky.components.account.AccountActivity
-import com.keylesspalace.tusky.components.compose.CAN_USE_QUOTE_ID
+import com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository.Companion.CAN_USE_QUOTE_ID
 import com.keylesspalace.tusky.components.report.ReportViewModel
 import com.keylesspalace.tusky.components.report.Screen
 import com.keylesspalace.tusky.components.report.adapter.AdapterHandler

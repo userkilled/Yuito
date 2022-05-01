@@ -15,6 +15,8 @@
 
 package com.keylesspalace.tusky.fragment;
 
+import static com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository.CAN_USE_QUOTE_ID;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -147,7 +149,7 @@ public final class ViewThreadFragment extends SFragment implements
                 preferences.getBoolean("confirmFavourites", false),
                 preferences.getBoolean(PrefKeys.WELLBEING_HIDE_STATS_POSTS, false),
                 preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false),
-                Arrays.asList(ComposeViewModelKt.getCAN_USE_QUOTE_ID()).contains(accountManager.getActiveAccount().getDomain())
+                Arrays.asList(CAN_USE_QUOTE_ID).contains(accountManager.getActiveAccount().getDomain())
         );
         adapter = new ThreadAdapter(statusDisplayOptions, this);
     }

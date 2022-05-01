@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.google.android.material.button.MaterialButton;
@@ -42,6 +44,7 @@ import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.HashTag;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
+import com.keylesspalace.tusky.util.AbsoluteTimeFormatter;
 import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
 import com.keylesspalace.tusky.util.ImageLoadingHelper;
@@ -58,10 +61,8 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 import net.accelf.yuito.QuoteInlineHelper;
 
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.helpers.Utils;
@@ -82,6 +83,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private ImageButton quoteButton;
     private SparkButton bookmarkButton;
     private ImageButton moreButton;
+    private ConstraintLayout mediaContainer;
     protected MediaPreviewImageView[] mediaPreviews;
     private ImageView[] mediaOverlays;
     private TextView sensitiveMediaWarning;
@@ -110,10 +112,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private TextView cardUrl;
     private PollAdapter pollAdapter;
 
-    private SimpleDateFormat shortSdf;
-    private SimpleDateFormat longSdf;
-
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
+    private final AbsoluteTimeFormatter absoluteTimeFormatter = new AbsoluteTimeFormatter();
 
     protected int avatarRadius48dp;
     private int avatarRadius36dp;
@@ -135,7 +135,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         bookmarkButton = itemView.findViewById(R.id.status_bookmark);
         moreButton = itemView.findViewById(R.id.status_more);
 
-        itemView.findViewById(R.id.status_media_preview_container).setClipToOutline(true);
+        mediaContainer = itemView.findViewById(R.id.status_media_preview_container);
+        mediaContainer.setClipToOutline(true);
 
         mediaPreviews = new MediaPreviewImageView[]{
                 itemView.findViewById(R.id.status_media_preview_0),
@@ -179,9 +180,6 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         pollOptions.setAdapter(pollAdapter);
         pollOptions.setLayoutManager(new LinearLayoutManager(pollOptions.getContext()));
         ((DefaultItemAnimator) pollOptions.getItemAnimator()).setSupportsChangeAnimations(false);
-
-        this.shortSdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        this.longSdf = new SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault());
 
         this.avatarRadius48dp = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.avatar_radius_48dp);
         this.avatarRadius36dp = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.avatar_radius_36dp);
@@ -300,11 +298,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
             if (statusDisplayOptions.showBotOverlay() && isBot) {
                 avatarInset.setVisibility(View.VISIBLE);
-                avatarInset.setBackgroundColor(0x50ffffff);
                 Glide.with(avatarInset)
-                        .load(R.drawable.ic_bot_24dp)
+                        // passing the drawable id directly into .load() ignores night mode https://github.com/bumptech/glide/issues/4692
+                        .load(ContextCompat.getDrawable(avatarInset.getContext(), R.drawable.bot_badge))
                         .into(avatarInset);
-
             } else {
                 avatarInset.setVisibility(View.GONE);
             }
@@ -330,7 +327,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     protected void setCreatedAt(Date createdAt, StatusDisplayOptions statusDisplayOptions) {
         if (statusDisplayOptions.useAbsoluteTime()) {
-            timestampInfo.setText(getAbsoluteTime(createdAt));
+            timestampInfo.setText(absoluteTimeFormatter.format(createdAt, true));
         } else {
             if (createdAt == null) {
                 timestampInfo.setText("?m");
@@ -343,21 +340,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    private String getAbsoluteTime(Date createdAt) {
-        if (createdAt == null) {
-            return "??:??:??";
-        }
-        if (DateUtils.isToday(createdAt.getTime())) {
-            return shortSdf.format(createdAt);
-        } else {
-            return longSdf.format(createdAt);
-        }
-    }
-
     private CharSequence getCreatedAtDescription(Date createdAt,
                                                  StatusDisplayOptions statusDisplayOptions) {
         if (statusDisplayOptions.useAbsoluteTime()) {
-            return getAbsoluteTime(createdAt);
+            return absoluteTimeFormatter.format(createdAt, true);
         } else {
             /* This one is for screen-readers. Frequently, they would mispronounce timestamps like "17m"
              * as 17 meters instead of minutes. */
@@ -844,9 +830,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         this.setupWithStatus(status, listener, statusDisplayOptions, null);
     }
 
-    public void setupWithStatus(StatusViewData.Concrete status,
-                                final StatusActionListener listener,
-                                StatusDisplayOptions statusDisplayOptions,
+    public void setupWithStatus(@NonNull StatusViewData.Concrete status,
+                                @NonNull final StatusActionListener listener,
+                                @NonNull StatusDisplayOptions statusDisplayOptions,
                                 @Nullable Object payloads) {
         if (payloads == null) {
             Status actionable = status.getActionable();
@@ -1139,7 +1125,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             return votesText;
         } else {
             if (statusDisplayOptions.useAbsoluteTime()) {
-                pollDurationInfo = context.getString(R.string.poll_info_time_absolute, getAbsoluteTime(poll.getExpiresAt()));
+                pollDurationInfo = context.getString(R.string.poll_info_time_absolute, absoluteTimeFormatter.format(poll.getExpiresAt(), false));
             } else {
                 pollDurationInfo = TimestampUtils.formatPollDuration(pollDescription.getContext(), poll.getExpiresAt().getTime(), timestamp);
             }
@@ -1259,6 +1245,28 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         } else {
             cardView.setVisibility(View.GONE);
         }
+    }
+
+    public void showStatusContent(boolean show) {
+        int visibility = show ? View.VISIBLE : View.GONE;
+        avatar.setVisibility(visibility);
+        avatarInset.setVisibility(visibility);
+        displayName.setVisibility(visibility);
+        username.setVisibility(visibility);
+        timestampInfo.setVisibility(visibility);
+        contentWarningDescription.setVisibility(visibility);
+        contentWarningButton.setVisibility(visibility);
+        content.setVisibility(visibility);
+        cardView.setVisibility(visibility);
+        mediaContainer.setVisibility(visibility);
+        pollOptions.setVisibility(visibility);
+        pollButton.setVisibility(visibility);
+        pollDescription.setVisibility(visibility);
+        replyButton.setVisibility(visibility);
+        reblogButton.setVisibility(visibility);
+        favouriteButton.setVisibility(visibility);
+        bookmarkButton.setVisibility(visibility);
+        moreButton.setVisibility(visibility);
     }
 
     private static String formatDuration(double durationInSeconds) {
