@@ -96,7 +96,8 @@ fun Placeholder.toEntity(timelineUserId: Long): TimelineStatusEntity {
         expanded = loading,
         contentCollapsed = false,
         contentShowing = false,
-        pinned = false
+        pinned = false,
+        quote = null,
     )
 }
 
@@ -136,7 +137,8 @@ fun Status.toEntity(
         expanded = expanded,
         contentShowing = contentShowing,
         contentCollapsed = contentCollapsed,
-        pinned = actionableStatus.pinned == true
+        pinned = actionableStatus.pinned == true,
+        quote = actionableStatus.quote?.let(gson::toJson),
     )
 }
 
@@ -151,6 +153,7 @@ fun TimelineStatusWithAccount.toViewData(gson: Gson): StatusViewData {
     val application = gson.fromJson(status.application, Status.Application::class.java)
     val emojis: List<Emoji> = gson.fromJson(status.emojis, emojisListType) ?: emptyList()
     val poll: Poll? = gson.fromJson(status.poll, Poll::class.java)
+    val quote: Status? = gson.fromJson(status.quote, Status::class.java)
 
     val reblog = status.reblogServerId?.let { id ->
         Status(
@@ -179,7 +182,7 @@ fun TimelineStatusWithAccount.toViewData(gson: Gson): StatusViewData {
             muted = status.muted,
             poll = poll,
             card = null,
-            quote = null,
+            quote = quote,
         )
     }
     val status = if (reblog != null) {
@@ -238,7 +241,7 @@ fun TimelineStatusWithAccount.toViewData(gson: Gson): StatusViewData {
             muted = status.muted,
             poll = poll,
             card = null,
-            quote = null,
+            quote = quote,
         )
     }
     return StatusViewData.Concrete(
