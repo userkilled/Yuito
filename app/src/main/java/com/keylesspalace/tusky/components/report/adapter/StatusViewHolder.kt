@@ -102,7 +102,7 @@ class StatusViewHolder(
             )
 
             if (viewdata.spoilerText.isBlank()) {
-                setTextVisible(true, viewdata.content, viewdata.status.mentions, viewdata.status.tags, viewdata.status.emojis, adapterHandler, viewdata.status.quote != null)
+                setTextVisible(true, viewdata.content, viewdata.status.mentions, viewdata.status.tags, viewdata.status.emojis, adapterHandler)
                 binding.statusContentWarningButton.hide()
                 binding.statusContentWarningDescription.hide()
             } else {
@@ -116,11 +116,11 @@ class StatusViewHolder(
                         val contentShown = viewState.isContentShow(viewdata.id, true)
                         binding.statusContentWarningDescription.invalidate()
                         viewState.setContentShow(viewdata.id, !contentShown)
-                        setTextVisible(!contentShown, viewdata.content, viewdata.status.mentions, viewdata.status.tags, viewdata.status.emojis, adapterHandler, viewdata.status.quote != null)
+                        setTextVisible(!contentShown, viewdata.content, viewdata.status.mentions, viewdata.status.tags, viewdata.status.emojis, adapterHandler)
                         setContentWarningButtonText(!contentShown)
                     }
                 }
-                setTextVisible(viewState.isContentShow(viewdata.id, true), viewdata.content, viewdata.status.mentions, viewdata.status.tags, viewdata.status.emojis, adapterHandler, viewdata.status.quote != null)
+                setTextVisible(viewState.isContentShow(viewdata.id, true), viewdata.content, viewdata.status.mentions, viewdata.status.tags, viewdata.status.emojis, adapterHandler)
             }
         }
     }
@@ -140,7 +140,6 @@ class StatusViewHolder(
         tags: List<HashTag>?,
         emojis: List<Emoji>,
         listener: LinkListener,
-        removeQuote: Boolean,
     ) {
         if (expanded) {
             val emojifiedText = content.emojify(emojis, binding.statusContent, statusDisplayOptions.animateEmojis)
