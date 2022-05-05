@@ -22,10 +22,10 @@ import java.util.Locale
 import java.util.TimeZone
 
 class AbsoluteTimeFormatter @JvmOverloads constructor(private val tz: TimeZone = TimeZone.getDefault()) {
-    private val sameDaySdf = SimpleDateFormat("HH:mm", Locale.getDefault()).apply { this.timeZone = tz }
-    private val sameYearSdf = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).apply { this.timeZone = tz }
-    private val otherYearSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { this.timeZone = tz }
-    private val otherYearCompleteSdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).apply { this.timeZone = tz }
+    private val sameDaySdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).apply { this.timeZone = tz }
+    private val sameYearSdf = SimpleDateFormat("MM/dd HH:mm", Locale.getDefault()).apply { this.timeZone = tz }
+    private val otherYearSdf = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).apply { this.timeZone = tz }
+    private val otherYearCompleteSdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).apply { this.timeZone = tz }
 
     @JvmOverloads
     fun format(time: Date?, shortFormat: Boolean = true, now: Date = Date()): String {
