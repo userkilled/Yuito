@@ -98,7 +98,7 @@ public class AccessTokenLoginActivity extends AppCompatActivity implements Injec
     }
 
     private void authSucceeded(String domain, String accessToken) {
-        accountManager.addAccount(accessToken, domain);
+        accountManager.addAccount(accessToken, domain, "");
         log("Completed. Enjoy!");
 
         Intent intent = new Intent(this, MainActivity.class);

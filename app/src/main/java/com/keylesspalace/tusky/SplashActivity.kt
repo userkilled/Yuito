@@ -46,7 +46,7 @@ class SplashActivity : AppCompatActivity(), Injectable {
         val intent = if (accountManager.activeAccount != null) {
             Intent(this, MainActivity::class.java)
         } else {
-            LoginActivity.getIntent(this, false)
+            LoginActivity.getIntent(this, LoginActivity.MODE_DEFAULT)
         }
         startActivity(intent)
         finish()

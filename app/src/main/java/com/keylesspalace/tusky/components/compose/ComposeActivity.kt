@@ -82,7 +82,6 @@ import com.keylesspalace.tusky.entity.Emoji
 import com.keylesspalace.tusky.entity.NewPoll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.settings.PrefKeys
-import com.keylesspalace.tusky.util.ComposeTokenizer
 import com.keylesspalace.tusky.util.PickMediaFiles
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.afterTextChanged
@@ -361,7 +360,8 @@ class ComposeActivity :
             ComposeAutoCompleteAdapter(
                 this,
                 preferences.getBoolean(PrefKeys.ANIMATE_GIF_AVATARS, false),
-                preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false)
+                preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false),
+                preferences.getBoolean(PrefKeys.SHOW_BOT_OVERLAY, true)
             )
         )
         binding.composeEditField.setTokenizer(ComposeTokenizer())

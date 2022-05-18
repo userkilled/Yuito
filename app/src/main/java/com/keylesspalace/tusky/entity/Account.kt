@@ -23,6 +23,7 @@ data class Account(
     @SerializedName("username") val localUsername: String,
     @SerializedName("acct", alternate = ["subject"]) val username: String,
     @SerializedName("display_name") private val displayName: String?, // should never be null per Api definition, but some servers break the contract
+    @SerializedName("created_at") val createdAt: Date,
     val note: String,
     val url: String,
     val avatar: String,
