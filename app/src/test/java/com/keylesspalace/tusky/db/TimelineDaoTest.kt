@@ -462,6 +462,7 @@ class TimelineDaoTest {
             contentShowing = true,
             pinned = false,
             card = card,
+            quote = null,
         )
         return Triple(status, author, reblogAuthor)
     }
