@@ -1,0 +1,2 @@
+* ホームタイムラインのストリーミングで取得した引用が表示されない問題を修正
+* https://github.com/tuskyapp/Tusky/compare/5cb6a19375f253c43f32fdd2f4659a6ed542ba3e...0f1e95d0ca81d0254f8d1ae6b60a3130d51b15cf
