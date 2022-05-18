@@ -79,6 +79,7 @@ data class TimelineStatusEntity(
     val contentCollapsed: Boolean,
     val contentShowing: Boolean,
     val pinned: Boolean,
+    val card: String?,
     val quote: String?,
 )
 

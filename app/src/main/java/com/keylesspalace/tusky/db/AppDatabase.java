@@ -539,6 +539,7 @@ public abstract class AppDatabase extends RoomDatabase {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE `TimelineStatusEntity` ADD COLUMN `quote` TEXT DEFAULT ''");
+            database.execSQL("ALTER TABLE `TimelineStatusEntity` ADD COLUMN `card` TEXT");
         }
     };
 }
