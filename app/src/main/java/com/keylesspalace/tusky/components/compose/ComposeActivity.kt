@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.ConnectivityManager
@@ -58,6 +59,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.TransitionManager
+import com.canhub.cropper.CropImage
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.options
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.keylesspalace.tusky.BaseActivity
@@ -87,6 +91,7 @@ import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.afterTextChanged
 import com.keylesspalace.tusky.util.combineLiveData
 import com.keylesspalace.tusky.util.combineOptionalLiveData
+import com.keylesspalace.tusky.util.getMediaSize
 import com.keylesspalace.tusky.util.hide
 import com.keylesspalace.tusky.util.highlightSpans
 import com.keylesspalace.tusky.util.loadAvatar
@@ -157,6 +162,32 @@ class ComposeActivity :
         }
     }
 
+    // Contract kicked off by editImageInQueue; expects viewModel.cropImageItemOld set
+    private val cropImage = registerForActivityResult(CropImageContract()) { result ->
+        val uriNew = result.uriContent
+        if (result.isSuccessful && uriNew != null) {
+            viewModel.cropImageItemOld?.let { itemOld ->
+                val size = getMediaSize(contentResolver, uriNew)
+
+                lifecycleScope.launch {
+                    viewModel.addMediaToQueue(
+                        itemOld.type,
+                        uriNew,
+                        size,
+                        itemOld.description,
+                        itemOld
+                    )
+                }
+            }
+        } else if (result == CropImage.CancelledResult) {
+            Log.w("ComposeActivity", "Edit image cancelled by user")
+        } else {
+            Log.w("ComposeActivity", "Edit image failed: " + result.error)
+            displayTransientError(R.string.error_image_edit_failed)
+        }
+        viewModel.cropImageItemOld = null
+    }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -191,6 +222,7 @@ class ComposeActivity :
                     viewModel.updateDescription(item.localId, newDescription)
                 }
             },
+            onEditImage = this::editImageInQueue,
             onRemove = this::removeMediaFromQueue
         )
         binding.composeMediaPreviewBar.layoutManager =
@@ -429,8 +461,13 @@ class ComposeActivity :
                 enableButton(binding.composeAddMediaButton, active, active)
                 enablePollButton(media.isNullOrEmpty())
             }.subscribe()
-            viewModel.uploadError.observe {
-                displayTransientError(R.string.error_media_upload_sending)
+            viewModel.uploadError.observe { throwable ->
+                Log.w(TAG, "media upload failed", throwable)
+                if (throwable is UploadServerError) {
+                    displayTransientError(throwable.errorMessage)
+                } else {
+                    displayTransientError(R.string.error_media_upload_sending)
+                }
             }
             viewModel.setupComplete.observe {
                 // Focus may have changed during view model setup, ensure initial focus is on the edit field
@@ -594,11 +631,15 @@ class ComposeActivity :
         super.onSaveInstanceState(outState)
     }
 
-    private fun displayTransientError(@StringRes stringId: Int) {
-        val bar = Snackbar.make(binding.activityCompose, stringId, Snackbar.LENGTH_LONG)
+    private fun displayTransientError(errorMessage: String) {
+        val bar = Snackbar.make(binding.activityCompose, errorMessage, Snackbar.LENGTH_LONG)
         // necessary so snackbar is shown over everything
         bar.view.elevation = resources.getDimension(R.dimen.compose_activity_snackbar_elevation)
+        bar.setAnchorView(R.id.composeBottomBar)
         bar.show()
+    }
+    private fun displayTransientError(@StringRes stringId: Int) {
+        displayTransientError(getString(stringId))
     }
 
     private fun toggleHideMedia() {
@@ -606,7 +647,7 @@ class ComposeActivity :
     }
 
     private fun updateSensitiveMediaToggle(markMediaSensitive: Boolean, contentWarningShown: Boolean) {
-        if (viewModel.media.value.isNullOrEmpty()) {
+        if (viewModel.media.value.isEmpty()) {
             binding.composeHideMediaButton.hide()
         } else {
             binding.composeHideMediaButton.show()
@@ -946,6 +987,26 @@ class ComposeActivity :
         )
         binding.addPollTextActionTextView.setTextColor(textColor)
         binding.addPollTextActionTextView.compoundDrawablesRelative[0].colorFilter = PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN)
+    }
+
+    private fun editImageInQueue(item: QueuedMedia) {
+        // If input image is lossless, output image should be lossless.
+        // Currently the only supported lossless format is png.
+        val mimeType: String? = contentResolver.getType(item.uri)
+        val isPng: Boolean = mimeType != null && mimeType.endsWith("/png")
+        val tempFile = createNewImageFile(this, if (isPng) ".png" else ".jpg")
+
+        // "Authority" must be the same as the android:authorities string in AndroidManifest.xml
+        val uriNew = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", tempFile)
+
+        viewModel.cropImageItemOld = item
+
+        cropImage.launch(
+            options(uri = item.uri) {
+                setOutputUri(uriNew)
+                setOutputCompressFormat(if (isPng) Bitmap.CompressFormat.PNG else Bitmap.CompressFormat.JPEG)
+            }
+        )
     }
 
     private fun removeMediaFromQueue(item: QueuedMedia) {

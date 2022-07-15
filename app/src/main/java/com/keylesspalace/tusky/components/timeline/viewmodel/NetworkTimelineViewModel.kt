@@ -34,7 +34,7 @@ import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
-import com.keylesspalace.tusky.network.TimelineCases
+import com.keylesspalace.tusky.usecase.TimelineCases
 import com.keylesspalace.tusky.util.getDomain
 import com.keylesspalace.tusky.util.isLessThan
 import com.keylesspalace.tusky.util.isLessThanOrEqual
@@ -267,6 +267,10 @@ class NetworkTimelineViewModel @Inject constructor(
     override fun fullReload() {
         nextKey = statusData.firstOrNull { it is StatusViewData.Concrete }?.asStatusOrNull()?.id
         statusData.clear()
+        currentSource?.invalidate()
+    }
+
+    override suspend fun invalidate() {
         currentSource?.invalidate()
     }
 

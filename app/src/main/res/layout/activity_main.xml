@@ -14,11 +14,13 @@
         tools:context="com.keylesspalace.tusky.MainActivity">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/mainCoordinatorLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1">
 
             <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:elevation="@dimen/actionbar_elevation"
@@ -80,6 +82,13 @@
                 app:srcCompat="@drawable/ic_create_24dp" />
 
             <include layout="@layout/item_status_bottom_sheet" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity="center" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

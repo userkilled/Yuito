@@ -20,7 +20,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.keylesspalace.tusky.components.login.LoginActivity
-import com.keylesspalace.tusky.components.notifications.NotificationHelper
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.di.Injectable
 import net.accelf.yuito.CustomUncaughtExceptionHandler
@@ -37,12 +36,8 @@ class SplashActivity : AppCompatActivity(), Injectable {
 
         Thread.setDefaultUncaughtExceptionHandler(CustomUncaughtExceptionHandler(applicationContext))
 
-        /** delete old notification channels */
-        NotificationHelper.deleteLegacyNotificationChannels(this, accountManager)
-
         /** Determine whether the user is currently logged in, and if so go ahead and load the
          *  timeline. Otherwise, start the activity_login screen. */
-
         val intent = if (accountManager.activeAccount != null) {
             Intent(this, MainActivity::class.java)
         } else {

@@ -19,6 +19,7 @@ import android.content.Intent
 import android.os.Looper.getMainLooper
 import android.widget.EditText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import at.connyduck.calladapter.networkresult.NetworkResult
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeViewModel
 import com.keylesspalace.tusky.components.instanceinfo.InstanceInfoRepository
@@ -67,6 +68,8 @@ class ComposeActivityTest {
         id = 1,
         domain = instanceDomain,
         accessToken = "token",
+        clientId = "id",
+        clientSecret = "secret",
         isActive = true,
         accountId = "1",
         username = "username",
@@ -95,12 +98,12 @@ class ComposeActivityTest {
         }
 
         apiMock = mock {
-            onBlocking { getCustomEmojis() } doReturn Result.success(emptyList())
+            onBlocking { getCustomEmojis() } doReturn NetworkResult.success(emptyList())
             onBlocking { getInstance() } doReturn instanceResponseCallback?.invoke().let { instance ->
                 if (instance == null) {
-                    Result.failure(Throwable())
+                    NetworkResult.failure(Throwable())
                 } else {
-                    Result.success(instance)
+                    NetworkResult.success(instance)
                 }
             }
         }

@@ -74,10 +74,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     public static class Key {
         public static final String KEY_CREATED = "created";
     }
-
     private TextView displayName;
     private TextView username;
     private ImageButton replyButton;
+    private TextView replyCountLabel;
     private SparkButton reblogButton;
     private SparkButton favouriteButton;
     private ImageButton quoteButton;
@@ -129,6 +129,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         content = itemView.findViewById(R.id.status_content);
         avatar = itemView.findViewById(R.id.status_avatar);
         replyButton = itemView.findViewById(R.id.status_reply);
+        replyCountLabel = itemView.findViewById(R.id.status_replies);
         reblogButton = itemView.findViewById(R.id.status_inset);
         favouriteButton = itemView.findViewById(R.id.status_favourite);
         quoteButton = itemView.findViewById(R.id.status_quote);
@@ -416,6 +417,13 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             replyButton.setImageResource(R.drawable.ic_reply_24dp);
         }
 
+    }
+
+    private void setReplyCount(int repliesCount) {
+        // This label only exists in the non-detailed view (to match the web ui)
+        if (replyCountLabel != null) {
+            replyCountLabel.setText((repliesCount > 1 ? replyCountLabel.getContext().getString(R.string.status_count_one_plus) : Integer.toString(repliesCount)));
+        }
     }
 
     private void setReblogged(boolean reblogged) {
@@ -841,6 +849,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             setCreatedAt(actionable.getCreatedAt(), statusDisplayOptions);
             setStatusVisibility(actionable.getVisibility());
             setIsReply(actionable.getInReplyToId() != null);
+            setReplyCount(actionable.getRepliesCount());
             setAvatar(actionable.getAccount().getAvatar(), status.getRebloggedAvatar(),
                     actionable.getAccount().getBot(), statusDisplayOptions);
             setReblogged(actionable.getReblogged());
@@ -1147,6 +1156,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 actionable.getPoll() == null &&
                 card != null &&
                 !TextUtils.isEmpty(card.getUrl()) &&
+                (!actionable.getSensitive() || status.isExpanded()) &&
                 (!status.isCollapsible() || !status.isCollapsed())) {
             cardView.setVisibility(View.VISIBLE);
             cardTitle.setText(card.getTitle());

@@ -23,6 +23,7 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import at.connyduck.calladapter.networkresult.fold
 import com.keylesspalace.tusky.BuildConfig
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.components.compose.ComposeActivity.QueuedMedia
@@ -31,6 +32,7 @@ import com.keylesspalace.tusky.network.ProgressRequestBody
 import com.keylesspalace.tusky.util.MEDIA_SIZE_UNKNOWN
 import com.keylesspalace.tusky.util.getImageSquarePixels
 import com.keylesspalace.tusky.util.getMediaSize
+import com.keylesspalace.tusky.util.getServerErrorMessage
 import com.keylesspalace.tusky.util.randomAlphanumericString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,14 +56,14 @@ sealed class UploadEvent {
     data class FinishedEvent(val mediaId: String) : UploadEvent()
 }
 
-fun createNewImageFile(context: Context): File {
+fun createNewImageFile(context: Context, suffix: String = ".jpg"): File {
     // Create an image file name
     val randomId = randomAlphanumericString(12)
     val imageFileName = "Tusky_${randomId}_"
     val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
     return File.createTempFile(
         imageFileName, /* prefix */
-        ".jpg", /* suffix */
+        suffix, /* suffix */
         storageDir /* directory */
     )
 }
@@ -72,6 +74,7 @@ class AudioSizeException : Exception()
 class VideoSizeException : Exception()
 class MediaTypeException : Exception()
 class CouldNotOpenFileException : Exception()
+class UploadServerError(val errorMessage: String) : Exception()
 
 class MediaUploader @Inject constructor(
     private val context: Context,
@@ -222,13 +225,21 @@ class MediaUploader @Inject constructor(
                 null
             }
 
-            val result = mediaUploadApi.uploadMedia(body, description).getOrThrow()
-            if (media.uri.scheme == "file") {
-                media.uri.path?.let {
-                    File(it).delete()
+            mediaUploadApi.uploadMedia(body, description).fold({ result ->
+                if (media.uri.scheme == "file") {
+                    media.uri.path?.let {
+                        File(it).delete()
+                    }
                 }
-            }
-            send(UploadEvent.FinishedEvent(result.id))
+                send(UploadEvent.FinishedEvent(result.id))
+            }, { throwable ->
+                val errorMessage = throwable.getServerErrorMessage()
+                if (errorMessage == null) {
+                    throw throwable
+                } else {
+                    throw UploadServerError(errorMessage)
+                }
+            })
             awaitClose()
         }
     }
@@ -245,7 +256,7 @@ class MediaUploader @Inject constructor(
     }
 
     private companion object {
-        private const val TAG = "MediaUploaderImpl"
+        private const val TAG = "MediaUploader"
         private const val STATUS_VIDEO_SIZE_LIMIT = 41943040 // 40MiB
         private const val STATUS_AUDIO_SIZE_LIMIT = 41943040 // 40MiB
         private const val STATUS_IMAGE_SIZE_LIMIT = 8388608 // 8MiB

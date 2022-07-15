@@ -18,10 +18,12 @@ package com.keylesspalace.tusky.di
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import at.connyduck.calladapter.kotlinresult.KotlinResultCallAdapterFactory
+import at.connyduck.calladapter.networkresult.NetworkResultCallAdapterFactory
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.keylesspalace.tusky.BuildConfig
 import com.keylesspalace.tusky.db.AccountManager
+import com.keylesspalace.tusky.json.Rfc3339DateJsonAdapter
 import com.keylesspalace.tusky.network.InstanceSwitchAuthInterceptor
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.MediaUploadApi
@@ -40,6 +42,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import java.net.InetSocketAddress
 import java.net.Proxy
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -52,7 +55,9 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun providesGson() = Gson()
+    fun providesGson(): Gson = GsonBuilder()
+        .registerTypeAdapter(Date::class.java, Rfc3339DateJsonAdapter())
+        .create()
 
     @Provides
     @Singleton
@@ -109,7 +114,7 @@ class NetworkModule {
             .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
-            .addCallAdapterFactory(KotlinResultCallAdapterFactory.create())
+            .addCallAdapterFactory(NetworkResultCallAdapterFactory.create())
             .build()
     }
 

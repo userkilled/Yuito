@@ -4,6 +4,9 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import at.connyduck.calladapter.networkresult.NetworkResult
+import at.connyduck.calladapter.networkresult.onFailure
+import at.connyduck.calladapter.networkresult.onSuccess
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.databinding.ItemDrawerFooterBinding
 import com.keylesspalace.tusky.entity.Instance
@@ -34,10 +37,10 @@ class FooterDrawerItem : AbstractDrawerItem<FooterDrawerItem, BindingHolder<Item
 
     override fun getViewHolder(v: View): BindingHolder<ItemDrawerFooterBinding> = throw UnsupportedOperationException()
 
-    fun setInstance(instance: Result<Instance>) {
+    fun setInstance(instance: NetworkResult<Instance>) {
         instance
             .onSuccess {
-                binding.instanceData.text = String.format("%s\n%s\n%s", it.title, it.uri, it.version)
+                binding.instanceData.text = listOf(it.title, it.uri, it.version).joinToString("\n")
             }
             .onFailure {
                 binding.instanceData.text = binding.root.context.getString(R.string.instance_data_failed)

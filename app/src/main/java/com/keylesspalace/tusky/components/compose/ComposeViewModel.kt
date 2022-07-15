@@ -23,6 +23,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import at.connyduck.calladapter.networkresult.fold
 import com.keylesspalace.tusky.components.compose.ComposeActivity.QueuedMedia
 import com.keylesspalace.tusky.components.compose.ComposeAutoCompleteAdapter.AutocompleteResult
 import com.keylesspalace.tusky.components.drafts.DraftHelper
@@ -39,7 +40,6 @@ import com.keylesspalace.tusky.service.ServiceClient
 import com.keylesspalace.tusky.service.StatusToSend
 import com.keylesspalace.tusky.util.combineLiveData
 import com.keylesspalace.tusky.util.randomAlphanumericString
-import com.keylesspalace.tusky.util.result
 import com.keylesspalace.tusky.util.toLiveData
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.Dispatchers
@@ -100,6 +100,9 @@ class ComposeViewModel @Inject constructor(
 
     private val isEditingScheduledToot get() = !scheduledTootId.isNullOrEmpty()
 
+    // Used in ComposeActivity to pass state to result function when cropImage contract inflight
+    var cropImageItemOld: QueuedMedia? = null
+
     fun loadInstanceDataFromNetwork(loadActually: Boolean) {
         viewModelScope.launch {
             emoji.postValue(when (loadActually) {
@@ -133,13 +136,16 @@ class ComposeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun addMediaToQueue(
+    suspend fun addMediaToQueue(
         type: QueuedMedia.Type,
         uri: Uri,
         mediaSize: Long,
-        description: String? = null
+        description: String? = null,
+        replaceItem: QueuedMedia? = null
     ): QueuedMedia {
-        val mediaItem = media.updateAndGet { mediaValue ->
+        var stashMediaItem: QueuedMedia? = null
+
+        media.updateAndGet { mediaValue ->
             val mediaItem = QueuedMedia(
                 localId = (mediaValue.maxOfOrNull { it.localId } ?: 0) + 1,
                 uri = uri,
@@ -147,8 +153,19 @@ class ComposeViewModel @Inject constructor(
                 mediaSize = mediaSize,
                 description = description
             )
-            mediaValue + mediaItem
-        }.last()
+            stashMediaItem = mediaItem
+
+            if (replaceItem != null) {
+                mediaToJob[replaceItem.localId]?.cancel()
+                mediaValue.map {
+                    if (it.localId == replaceItem.localId) mediaItem else it
+                }
+            } else { // Append
+                mediaValue + mediaItem
+            }
+        }
+        val mediaItem = stashMediaItem!! // stashMediaItem is always non-null and uncaptured at this point, but Kotlin doesn't know that
+
         mediaToJob[mediaItem.localId] = viewModelScope.launch {
             mediaUploader
                 .uploadMedia(mediaItem)
@@ -213,7 +230,7 @@ class ComposeViewModel @Inject constructor(
         val contentWarningChanged = showContentWarning.value!! &&
             !contentWarning.isNullOrEmpty() &&
             !startingContentWarning.startsWith(contentWarning.toString())
-        val mediaChanged = !media.value.isNullOrEmpty()
+        val mediaChanged = media.value.isNotEmpty()
         val pollChanged = poll.value != null
 
         return modifiedInitialState || textChanged || contentWarningChanged || mediaChanged || pollChanged
@@ -346,8 +363,7 @@ class ComposeViewModel @Inject constructor(
     fun searchAutocompleteSuggestions(token: String): List<AutocompleteResult> {
         when (token[0]) {
             '@' -> {
-                return api.searchAccountsCall(query = token.substring(1), limit = 10)
-                    .result()
+                return api.searchAccountsSync(query = token.substring(1), limit = 10)
                     .fold({ accounts ->
                         accounts.map { AutocompleteResult.AccountResult(it) }
                     }, { e ->
@@ -356,8 +372,7 @@ class ComposeViewModel @Inject constructor(
                     })
             }
             '#' -> {
-                return api.searchCall(query = token, type = SearchType.Hashtag.apiParameter, limit = 10)
-                    .result()
+                return api.searchSync(query = token, type = SearchType.Hashtag.apiParameter, limit = 10)
                     .fold({ searchResult ->
                         searchResult.hashtags.map { AutocompleteResult.HashtagResult(it.name) }
                     }, { e ->

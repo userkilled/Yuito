@@ -547,7 +547,7 @@ public class NotificationsFragment extends SFragment implements
 
     @Override
     public void onContentCollapsedChange(boolean isCollapsed, int position) {
-        updateViewDataAt(position, (vd) -> vd.copyWIthCollapsed(isCollapsed));
+        updateViewDataAt(position, (vd) -> vd.copyWithCollapsed(isCollapsed));
         ;
     }
 
@@ -972,10 +972,10 @@ public class NotificationsFragment extends SFragment implements
         if (notifications.size() == 0 && adapter.getItemCount() == 0) {
             this.statusView.setVisibility(View.VISIBLE);
             this.statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
-        } else {
-            swipeRefreshLayout.setEnabled(true);
         }
+
         updateFilterVisibility();
+        swipeRefreshLayout.setEnabled(true);
         swipeRefreshLayout.setRefreshing(false);
         progressBar.setVisibility(View.GONE);
     }
@@ -1240,7 +1240,7 @@ public class NotificationsFragment extends SFragment implements
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         if (!useAbsoluteTime) {
-            Observable.interval(1, TimeUnit.MINUTES)
+            Observable.interval(0, 1, TimeUnit.MINUTES)
                     .observeOn(AndroidSchedulers.mainThread())
                     .to(autoDisposable(from(this, Lifecycle.Event.ON_PAUSE)))
                     .subscribe(

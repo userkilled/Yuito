@@ -108,7 +108,7 @@ ext.glideVersion = '4.13.1'
 ext.daggerVersion = '2.42'
 ext.materialdrawerVersion = '8.4.5'
 ext.emoji2_version = '1.1.0'
-ext.filemojicompat_version = '3.2.1'
+ext.filemojicompat_version = '3.2.2'
 
 repositories {
     maven {
@@ -154,7 +154,7 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     implementation "com.squareup.retrofit2:adapter-rxjava3:$retrofitVersion"
-    implementation "at.connyduck:kotlin-result-calladapter:1.0.1"
+    implementation "at.connyduck:networkresult-calladapter:1.0.0"
 
     implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
@@ -165,7 +165,7 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glideVersion"
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
-    implementation "com.github.penfeizhou.android.animation:glide-plugin:2.20.0"
+    implementation "com.github.penfeizhou.android.animation:glide-plugin:2.22.0"
 
     implementation "io.reactivex.rxjava3:rxjava:3.1.3"
     implementation "io.reactivex.rxjava3:rxandroid:3.0.0"
@@ -188,7 +188,7 @@ dependencies {
     implementation "com.mikepenz:materialdrawer-iconics:$materialdrawerVersion"
     implementation 'com.mikepenz:google-material-typeface:4.0.0.2-kotlin@aar'
 
-    implementation "com.github.CanHub:Android-Image-Cropper:4.1.0"
+    implementation "com.github.CanHub:Android-Image-Cropper:4.2.1"
 
     implementation "de.c1710:filemojicompat-ui:$filemojicompat_version"
     implementation "de.c1710:filemojicompat:$filemojicompat_version"
@@ -201,6 +201,8 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.4"
     testImplementation "org.mockito:mockito-inline:4.4.0"
     testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
+
+    testImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
 
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     androidTestImplementation "androidx.room:room-testing:$roomVersion"

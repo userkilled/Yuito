@@ -34,6 +34,7 @@ import java.util.Date
 data class ConversationEntity(
     val accountId: Long,
     val id: String,
+    val order: Int,
     val accounts: List<ConversationAccountEntity>,
     val unread: Boolean,
     @Embedded(prefix = "s_") val lastStatus: ConversationStatusEntity
@@ -41,6 +42,7 @@ data class ConversationEntity(
     fun toViewData(): ConversationViewData {
         return ConversationViewData(
             id = id,
+            order = order,
             accounts = accounts,
             unread = unread,
             lastStatus = lastStatus.toViewData()
@@ -50,6 +52,7 @@ data class ConversationEntity(
 
 data class ConversationAccountEntity(
     val id: String,
+    val localUsername: String,
     val username: String,
     val displayName: String,
     val avatar: String,
@@ -58,12 +61,12 @@ data class ConversationAccountEntity(
     fun toAccount(): TimelineAccount {
         return TimelineAccount(
             id = id,
+            localUsername = localUsername,
             username = username,
             displayName = displayName,
             url = "",
             avatar = avatar,
             emojis = emojis,
-            localUsername = "",
         )
     }
 }
@@ -79,6 +82,7 @@ data class ConversationStatusEntity(
     val createdAt: Date,
     val emojis: List<Emoji>,
     val favouritesCount: Int,
+    val repliesCount: Int,
     val favourited: Boolean,
     val bookmarked: Boolean,
     val sensitive: Boolean,
@@ -107,6 +111,7 @@ data class ConversationStatusEntity(
                 emojis = emojis,
                 reblogsCount = 0,
                 favouritesCount = favouritesCount,
+                repliesCount = repliesCount,
                 reblogged = false,
                 favourited = favourited,
                 bookmarked = bookmarked,
@@ -133,6 +138,7 @@ data class ConversationStatusEntity(
 fun TimelineAccount.toEntity() =
     ConversationAccountEntity(
         id = id,
+        localUsername = localUsername,
         username = username,
         displayName = name,
         avatar = avatar,
@@ -150,6 +156,7 @@ fun Status.toEntity() =
         createdAt = createdAt,
         emojis = emojis,
         favouritesCount = favouritesCount,
+        repliesCount = repliesCount,
         favourited = favourited,
         bookmarked = bookmarked,
         sensitive = sensitive,
@@ -164,10 +171,11 @@ fun Status.toEntity() =
         poll = poll
     )
 
-fun Conversation.toEntity(accountId: Long) =
+fun Conversation.toEntity(accountId: Long, order: Int) =
     ConversationEntity(
         accountId = accountId,
         id = id,
+        order = order,
         accounts = accounts.map { it.toEntity() },
         unread = unread,
         lastStatus = lastStatus!!.toEntity()

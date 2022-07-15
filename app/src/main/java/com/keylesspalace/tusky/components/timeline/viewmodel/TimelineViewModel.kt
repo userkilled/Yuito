@@ -41,8 +41,8 @@ import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
 import com.keylesspalace.tusky.network.MastodonApi
-import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.settings.PrefKeys
+import com.keylesspalace.tusky.usecase.TimelineCases
 import com.keylesspalace.tusky.viewdata.StatusViewData
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -140,6 +140,7 @@ abstract class TimelineViewModel(
         this.isStreamingEnabled = isStreamingEnabled
 
         if (kind == Kind.HOME) {
+            // Note the variable is "true if filter" but the underlying preference/settings text is "true if show"
             filterRemoveReplies =
                 !sharedPreferences.getBoolean(PrefKeys.TAB_FILTER_HOME_REPLIES, true)
             filterRemoveReblogs =
@@ -232,6 +233,9 @@ abstract class TimelineViewModel(
     abstract fun handleStreamUpdateEvent(status: Status)
 
     abstract fun fullReload()
+
+    /** Triggered when currently displayed data must be reloaded. */
+    protected abstract suspend fun invalidate()
 
     protected fun shouldFilterStatus(statusViewData: StatusViewData): Boolean {
         val status = statusViewData.asStatusOrNull()?.status ?: return false
@@ -353,6 +357,9 @@ abstract class TimelineViewModel(
                     filterContextMatchesKind(kind, it.context)
                 }
             )
+            // After the filters are loaded we need to reload displayed content to apply them.
+            // It can happen during the usage or at startup, when we get statuses before filters.
+            invalidate()
         }
     }
 
