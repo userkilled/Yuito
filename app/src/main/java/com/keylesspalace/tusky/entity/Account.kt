@@ -21,7 +21,7 @@ import java.util.Date
 data class Account(
     val id: String,
     @SerializedName("username") val localUsername: String,
-    @SerializedName("acct", alternate = ["subject"]) val username: String,
+    @SerializedName("acct") val username: String,
     @SerializedName("display_name") private val displayName: String?, // should never be null per Api definition, but some servers break the contract
     @SerializedName("created_at") val createdAt: Date,
     val note: String,
@@ -37,12 +37,11 @@ data class Account(
     val emojis: List<Emoji>? = emptyList(), // nullable for backward compatibility
     val fields: List<Field>? = emptyList(), // nullable for backward compatibility
     val moved: Account? = null,
-    @SerializedName("name") val notestockUsername: String? = null,
 
 ) {
 
     val name: String
-        get() = notestockUsername ?: if (displayName.isNullOrEmpty()) {
+        get() = if (displayName.isNullOrEmpty()) {
             localUsername
         } else displayName
 

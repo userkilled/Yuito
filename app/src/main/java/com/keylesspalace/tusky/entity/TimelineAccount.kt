@@ -24,7 +24,7 @@ import com.google.gson.annotations.SerializedName
 data class TimelineAccount(
     val id: String,
     @SerializedName("username") val localUsername: String,
-    @SerializedName("acct") val username: String,
+    @SerializedName("acct", alternate = ["subject"]) val username: String,
     @SerializedName("display_name") val displayName: String?, // should never be null per Api definition, but some servers break the contract
     val url: String,
     val avatar: String,
@@ -34,7 +34,7 @@ data class TimelineAccount(
 ) {
 
     val name: String
-        get() = if (displayName.isNullOrEmpty()) {
+        get() = notestockUsername ?: if (displayName.isNullOrEmpty()) {
             localUsername
         } else displayName
 }

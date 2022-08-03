@@ -41,7 +41,7 @@ data class Status(
     @SerializedName("spoiler_text", alternate = ["summary"]) val spoilerText: String,
     val visibility: Visibility,
     @SerializedName("media_attachments", alternate = ["attachment"]) var attachments: ArrayList<Attachment>,
-    val mentions: List<Mention>,
+    @SerializedName("mentions", alternate = ["tag"]) val mentions: List<Mention>,
     val tags: List<HashTag>?,
     val application: Application?,
     val pinned: Boolean?,
