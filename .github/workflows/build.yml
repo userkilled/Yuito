@@ -89,11 +89,12 @@ jobs:
           cd ./built-app
           mv "$(find . -type f -name "*.apk" | head -1)" "Yuito-${{ env.CHANGELOG_VERSION }}.apk"
 
-      - uses: softprops/action-gh-release@v1
+      - uses: ncipollo/release-action@v1
         with:
-          body_path: ${{ env.CHANGELOG_DIR }}whatsnew-en-US
+          allowUpdates: false
+          artifactErrorsFailBuild: true
+          artifacts: ./built-app/Yuito-${{ env.CHANGELOG_VERSION }}.apk
+          bodyFile: ${{ env.CHANGELOG_DIR }}whatsnew-en-US
           draft: true
-          files: ./built-app/Yuito-${{ env.CHANGELOG_VERSION }}.apk
           name: Yuito ${{ env.CHANGELOG_VERSION }}
-          tag_name: ${{ env.CHANGELOG_VERSION }}
-          fail_on_unmatched_files: true
+          tag: ${{ env.CHANGELOG_VERSION }}
