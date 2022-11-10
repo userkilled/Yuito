@@ -94,7 +94,8 @@ data class ConversationStatusEntity(
     val expanded: Boolean,
     val collapsed: Boolean,
     val muted: Boolean,
-    val poll: Poll?
+    val poll: Poll?,
+    val language: String?,
 ) {
 
     fun toViewData(): StatusViewData.Concrete {
@@ -126,6 +127,7 @@ data class ConversationStatusEntity(
                 muted = muted,
                 poll = poll,
                 card = null,
+                language = language,
                 quote = null,
             ),
             isExpanded = expanded,
@@ -168,7 +170,8 @@ fun Status.toEntity() =
         expanded = false,
         collapsed = true,
         muted = muted ?: false,
-        poll = poll
+        poll = poll,
+        language = language,
     )
 
 fun Conversation.toEntity(accountId: Long, order: Int) =

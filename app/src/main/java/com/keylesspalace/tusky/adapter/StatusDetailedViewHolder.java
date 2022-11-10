@@ -1,8 +1,6 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
@@ -12,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.keylesspalace.tusky.R;
-import com.keylesspalace.tusky.ViewThreadActivity;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.util.CardViewMode;
@@ -22,15 +19,13 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-class StatusDetailedViewHolder extends StatusBaseViewHolder {
-    private TextView reblogs;
-    private TextView favourites;
-    private View infoDivider;
+public class StatusDetailedViewHolder extends StatusBaseViewHolder {
+    private final TextView reblogs;
+    private final TextView favourites;
+    private final View infoDivider;
 
-    StatusDetailedViewHolder(View view) {
+    public StatusDetailedViewHolder(View view) {
         super(view);
         reblogs = view.findViewById(R.id.status_reblogs);
         favourites = view.findViewById(R.id.status_favourites);

@@ -45,7 +45,7 @@ class InstanceInfoRepository @Inject constructor(
      */
     suspend fun getEmojis(): List<Emoji> = withContext(Dispatchers.IO) {
         api.getCustomEmojis()
-            .onSuccess { emojiList -> dao.insertOrReplace(EmojisEntity(instanceName, emojiList)) }
+            .onSuccess { emojiList -> dao.upsert(EmojisEntity(instanceName, emojiList)) }
             .getOrElse { throwable ->
                 Log.w(TAG, "failed to load custom emojis, falling back to cache", throwable)
                 getCachedEmojis()
@@ -72,9 +72,16 @@ class InstanceInfoRepository @Inject constructor(
                         minPollDuration = instance.configuration?.polls?.minExpiration ?: instance.pollConfiguration?.minExpiration,
                         maxPollDuration = instance.configuration?.polls?.maxExpiration ?: instance.pollConfiguration?.maxExpiration,
                         charactersReservedPerUrl = instance.configuration?.statuses?.charactersReservedPerUrl,
-                        version = instance.version
+                        version = instance.version,
+                        videoSizeLimit = instance.configuration?.mediaAttachments?.videoSizeLimit ?: instance.uploadLimit,
+                        imageSizeLimit = instance.configuration?.mediaAttachments?.imageSizeLimit ?: instance.uploadLimit,
+                        imageMatrixLimit = instance.configuration?.mediaAttachments?.imageMatrixLimit,
+                        maxMediaAttachments = instance.configuration?.statuses?.maxMediaAttachments ?: instance.maxMediaAttachments,
+                        maxFields = instance.pleroma?.metadata?.fieldLimits?.maxFields,
+                        maxFieldNameLength = instance.pleroma?.metadata?.fieldLimits?.nameLength,
+                        maxFieldValueLength = instance.pleroma?.metadata?.fieldLimits?.valueLength
                     )
-                    dao.insertOrReplace(instanceEntity)
+                    dao.upsert(instanceEntity)
                     instanceEntity
                 },
                 { throwable ->
@@ -99,6 +106,10 @@ class InstanceInfoRepository @Inject constructor(
         private const val DEFAULT_MIN_POLL_DURATION = 300
         private const val DEFAULT_MAX_POLL_DURATION = 604800
 
+        private const val DEFAULT_VIDEO_SIZE_LIMIT = 41943040 // 40MiB
+        private const val DEFAULT_IMAGE_SIZE_LIMIT = 10485760 // 10MiB
+        private const val DEFAULT_IMAGE_MATRIX_LIMIT = 16777216 // 4096^2 Pixels
+
         @JvmField
         val CAN_USE_QUOTE_ID = arrayOf(
             "odakyu.app",
@@ -120,6 +131,9 @@ class InstanceInfoRepository @Inject constructor(
         // Mastodon only counts URLs as this long in terms of status character limits
         const val DEFAULT_CHARACTERS_RESERVED_PER_URL = 23
 
+        const val DEFAULT_MAX_MEDIA_ATTACHMENTS = 4
+        const val DEFAULT_MAX_ACCOUNT_FIELDS = 4
+
         fun InstanceInfoEntity?.toInstanceInfo(): InstanceInfo =
             InstanceInfo(
                 maxChars = this?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT,
@@ -127,7 +141,14 @@ class InstanceInfoRepository @Inject constructor(
                 pollMaxLength = this?.maxPollOptionLength ?: DEFAULT_MAX_OPTION_LENGTH,
                 pollMinDuration = this?.minPollDuration ?: DEFAULT_MIN_POLL_DURATION,
                 pollMaxDuration = this?.maxPollDuration ?: DEFAULT_MAX_POLL_DURATION,
-                charactersReservedPerUrl = this?.charactersReservedPerUrl ?: DEFAULT_CHARACTERS_RESERVED_PER_URL
+                charactersReservedPerUrl = this?.charactersReservedPerUrl ?: DEFAULT_CHARACTERS_RESERVED_PER_URL,
+                videoSizeLimit = this?.videoSizeLimit ?: DEFAULT_VIDEO_SIZE_LIMIT,
+                imageSizeLimit = this?.imageSizeLimit ?: DEFAULT_IMAGE_SIZE_LIMIT,
+                imageMatrixLimit = this?.imageMatrixLimit ?: DEFAULT_IMAGE_MATRIX_LIMIT,
+                maxMediaAttachments = this?.maxMediaAttachments ?: DEFAULT_MAX_MEDIA_ATTACHMENTS,
+                maxFields = this?.maxFields ?: DEFAULT_MAX_ACCOUNT_FIELDS,
+                maxFieldNameLength = this?.maxFieldNameLength,
+                maxFieldValueLength = this?.maxFieldValueLength,
             )
     }
 }

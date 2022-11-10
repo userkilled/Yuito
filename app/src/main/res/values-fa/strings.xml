@@ -9,8 +9,6 @@
     <string name="error_authorization_denied">احراز هویت رد شد.</string>
     <string name="error_retrieving_oauth_token">دریافت ژتون ورود شکست خورد.</string>
     <string name="error_compose_character_limit">فرسته خیلی طولانی است!</string>
-    <string name="error_image_upload_size">پرونده باید کمتر از ۸ مگابایت باشد.</string>
-    <string name="error_video_upload_size">پرونده ویدئویی باید کمتر از ۴۰ مگابایت باشد.</string>
     <string name="error_media_upload_type">این گونهٔ پرونده نمی‌تواند بارگذاری شود.</string>
     <string name="error_media_upload_opening">این پرونده نتوانست گشوده شود.</string>
     <string name="error_media_upload_permission">نیاز به اجازهٔ خواندن رسانه است.</string>
@@ -363,10 +361,10 @@
     <string name="description_post_media_no_description_placeholder">بدون شرح</string>
     <string name="description_post_reblogged">تقویت شده</string>
     <string name="description_post_favourited">برگزیده</string>
-    <string name="description_visiblity_public">عمومی</string>
-    <string name="description_visiblity_unlisted">فهرست‌نشده</string>
-    <string name="description_visiblity_private">پی‌گیران</string>
-    <string name="description_visiblity_direct">مستقیم</string>
+    <string name="description_visibility_public">عمومی</string>
+    <string name="description_visibility_unlisted">فهرست‌نشده</string>
+    <string name="description_visibility_private">پی‌گیران</string>
+    <string name="description_visibility_direct">مستقیم</string>
     <string name="description_poll">نظرسنجی با گزینه‌ها: %1$s، %2$s، %3$s، %4$s؛ %5$s</string>
     <string name="hint_list_name">نام فهرست</string>
     <string name="edit_hashtag_hint">برچسب بدون #</string>
@@ -429,7 +427,6 @@
     <string name="report_description_remote_instance">این حساب از کارسازی دیگر است. رونوشتی ناشناس از گزارش، به آن‌جا نیز ارسال شود؟</string>
     <string name="post_lookup_error_format">خطا در یافتن فرستهٔ %s</string>
     <string name="about_powered_by_tusky">قدرت‌گرفته از تاسکی</string>
-    <string name="error_audio_upload_size">پرونده‌های صوتی باید کم‌تر از ۴۰م‌ب باشند.</string>
     <string name="title_bookmarks">نشانک‌ها</string>
     <string name="action_bookmark">نشانک</string>
     <string name="action_view_bookmarks">نشانک‌ها</string>

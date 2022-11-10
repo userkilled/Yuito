@@ -11,9 +11,6 @@
     <string name="error_media_upload_permission">श्रव्यदृश्यसामग्र्यः द्रष्टुमनुमतिर्दातव्या ।</string>
     <string name="error_media_upload_opening">सा सञ्चिका नोद्घाट्यते ।</string>
     <string name="error_media_upload_type">नैतादृशा सञ्चिका उपारोपणीया ।</string>
-    <string name="error_audio_upload_size">श्रव्यसञ्चिका ४०MBतोऽल्पा स्थाप्या ।</string>
-    <string name="error_video_upload_size">चलचित्रसञ्चिका ४०MBतोऽल्पा स्थाप्या ।</string>
-    <string name="error_image_upload_size">८ MBतोऽल्पा परिमिता सञ्चिका स्थाप्या ।</string>
     <string name="error_retrieving_oauth_token">सम्प्रवेशस्तोकं न लब्धः ।</string>
     <string name="error_authorization_denied">प्रमाणीकरणं निषिद्धम् ।</string>
     <string name="error_authorization_unknown">अज्ञातः प्रमाणीकरणदोषो जातः ।</string>
@@ -441,10 +438,10 @@
     <string name="add_hashtag_title">प्रचलितं युज्यताम्</string>
     <string name="hint_list_name">सूचिनाम</string>
     <string name="description_poll">मतदाने मतानि- %1$s, %2$s, %3$s, %4$s; %5$s</string>
-    <string name="description_visiblity_direct">प्रत्यक्षम्</string>
-    <string name="description_visiblity_private">अनुसर्तारः</string>
-    <string name="description_visiblity_unlisted">अनिर्दिष्टम्</string>
-    <string name="description_visiblity_public">सार्वजनिकम्</string>
+    <string name="description_visibility_direct">प्रत्यक्षम्</string>
+    <string name="description_visibility_private">अनुसर्तारः</string>
+    <string name="description_visibility_unlisted">अनिर्दिष्टम्</string>
+    <string name="description_visibility_public">सार्वजनिकम्</string>
     <string name="description_post_bookmarked">पुटचिह्नं कृतम्</string>
     <string name="description_post_favourited">प्रीतिर्दत्ता</string>
     <string name="description_post_reblogged">पुनर्लिखितम्</string>

@@ -9,8 +9,6 @@
     <string name="error_authorization_denied">承認が拒否されました。</string>
     <string name="error_retrieving_oauth_token">ログイントークンの取得に失敗しました。</string>
     <string name="error_compose_character_limit">投稿文が長すぎます！</string>
-    <string name="error_image_upload_size">ファイルは4MB未満にしてください。</string>
-    <string name="error_video_upload_size">ビデオファイルは40MB未満にしてください。</string>
     <string name="error_media_upload_type">その形式のファイルはアップロードできません。</string>
     <string name="error_media_upload_opening">ファイルを開けませんでした。</string>
     <string name="error_media_upload_permission">メディアの読み取り許可が必要です。</string>
@@ -325,11 +323,11 @@
     <plurals name="max_tab_number_reached">
         <item quantity="other">タブは %1$d 個が上限です</item>
     </plurals>
-    <string name="description_visiblity_public">        公開
+    <string name="description_visibility_public">        公開
     </string>
-    <string name="description_visiblity_unlisted">        未収載
+    <string name="description_visibility_unlisted">        未収載
     </string>
-    <string name="description_visiblity_direct">        ダイレクト
+    <string name="description_visibility_direct">        ダイレクト
     </string>
     <string name="hint_list_name">リスト名</string>
     <string name="error_network">ネットワークエラーが発生しました！接続を確認してもう一度試してください！</string>
@@ -404,7 +402,6 @@
     <string name="failed_search">検索に失敗しました</string>
     <string name="pref_title_show_notifications_filter">通知フィルターを表示</string>
     <string name="action_reset_schedule">リセット</string>
-    <string name="error_audio_upload_size">音声ファイルは40MB未満にしてください。</string>
     <string name="title_bookmarks">ブックマーク</string>
     <string name="action_bookmark">ブックマーク</string>
     <string name="action_edit">編集</string>
@@ -412,7 +409,7 @@
     <string name="title_scheduled_posts">予約トゥート</string>
     <string name="action_access_scheduled_posts">予約トゥート</string>
     <string name="action_schedule_post">予約トゥート</string>
-    <string name="description_visiblity_private">フォロワー</string>
+    <string name="description_visibility_private">フォロワー</string>
     <string name="conversation_2_recipients">%1$sさん、%2$sさん</string>
     <string name="notification_follow_request_name">フォローリクエスト</string>
     <string name="action_unmute_desc">%sさんのミュートを解除</string>

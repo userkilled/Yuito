@@ -1,14 +1,14 @@
 package net.accelf.yuito
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.CAN_USE_UNLEAKABLE
-import com.keylesspalace.tusky.components.compose.mutableLiveData
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.entity.Status.Visibility
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class QuickTootViewModel @Inject constructor(
@@ -19,16 +19,16 @@ class QuickTootViewModel @Inject constructor(
 
     private val unleakableAllowed by lazy { CAN_USE_UNLEAKABLE.contains(account.domain) }
 
-    val content = mutableLiveData("")
+    val content = MutableStateFlow("")
 
-    private val visibilityMutable = mutableLiveData(Visibility.PUBLIC)
-    val visibility: LiveData<Visibility> = visibilityMutable
+    private val visibilityMutable = MutableStateFlow(Visibility.PUBLIC)
+    val visibility: StateFlow<Visibility> = visibilityMutable
     private var stashedVisibility: Visibility? = null
 
-    private val inReplyToMutable: MutableLiveData<Status?> = mutableLiveData(null)
-    val inReplyTo: LiveData<Status?> = inReplyToMutable
+    private val inReplyToMutable: MutableStateFlow<Status?> = MutableStateFlow(null)
+    val inReplyTo: MutableStateFlow<Status?> = inReplyToMutable
 
-    val defaultTag: MutableLiveData<String?> = mutableLiveData(null)
+    val defaultTag: MutableStateFlow<String?> = MutableStateFlow(null)
 
     fun setInitialVisibility(num: Int) {
         visibilityMutable.value = (Visibility.byNum(num)
@@ -73,7 +73,7 @@ class QuickTootViewModel @Inject constructor(
                 visibility = visibility.value,
                 contentWarning = inReplyTo.value?.spoilerText,
                 replyingStatusAuthor = inReplyTo.value?.account?.name,
-                replyingStatusContent = inReplyTo.value?.content?.toString(),
+                replyingStatusContent = inReplyTo.value?.content,
                 tootRightNow = tootRightNow
         )
     }
@@ -82,7 +82,7 @@ class QuickTootViewModel @Inject constructor(
         content.value = ""
         inReplyToMutable.value = null
         stashedVisibility?.let {
-            visibilityMutable.value = stashedVisibility
+            visibilityMutable.update { it }
             stashedVisibility = null
         }
     }

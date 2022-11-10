@@ -223,7 +223,8 @@ class SearchStatusesFragment : SearchFragment<StatusViewData.Concrete>(), Status
                 contentWarning = actionableStatus.spoilerText,
                 mentionedUsernames = mentionedUsernames,
                 replyingStatusAuthor = actionableStatus.account.localUsername,
-                replyingStatusContent = status.content.toString()
+                replyingStatusContent = status.content.toString(),
+                language = actionableStatus.language,
             )
         )
         bottomSheetActivity?.startActivityWithSlideInAnimation(intent)
@@ -318,7 +319,7 @@ class SearchStatusesFragment : SearchFragment<StatusViewData.Concrete>(), Status
 
                     val stringToShare = statusToShare.account.username +
                         " - " +
-                        statusToShare.content.toString()
+                        statusToShare.content
                     sendIntent.putExtra(Intent.EXTRA_TEXT, stringToShare)
                     sendIntent.type = "text/plain"
                     startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.send_post_content_to)))
@@ -412,7 +413,7 @@ class SearchStatusesFragment : SearchFragment<StatusViewData.Concrete>(), Status
         } != null
     }
 
-    private fun showOpenAsDialog(statusUrl: String, dialogTitle: CharSequence) {
+    private fun showOpenAsDialog(statusUrl: String, dialogTitle: CharSequence?) {
         bottomSheetActivity?.showAccountChooserDialog(
             dialogTitle, false,
             object : AccountSelectionListener {
@@ -491,7 +492,8 @@ class SearchStatusesFragment : SearchFragment<StatusViewData.Concrete>(), Status
                                         contentWarning = redraftStatus.spoilerText,
                                         mediaAttachments = redraftStatus.attachments,
                                         sensitive = redraftStatus.sensitive,
-                                        poll = redraftStatus.poll?.toNewPoll(status.createdAt)
+                                        poll = redraftStatus.poll?.toNewPoll(status.createdAt),
+                                        language = redraftStatus.language,
                                     )
                                 )
                                 startActivity(intent)

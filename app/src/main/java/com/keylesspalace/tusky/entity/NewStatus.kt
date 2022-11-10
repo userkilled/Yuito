@@ -28,6 +28,7 @@ data class NewStatus(
     @SerializedName("media_ids") val mediaIds: List<String>?,
     @SerializedName("scheduled_at") val scheduledAt: String?,
     val poll: NewPoll?,
+    val language: String?,
     @SerializedName("quote_id") val quoteId: String?,
 )
 

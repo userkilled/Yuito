@@ -100,6 +100,7 @@ fun Placeholder.toEntity(timelineUserId: Long): TimelineStatusEntity {
         pinned = false,
         card = null,
         repliesCount = 0,
+        language = null,
         quote = null,
     )
 }
@@ -143,6 +144,7 @@ fun Status.toEntity(
         pinned = actionableStatus.pinned == true,
         card = actionableStatus.card?.let(gson::toJson),
         repliesCount = actionableStatus.repliesCount,
+        language = actionableStatus.language,
         quote = actionableStatus.quote?.let(gson::toJson),
     )
 }
@@ -189,6 +191,7 @@ fun TimelineStatusWithAccount.toViewData(gson: Gson): StatusViewData {
             poll = poll,
             card = card,
             repliesCount = status.repliesCount,
+            language = status.language,
             quote = quote,
         )
     }
@@ -220,6 +223,7 @@ fun TimelineStatusWithAccount.toViewData(gson: Gson): StatusViewData {
             poll = null,
             card = null,
             repliesCount = status.repliesCount,
+            language = status.language,
             quote = null,
         )
     } else {
@@ -250,6 +254,7 @@ fun TimelineStatusWithAccount.toViewData(gson: Gson): StatusViewData {
             poll = poll,
             card = card,
             repliesCount = status.repliesCount,
+            language = status.language,
             quote = quote,
         )
     }

@@ -10,8 +10,6 @@
     <string name="error_authorization_denied">Authentification refusée.</string>
     <string name="error_retrieving_oauth_token">Impossible de récupérer le jeton d’authentification.</string>
     <string name="error_compose_character_limit">Votre message est trop long !</string>
-    <string name="error_image_upload_size">Le fichier doit avoir moins de 8 Mo.</string>
-    <string name="error_video_upload_size">Les fichiers vidéos doivent avoir moins de 40 Mo.</string>
     <string name="error_media_upload_type">Ce type de fichier ne peut pas être téléversé.</string>
     <string name="error_media_upload_opening">Le fichier ne peut pas être ouvert.</string>
     <string name="error_media_upload_permission">Permission requise pour lire le média.</string>
@@ -285,7 +283,7 @@
     <string name="hint_search_people_list">Chercher des personnes que vous suivez</string>
     <string name="action_add_to_list">Ajouter un compte à la liste</string>
     <string name="action_remove_from_list">Supprimer un compte de la liste</string>
-    <string name="compose_active_account_description">Publier avec le compte %1$s</string>
+    <string name="compose_active_account_description">Publier en tant que %1$s</string>
     <string name="error_failed_set_caption">Impossible de définir la légende</string>
     <plurals name="hint_describe_for_visually_impaired">
         <item quantity="other">Décrire pour les malvoyants
@@ -335,10 +333,12 @@
     <string name="pin_action">Épingler</string>
     <plurals name="favs">
         <item quantity="one"><b>%1$s</b> Favori</item>
+        <item quantity="many"><b>%1$s</b> de favoris</item>
         <item quantity="other"><b>%1$s</b> Favoris</item>
     </plurals>
     <plurals name="reblogs">
         <item quantity="one"><b>%s</b> Partage</item>
+        <item quantity="many"><b>%s</b> de partages</item>
         <item quantity="other"><b>%s</b> Partages</item>
     </plurals>
     <string name="title_reblogged_by">Partagé par</string>
@@ -356,12 +356,12 @@
     <string name="description_post_media_no_description_placeholder">Aucune description</string>
     <string name="description_post_reblogged">Partagé</string>
     <string name="description_post_favourited">Mis en favoris</string>
-    <string name="description_visiblity_public">        Public
+    <string name="description_visibility_public">        Public
     </string>
-    <string name="description_visiblity_unlisted">Non listé</string>
-    <string name="description_visiblity_private">        Abonné·e·s
+    <string name="description_visibility_unlisted">Non listé</string>
+    <string name="description_visibility_private">        Abonné·e·s
     </string>
-    <string name="description_visiblity_direct">        Direct
+    <string name="description_visibility_direct">        Direct
     </string>
     <string name="hint_list_name">Nom de la liste</string>
     <string name="edit_hashtag_hint">Hashtag sans #</string>
@@ -451,7 +451,6 @@
     <string name="description_post_bookmarked">Ajouté aux signets</string>
     <string name="select_list_title">Sélectionner la liste</string>
     <string name="list">Liste</string>
-    <string name="error_audio_upload_size">Les fichiers audio doivent avoir moins de 40 Mo.</string>
     <string name="no_drafts">Vous n’avez aucun brouillon.</string>
     <string name="no_scheduled_posts">Vous n’avez aucun message planifié.</string>
     <string name="warning_scheduling_interval">L’intervalle minimum de planification sur Mastodon est de 5 minutes.</string>
@@ -555,4 +554,11 @@
     <string name="dialog_push_notification_migration">Afin de recevoir les notifications via UnifiedPush, Tusky doit demander à votre serveur Mastodon la permission de s’inscrire aux notifications. Ceci nécessite une reconnexion de vos comptes afin de changer les droits OAuth accordés a Tusky. En utilisant l’option de reconnexion ici ou dans les préférences de compte, vos brouillons et le cache seront préservés.</string>
     <string name="tips_push_notification_migration">Reconnectez tous vos comptes pour activer les notifications instantanées.</string>
     <string name="error_image_edit_failed">L\'image n’a pas pu être retouchée.</string>
+    <string name="delete_scheduled_post_warning">Supprimer ce message planifié \?</string>
+    <string name="filter_expiration_format">%s (%s)</string>
+    <string name="pref_show_self_username_always">Toujours</string>
+    <string name="pref_show_self_username_never">Jamais</string>
+    <string name="description_post_language">Langue du message</string>
+    <string name="duration_no_change">(Aucune modification)</string>
+    <string name="url_domain_notifier">%s (🔗 %s)</string>
 </resources>

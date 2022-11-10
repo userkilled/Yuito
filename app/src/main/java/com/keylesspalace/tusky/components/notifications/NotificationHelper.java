@@ -38,7 +38,6 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 import androidx.core.app.TaskStackBuilder;
-import androidx.core.content.ContextCompat;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
@@ -57,7 +56,6 @@ import com.keylesspalace.tusky.entity.Notification;
 import com.keylesspalace.tusky.entity.Poll;
 import com.keylesspalace.tusky.entity.PollOption;
 import com.keylesspalace.tusky.entity.Status;
-import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.receiver.NotificationClearBroadcastReceiver;
 import com.keylesspalace.tusky.receiver.SendStatusBroadcastReceiver;
 import com.keylesspalace.tusky.util.StringUtils;
@@ -85,6 +83,8 @@ public class NotificationHelper {
      * constants used in Intents
      */
     public static final String ACCOUNT_ID = "account_id";
+
+    public static final String TYPE = "type";
 
     private static final String TAG = "NotificationHelper";
 
@@ -270,6 +270,7 @@ public class NotificationHelper {
     private static NotificationCompat.Builder newNotification(Context context, Notification body, AccountEntity account, boolean summary) {
         Intent summaryResultIntent = new Intent(context, MainActivity.class);
         summaryResultIntent.putExtra(ACCOUNT_ID, account.getId());
+        summaryResultIntent.putExtra(TYPE, body.getType().name());
         TaskStackBuilder summaryStackBuilder = TaskStackBuilder.create(context);
         summaryStackBuilder.addParentStack(MainActivity.class);
         summaryStackBuilder.addNextIntent(summaryResultIntent);
@@ -280,6 +281,7 @@ public class NotificationHelper {
         // we have to switch account here
         Intent eventResultIntent = new Intent(context, MainActivity.class);
         eventResultIntent.putExtra(ACCOUNT_ID, account.getId());
+        eventResultIntent.putExtra(TYPE, body.getType().name());
         TaskStackBuilder eventStackBuilder = TaskStackBuilder.create(context);
         eventStackBuilder.addParentStack(MainActivity.class);
         eventStackBuilder.addNextIntent(eventResultIntent);
@@ -296,7 +298,7 @@ public class NotificationHelper {
                 .setSmallIcon(R.drawable.ic_notify)
                 .setContentIntent(summary ? summaryResultPendingIntent : eventResultPendingIntent)
                 .setDeleteIntent(deletePendingIntent)
-                .setColor(ContextCompat.getColor(context, R.color.notification_color))
+                .setColor(context.getColor(R.color.notification_color))
                 .setGroup(account.getAccountId())
                 .setAutoCancel(true)
                 .setShortcutId(Long.toString(account.getId()))
@@ -367,6 +369,7 @@ public class NotificationHelper {
         composeOptions.setReplyingStatusContent(citedText);
         composeOptions.setMentionedUsernames(mentionedUsernames);
         composeOptions.setModifiedInitialState(true);
+        composeOptions.setLanguage(actionableStatus.getLanguage());
 
         Intent composeIntent = ComposeActivity.startIntent(
                 context,

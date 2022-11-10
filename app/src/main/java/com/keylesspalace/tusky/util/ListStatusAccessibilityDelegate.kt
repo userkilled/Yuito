@@ -48,7 +48,7 @@ class ListStatusAccessibilityDelegate(
             val pos = recyclerView.getChildAdapterPosition(host)
             val status = statusProvider.getStatus(pos) ?: return
             if (status is StatusViewData.Concrete) {
-                if (!status.spoilerText.isNullOrEmpty()) {
+                if (status.spoilerText.isNotEmpty()) {
                     info.addAction(if (status.isExpanded) collapseCwAction else expandCwAction)
                 }
 
@@ -135,7 +135,7 @@ class ListStatusAccessibilityDelegate(
                 }
                 R.id.action_expand_cw -> {
                     // Toggling it directly to avoid animations
-                    // which cannot be disabled for detaild status for some reason
+                    // which cannot be disabled for detailed status for some reason
                     val holder = recyclerView.getChildViewHolder(host) as StatusBaseViewHolder
                     holder.toggleContentWarning()
                     // Stop and restart narrator before it reads old description.

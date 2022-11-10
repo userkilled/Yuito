@@ -10,8 +10,6 @@
     <string name="error_authorization_denied">تم رفض التصريح.</string>
     <string name="error_retrieving_oauth_token">فشل الحصول على رمز الولوج.</string>
     <string name="error_compose_character_limit">إنّ المنشور طويل جدا!</string>
-    <string name="error_image_upload_size">يجب أن يكون حجم الملف أقل من 8 ميغابايت.</string>
-    <string name="error_video_upload_size">يجب أن يكون حجم ملفات الفيديو أقل من 40 ميغا بايت.</string>
     <string name="error_media_upload_type">لا يمكن تحميل هذا النوع من الملفات.</string>
     <string name="error_media_upload_opening">تعذر فتح ذاك الملف.</string>
     <string name="error_media_upload_permission">التصريح لازم لقراءة الوسائط.</string>
@@ -344,10 +342,10 @@
     <string name="description_post_cw">تحذير عن المحتوى: %s    </string>
     <string name="description_post_media_no_description_placeholder">مِن دون وصف    </string>
     <string name="description_post_reblogged">أعاد تدوينه    </string>
-    <string name="description_visiblity_public">للعامة    </string>
-    <string name="description_visiblity_unlisted">غير مُدرَج    </string>
-    <string name="description_visiblity_private">المتابِعون    </string>
-    <string name="description_visiblity_direct">مباشر    </string>
+    <string name="description_visibility_public">للعامة    </string>
+    <string name="description_visibility_unlisted">غير مُدرَج    </string>
+    <string name="description_visibility_private">المتابِعون    </string>
+    <string name="description_visibility_direct">مباشر    </string>
     <string name="hint_list_name">اسم القائمة</string>
     <string name="action_delete_and_redraft">حذف وإعادة الصياغة</string>
     <string name="action_open_reblogger">إظهار صاحب الترقية</string>
@@ -483,7 +481,6 @@
     <string name="list">القائمة</string>
     <string name="no_drafts">ليس لديك أية مسودات.</string>
     <string name="no_scheduled_posts">ليس لديك أية منشورات مُبرمَجة للنشر.</string>
-    <string name="error_audio_upload_size">يجب أن يكون حجم الملفات الصوتية أقل مِن 40 ميغابايت.</string>
     <string name="warning_scheduling_interval">تُقدّر أدنى فترة لبرمجة النشر في ماستدون بـ 5 دقائق.</string>
     <string name="pref_title_enable_swipe_for_tabs">تمكين حركات السحب للانتقال بين الألسنة</string>
     <string name="pref_title_notification_filter_follow_requests">طلب متابعة</string>

@@ -236,9 +236,6 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
         val accountId = status.actionableStatus.account.id
         val accountUsername = status.actionableStatus.account.username
         val statusUrl = status.actionableStatus.url
-        val accounts = viewModel.getAllAccountsOrderedByActive()
-        var openAsTitle: String? = null
-
         val loggedInAccountId = viewModel.activeAccount?.accountId
 
         val popup = PopupMenu(view.context, view)
@@ -270,18 +267,12 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
         }
 
         val openAsItem = popup.menu.findItem(R.id.status_open_as)
-        when (accounts.size) {
-            0, 1 -> openAsItem.isVisible = false
-            2 -> for (account in accounts) {
-                if (account !== viewModel.activeAccount) {
-                    openAsTitle =
-                        String.format(getString(R.string.action_open_as), account.fullName)
-                    break
-                }
-            }
-            else -> openAsTitle = String.format(getString(R.string.action_open_as), "…")
+        val openAsText = bottomSheetActivity?.openAsText
+        if (openAsText == null) {
+            openAsItem.isVisible = false
+        } else {
+            openAsItem.title = openAsText
         }
-        openAsItem.title = openAsTitle
 
         val mutable =
             statusIsByCurrentUser || accountIsInMentions(viewModel.activeAccount, status.mentions)
@@ -308,7 +299,7 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
 
                     val stringToShare = statusToShare.account.username +
                         " - " +
-                        statusToShare.content.toString()
+                        statusToShare.content
                     sendIntent.putExtra(Intent.EXTRA_TEXT, stringToShare)
                     sendIntent.type = "text/plain"
                     startActivity(
@@ -413,7 +404,7 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
         } != null
     }
 
-    private fun showOpenAsDialog(statusUrl: String, dialogTitle: CharSequence) {
+    private fun showOpenAsDialog(statusUrl: String, dialogTitle: CharSequence?) {
         bottomSheetActivity?.showAccountChooserDialog(
             dialogTitle,
             false,

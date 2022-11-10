@@ -141,9 +141,6 @@
     <string name="error_media_upload_permission">مۆڵەت بۆ خوێندنەوەی میدیا پێویستە.</string>
     <string name="error_media_upload_opening">ئەم فایلە ناتوانرێت بکرێتەوە.</string>
     <string name="error_media_upload_type">ناتوانیت لەم جۆرە فایلانە بەرز بکەیتەوە.</string>
-    <string name="error_audio_upload_size">دەبێت فایلە دەنگییەکان لە 40 مێگابایت گەورەتر نەبن.</string>
-    <string name="error_video_upload_size">دەبێت ڤیدیۆکان لە 40 مێگابایت گەورەتر نەبن.</string>
-    <string name="error_image_upload_size">فایلەکە دەبێت لە 8 مێگابایت بچووکتر بێت.</string>
     <string name="error_compose_character_limit">ئەم نووسینە زۆر درێژە!</string>
     <string name="error_retrieving_oauth_token">سەرکەوتوو نەبوو لە بەدەستهێنانی نیشانەی چوونەژوورەوە.</string>
     <string name="error_authorization_denied">ڕێپێدان ڕەتکرایەوە.</string>
@@ -319,10 +316,10 @@
     <string name="add_hashtag_title">هاشتاگی زیاد بکە</string>
     <string name="hint_list_name">ناوی لیست</string>
     <string name="description_poll">ڕاپرسی لەگەڵ هەڵبژاردنەکان: %1$s, %2$s, %3$s, %4$s; %5$s</string>
-    <string name="description_visiblity_direct">ڕاستەوخۆ</string>
-    <string name="description_visiblity_private">شوێنکەوتوانی</string>
-    <string name="description_visiblity_unlisted">لە لیست نەکراو</string>
-    <string name="description_visiblity_public">گشتی</string>
+    <string name="description_visibility_direct">ڕاستەوخۆ</string>
+    <string name="description_visibility_private">شوێنکەوتوانی</string>
+    <string name="description_visibility_unlisted">لە لیست نەکراو</string>
+    <string name="description_visibility_public">گشتی</string>
     <string name="description_post_bookmarked">نیشانکراوە</string>
     <string name="description_post_favourited">پەسەندکراو</string>
     <string name="description_post_reblogged">دووبارە بڵاگ کرا</string>

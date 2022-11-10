@@ -5,12 +5,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- For notifications -->
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:maxSdkVersion="22" /> <!-- for day/night mode -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
@@ -102,11 +100,12 @@
             android:theme="@style/TuskyDialogActivityTheme"
             android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
-            android:name=".ViewThreadActivity"
+            android:name=".components.viewthread.ViewThreadActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".ViewMediaActivity"
-            android:theme="@style/TuskyBaseTheme" />
+            android:theme="@style/TuskyBaseTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
         <activity
             android:name=".components.account.AccountActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
@@ -174,7 +173,7 @@
 
         <service
             android:name=".service.TuskyTileService"
-            android:icon="@drawable/ic_tusky"
+            android:icon="@mipmap/ic_launcher"
             android:label="@string/tusky_compose_post_quicksetting_label"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true"

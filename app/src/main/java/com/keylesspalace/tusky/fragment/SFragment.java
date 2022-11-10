@@ -41,6 +41,7 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.keylesspalace.tusky.BaseActivity;
 import com.keylesspalace.tusky.BottomSheetActivity;
 import com.keylesspalace.tusky.PostLookupFallbackBehavior;
@@ -154,6 +155,7 @@ public abstract class SFragment extends Fragment implements Injectable {
         composeOptions.setMentionedUsernames(mentionedUsernames);
         composeOptions.setReplyingStatusAuthor(actionableStatus.getAccount().getLocalUsername());
         composeOptions.setReplyingStatusContent(parseAsMastodonHtml(actionableStatus.getContent()).toString());
+        composeOptions.setLanguage(actionableStatus.getLanguage());
 
         Intent intent = ComposeActivity.startIntent(getContext(), composeOptions);
         getActivity().startActivity(intent);
@@ -316,6 +318,14 @@ public abstract class SFragment extends Fragment implements Injectable {
                 }
                 case R.id.pin: {
                     timelineCases.pin(status.getId(), !status.isPinned())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doOnError(e -> {
+                                String message = e.getMessage();
+                                if (message == null) {
+                                    message = getString(status.isPinned() ? R.string.failed_to_unpin : R.string.failed_to_pin);
+                                }
+                                Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+                            })
                             .to(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
                             .subscribe();
                     return true;
@@ -381,7 +391,7 @@ public abstract class SFragment extends Fragment implements Injectable {
                         urlIndex);
                 if (view != null) {
                     String url = active.getAttachment().getUrl();
-                    ViewCompat.setTransitionName(view, url);
+                    view.setTransitionName(url);
                     ActivityOptionsCompat options =
                             ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(),
                                     view, url);
@@ -452,6 +462,7 @@ public abstract class SFragment extends Fragment implements Injectable {
                                         composeOptions.setMediaAttachments(deletedStatus.getAttachments());
                                         composeOptions.setSensitive(deletedStatus.getSensitive());
                                         composeOptions.setModifiedInitialState(true);
+                                        composeOptions.setLanguage(deletedStatus.getLanguage());
                                         if (deletedStatus.getPoll() != null) {
                                             composeOptions.setPoll(deletedStatus.getPoll().toNewPoll(deletedStatus.getCreatedAt()));
                                         }

@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.appstore.Event
@@ -19,6 +20,7 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF
 import com.keylesspalace.tusky.databinding.ViewQuickTootBinding
 import com.keylesspalace.tusky.settings.PrefKeys.USE_QUICK_TOOT
 import com.keylesspalace.tusky.util.ThemeUtils
+import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
 
 class QuickTootView @JvmOverloads constructor(
@@ -42,9 +44,11 @@ class QuickTootView @JvmOverloads constructor(
 
         binding.buttonVisibility.attachViewModel(viewModel, owner)
 
-        viewModel.content.observe(owner) {
-            if (binding.editTextContent.text.toString() != it) {
-                binding.editTextContent.setText(it)
+        owner.lifecycleScope.launch {
+            viewModel.content.collect { content ->
+                if (binding.editTextContent.text.toString() != content) {
+                    binding.editTextContent.setText(content)
+                }
             }
         }
         binding.editTextContent.addTextChangedListener(object : TextWatcher {
@@ -55,20 +59,33 @@ class QuickTootView @JvmOverloads constructor(
             }
         })
 
-        viewModel.inReplyTo.observe(owner) {
-            binding.textQuickReply.text = it?.let { "Reply to ${it.account.username}" } ?: ""
+        owner.lifecycleScope.launch {
+            viewModel.inReplyTo.collect { inReplyTo ->
+                binding.textQuickReply.text =
+                    inReplyTo?.let { "Reply to ${it.account.username}" } ?: ""
+            }
         }
 
-        viewModel.defaultTag.observe(owner) {
-            binding.textDefaultTag.text = it?.let { "${context.getString(R.string.hint_default_text)} : $it" }
-                    ?: "${context.getString(R.string.hint_default_text)} inactive"
-            binding.textDefaultTag.setTextColor(ThemeUtils.getColor(context, it?.let { R.attr.colorInfo }
-                    ?: android.R.attr.textColorTertiary))
+        owner.lifecycleScope.launch {
+            viewModel.defaultTag.collect { defaultTag ->
+                binding.textDefaultTag.text =
+                    defaultTag?.let { "${context.getString(R.string.hint_default_text)} : $it" }
+                        ?: "${context.getString(R.string.hint_default_text)} inactive"
+                binding.textDefaultTag.setTextColor(
+                    ThemeUtils.getColor(
+                        context,
+                        defaultTag?.let { R.attr.colorInfo }
+                            ?: android.R.attr.textColorTertiary
+                    )
+                )
+            }
         }
         syncDefaultTag()
 
-        viewModel.visibility.observe(owner) {
-            binding.buttonToot.setStatusVisibility(it)
+        owner.lifecycleScope.launch {
+            viewModel.visibility.collect { visibility ->
+                binding.buttonToot.setStatusVisibility(visibility)
+            }
         }
         binding.buttonToot.setOnClickListener {
             val intent = ComposeActivity.startIntent(it.context, viewModel.composeOptions(true))

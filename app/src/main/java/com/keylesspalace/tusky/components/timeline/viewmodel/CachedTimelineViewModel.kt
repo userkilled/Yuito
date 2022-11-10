@@ -51,7 +51,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.await
 import net.accelf.yuito.streaming.StreamingManager
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -180,7 +179,7 @@ class CachedTimelineViewModel @Inject constructor(
                         sinceId = nextPlaceholderId,
                         limit = LOAD_AT_ONCE
                     )
-                }.await()
+                }
 
                 val statuses = response.body()
                 if (!response.isSuccessful || statuses == null) {

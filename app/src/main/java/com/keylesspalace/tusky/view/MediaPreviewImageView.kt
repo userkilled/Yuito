@@ -37,7 +37,7 @@ import com.keylesspalace.tusky.util.FocalPointUtil
  * However if there is no focal point set (e.g. it is null), then this view should simply
  * act exactly the same as an ordinary android ImageView.
  */
-class MediaPreviewImageView
+open class MediaPreviewImageView
 @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -70,7 +70,7 @@ class MediaPreviewImageView
      * Overridden getScaleType method which returns CENTER_CROP if we have a focal point set.
      *
      * This is necessary because the Android transitions framework tries to copy the scale type
-     * from this view to the PhotoView when animating between this view and the detailled view of
+     * from this view to the PhotoView when animating between this view and the detailed view of
      * the image. Since the PhotoView does not support a MATRIX scale type, the app would crash
      * if we simply passed that on, so instead we pretend that CENTER_CROP is still used here
      * even if we have a focus point set.

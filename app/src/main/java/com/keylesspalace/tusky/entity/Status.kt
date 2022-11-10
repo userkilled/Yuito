@@ -25,7 +25,7 @@ data class Status(
     val id: String,
     val url: String?, // not present if it's reblog
     val account: TimelineAccount,
-    @SerializedName("in_reply_to_id") var inReplyToId: String?,
+    @SerializedName("in_reply_to_id") val inReplyToId: String?,
     @SerializedName("in_reply_to_account_id") val inReplyToAccountId: String?,
     val reblog: Status?,
     val content: String,
@@ -34,13 +34,13 @@ data class Status(
     @SerializedName("reblogs_count") val reblogsCount: Int,
     @SerializedName("favourites_count") val favouritesCount: Int,
     @SerializedName("replies_count") val repliesCount: Int,
-    var reblogged: Boolean,
-    var favourited: Boolean,
-    var bookmarked: Boolean,
-    var sensitive: Boolean,
+    val reblogged: Boolean,
+    val favourited: Boolean,
+    val bookmarked: Boolean,
+    val sensitive: Boolean,
     @SerializedName("spoiler_text", alternate = ["summary"]) val spoilerText: String,
     val visibility: Visibility,
-    @SerializedName("media_attachments", alternate = ["attachment"]) var attachments: ArrayList<Attachment>,
+    @SerializedName("media_attachments", alternate = ["attachment"]) val attachments: ArrayList<Attachment>,
     @SerializedName("mentions", alternate = ["tag"]) val mentions: List<Mention>,
     val tags: List<HashTag>?,
     val application: Application?,
@@ -48,6 +48,7 @@ data class Status(
     val muted: Boolean?,
     val poll: Poll?,
     val card: Card?,
+    val language: String?,
     val quote: Status?,
 ) {
 
@@ -138,7 +139,8 @@ data class Status(
             sensitive = sensitive,
             attachments = attachments,
             poll = poll,
-            createdAt = createdAt
+            createdAt = createdAt,
+            language = language,
         )
     }
 

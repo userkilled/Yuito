@@ -178,12 +178,12 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 }
                 return;
             }
-            NotificationViewData.Concrete concreteNotificaton =
+            NotificationViewData.Concrete concreteNotification =
                     (NotificationViewData.Concrete) notification;
             switch (viewHolder.getItemViewType()) {
                 case VIEW_TYPE_STATUS: {
                     StatusViewHolder holder = (StatusViewHolder) viewHolder;
-                    StatusViewData.Concrete status = concreteNotificaton.getStatusViewData();
+                    StatusViewData.Concrete status = concreteNotification.getStatusViewData();
                     if (status == null) {
                         /* in some very rare cases servers sends null status even though they should not,
                          * we have to handle it somehow */
@@ -194,8 +194,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                         }
                         holder.setupWithStatus(status, statusListener, statusDisplayOptions, payloadForHolder);
                     }
-                    if (concreteNotificaton.getType() == Notification.Type.POLL) {
-                        holder.setPollInfo(accountId.equals(concreteNotificaton.getAccount().getId()));
+                    if (concreteNotification.getType() == Notification.Type.POLL) {
+                        holder.setPollInfo(accountId.equals(concreteNotification.getAccount().getId()));
                     } else {
                         holder.hideStatusInfo();
                     }
@@ -203,7 +203,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 }
                 case VIEW_TYPE_STATUS_NOTIFICATION: {
                     StatusNotificationViewHolder holder = (StatusNotificationViewHolder) viewHolder;
-                    StatusViewData.Concrete statusViewData = concreteNotificaton.getStatusViewData();
+                    StatusViewData.Concrete statusViewData = concreteNotification.getStatusViewData();
                     if (payloadForHolder == null) {
                         if (statusViewData == null) {
                             /* in some very rare cases servers sends null status even though they should not,
@@ -217,19 +217,19 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                             holder.setUsername(status.getAccount().getUsername());
                             holder.setCreatedAt(status.getCreatedAt());
 
-                            if (concreteNotificaton.getType() == Notification.Type.STATUS ||
-                                concreteNotificaton.getType() == Notification.Type.UPDATE) {
+                            if (concreteNotification.getType() == Notification.Type.STATUS ||
+                                concreteNotification.getType() == Notification.Type.UPDATE) {
                                 holder.setAvatar(status.getAccount().getAvatar(), status.getAccount().getBot());
                             } else {
                                 holder.setAvatars(status.getAccount().getAvatar(),
-                                        concreteNotificaton.getAccount().getAvatar());
+                                        concreteNotification.getAccount().getAvatar());
                             }
                         }
 
-                        holder.setMessage(concreteNotificaton, statusListener);
+                        holder.setMessage(concreteNotification, statusListener);
                         holder.setupButtons(notificationActionListener,
-                                concreteNotificaton.getAccount().getId(),
-                                concreteNotificaton.getId());
+                                concreteNotification.getAccount().getId(),
+                                concreteNotification.getId());
                     } else {
                         if (payloadForHolder instanceof List)
                             for (Object item : (List) payloadForHolder) {
@@ -243,16 +243,16 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 case VIEW_TYPE_FOLLOW: {
                     if (payloadForHolder == null) {
                         FollowViewHolder holder = (FollowViewHolder) viewHolder;
-                        holder.setMessage(concreteNotificaton.getAccount(), concreteNotificaton.getType() == Notification.Type.SIGN_UP);
-                        holder.setupButtons(notificationActionListener, concreteNotificaton.getAccount().getId());
+                        holder.setMessage(concreteNotification.getAccount(), concreteNotification.getType() == Notification.Type.SIGN_UP);
+                        holder.setupButtons(notificationActionListener, concreteNotification.getAccount().getId());
                     }
                     break;
                 }
                 case VIEW_TYPE_FOLLOW_REQUEST: {
                     if (payloadForHolder == null) {
                         FollowRequestViewHolder holder = (FollowRequestViewHolder) viewHolder;
-                        holder.setupWithAccount(concreteNotificaton.getAccount(), statusDisplayOptions.animateAvatars(), statusDisplayOptions.animateEmojis());
-                        holder.setupActionListener(accountActionListener, concreteNotificaton.getAccount().getId());
+                        holder.setupWithAccount(concreteNotification.getAccount(), statusDisplayOptions.animateAvatars(), statusDisplayOptions.animateEmojis());
+                        holder.setupActionListener(accountActionListener, concreteNotification.getAccount().getId());
                     }
                     break;
                 }
@@ -499,7 +499,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         Drawable getIconWithColor(Context context, @DrawableRes int drawable, @ColorRes int color) {
             Drawable icon = ContextCompat.getDrawable(context, drawable);
             if (icon != null) {
-                icon.setColorFilter(ContextCompat.getColor(context, color), PorterDuff.Mode.SRC_ATOP);
+                icon.setColorFilter(context.getColor(color), PorterDuff.Mode.SRC_ATOP);
             }
             return icon;
         }

@@ -10,8 +10,6 @@
     <string name="error_authorization_denied">授權被拒絕</string>
     <string name="error_retrieving_oauth_token">無法獲取登入資訊</string>
     <string name="error_compose_character_limit">嘟文太長了！</string>
-    <string name="error_image_upload_size">檔案大小限制 8MB</string>
-    <string name="error_video_upload_size">影片大小限制 40MB</string>
     <string name="error_media_upload_type">無法上傳此類型的檔案</string>
     <string name="error_media_upload_opening">此檔案無法開啟</string>
     <string name="error_media_upload_permission">需要授予 Yuito 讀取媒體檔案的權限</string>
@@ -357,14 +355,14 @@
     <string name="description_post_favourited">
         被收藏
     </string>
-    <string name="description_visiblity_public">
+    <string name="description_visibility_public">
         公開
     </string>
-    <string name="description_visiblity_unlisted">
+    <string name="description_visibility_unlisted">
         不公開
     </string>
-    <string name="description_visiblity_private">關注者</string>
-    <string name="description_visiblity_direct">
+    <string name="description_visibility_private">關注者</string>
+    <string name="description_visibility_direct">
         私信
     </string>
     <string name="hint_list_name">列表名</string>

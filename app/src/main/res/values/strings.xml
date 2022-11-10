@@ -12,9 +12,8 @@
     <string name="error_loading_account_details">Failed loading account details</string>
     <string name="error_could_not_load_login_page">Could not load the login page.</string>
     <string name="error_compose_character_limit">The post is too long!</string>
-    <string name="error_image_upload_size">The file must be less than 8MB.</string>
-    <string name="error_video_upload_size">Video files must be less than 40MB.</string>
-    <string name="error_audio_upload_size">Audio files must be less than 40MB.</string>
+    <string name="error_multimedia_size_limit">Video and audio files cannot exceed %s MB in size.</string>
+
     <string name="error_image_edit_failed">The image could not be edited.</string>
     <string name="error_media_upload_type">That type of file cannot be uploaded.</string>
     <string name="error_media_upload_opening">That file could not be opened.</string>
@@ -23,6 +22,8 @@
     <string name="error_media_upload_image_or_video">Images and videos cannot both be attached to the same post.</string>
     <string name="error_media_upload_sending">The upload failed.</string>
     <string name="error_sender_account_gone">Error sending post.</string>
+    <string name="error_following_hashtag_format">Error following #%s</string>
+    <string name="error_unfollowing_hashtag_format">Error unfollowing #%s</string>
 
     <string name="instance_data_loading">Collecting data…</string>
     <string name="instance_data_failed">Failed.</string>
@@ -318,6 +319,10 @@
     <string name="post_text_size_large">Large</string>
     <string name="post_text_size_largest">Largest</string>
 
+    <string name="pref_show_self_username_always">Always</string>
+    <string name="pref_show_self_username_disambiguate">When multiple accounts logged in</string>
+    <string name="pref_show_self_username_never">Never</string>
+
     <string name="notification_mention_name">New Mentions</string>
     <string name="notification_mention_descriptions">Notifications about new mentions</string>
     <string name="notification_follow_name">New Followers</string>
@@ -413,6 +418,7 @@
     <string name="filter_dialog_whole_word">Whole word</string>
     <string name="filter_dialog_whole_word_description">When the keyword or phrase is alphanumeric only, it will only be applied if it matches the whole word</string>
     <string name="filter_add_description">Phrase to filter</string>
+    <string name="filter_expiration_format">%s (%s)</string>
 
     <string name="add_account_name">Add Account</string>
     <string name="add_account_description">Add new Mastodon Account</string>
@@ -430,18 +436,22 @@
     <string name="action_add_to_list">Add account to the list</string>
     <string name="action_remove_from_list">Remove account from the list</string>
 
-    <string name="compose_active_account_description">Posting with account %1$s</string>
+    <string name="compose_active_account_description">Posting as %1$s</string>
 
     <string name="error_failed_set_caption">Failed to set caption</string>
+    <string name="error_failed_set_focus">Failed to set focus point</string>
     <plurals name="hint_describe_for_visually_impaired">
         <item quantity="other">Describe for visually impaired\n(%d character limit)</item>
     </plurals>
+    <string name="set_focus_description">Tap or drag the circle to choose the focal point which will always be visible in thumbnails.</string>
     <string name="action_set_caption">Set caption</string>
+    <string name="action_set_focus">Set focus point</string>
     <string name="action_edit_image">Edit image</string>
     <string name="action_remove">Remove</string>
     <string name="lock_account_label">Lock account</string>
     <string name="lock_account_label_description">Requires you to manually approve followers</string>
     <string name="compose_save_draft">Save draft?</string>
+    <string name="compose_save_draft_loses_media">Save draft? (Attachments will be uploaded again when you restore the draft.)</string>
     <string name="send_post_notification_title">Sending post…</string>
     <string name="send_post_notification_error_title">Error sending post</string>
     <string name="send_post_notification_channel_name">Sending Posts</string>
@@ -490,6 +500,8 @@
 
     <string name="unpin_action">Unpin</string>
     <string name="pin_action">Pin</string>
+    <string name="failed_to_pin">Failed to Pin</string>
+    <string name="failed_to_unpin">Failed to Unpin</string>
 
     <plurals name="favs">
         <item quantity="one">&lt;b>%1$s&lt;/b> Favorite</item>
@@ -530,21 +542,22 @@
     <string name="description_post_bookmarked">
         Bookmarked
     </string>
-    <string name="description_visiblity_public">
+    <string name="description_visibility_public">
         Public
     </string>
-    <string name="description_visiblity_unlisted">
+    <string name="description_visibility_unlisted">
         Unlisted
     </string>
-    <string name="description_visiblity_private">
+    <string name="description_visibility_private">
         Followers
     </string>
-    <string name="description_visiblity_direct">
+    <string name="description_visibility_direct">
         Direct
     </string>
     <string name="description_poll">
         Poll with choices: %1$s, %2$s, %3$s, %4$s; %5$s
     </string>
+    <string name="description_post_language">Post language</string>
 
     <string name="hint_list_name">List name</string>
 
@@ -633,6 +646,7 @@
     <string name="duration_90_days">90 days</string>
     <string name="duration_180_days">180 days</string>
     <string name="duration_365_days">365 days</string>
+    <string name="duration_no_change">(No change)</string>
     <string name="add_poll_choice">Add choice</string>
     <string name="poll_allow_multiple_choices">Multiple choices</string>
     <string name="poll_new_choice_hint">Choice %d</string>
@@ -643,6 +657,7 @@
     <string name="no_scheduled_posts">You don\'t have any scheduled posts.</string>
     <string name="no_announcements">There are no announcements.</string>
     <string name="warning_scheduling_interval">Mastodon has a minimum scheduling interval of 5 minutes.</string>
+    <string name="pref_title_show_self_username">Show username in toolbars</string>
     <string name="pref_title_show_cards_in_timelines">Show link previews in timelines</string>
     <string name="pref_title_confirm_reblogs">Show confirmation dialog before boosting</string>
     <string name="pref_title_confirm_favourites">Show confirmation dialog before favoriting</string>
@@ -686,6 +701,11 @@
     <string name="tips_push_notification_migration">Re-login all accounts to enable push notification support.</string>
     <string name="dialog_push_notification_migration">In order to use push notifications via UnifiedPush, Tusky needs permission to subscribe to notifications on your Mastodon server. This requires a re-login to change the OAuth scopes granted to Tusky. Using the re-login option here or in Account Preferences will preserve all of your local drafts and cache.</string>
     <string name="dialog_push_notification_migration_other_accounts">You have re-logged into your current account to grant push subscription permission to Tusky. However, you still have other accounts that have not been migrated this way. Switch to them and re-login one by one in order to enable UnifiedPush notifications support.</string>
+    <string name="url_domain_notifier">%s (🔗 %s)</string>
 
+    <string name="delete_scheduled_post_warning">Delete this scheduled post?</string>
+
+    <string name="instance_rule_info">By logging in you agree to the rules of %s.</string>
+    <string name="instance_rule_title">%s rules</string>
 
 </resources>

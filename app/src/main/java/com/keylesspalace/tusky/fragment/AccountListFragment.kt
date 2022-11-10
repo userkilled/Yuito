@@ -78,8 +78,8 @@ class AccountListFragment : Fragment(R.layout.fragment_account_list), AccountAct
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        type = arguments?.getSerializable(ARG_TYPE) as Type
-        id = arguments?.getString(ARG_ID)
+        type = requireArguments().getSerializable(ARG_TYPE) as Type
+        id = requireArguments().getString(ARG_ID)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -100,7 +100,7 @@ class AccountListFragment : Fragment(R.layout.fragment_account_list), AccountAct
             Type.BLOCKS -> BlocksAdapter(this, animateAvatar, animateEmojis)
             Type.MUTES -> MutesAdapter(this, animateAvatar, animateEmojis)
             Type.FOLLOW_REQUESTS -> {
-                val headerAdapter = FollowRequestsHeaderAdapter(accountManager.activeAccount!!.domain, arguments?.get(ARG_ACCOUNT_LOCKED) == true)
+                val headerAdapter = FollowRequestsHeaderAdapter(accountManager.activeAccount!!.domain, arguments?.getBoolean(ARG_ACCOUNT_LOCKED) == true)
                 val followRequestsAdapter = FollowRequestsAdapter(this, animateAvatar, animateEmojis)
                 binding.recyclerView.adapter = ConcatAdapter(headerAdapter, followRequestsAdapter)
                 followRequestsAdapter

@@ -15,10 +15,12 @@
 
 package com.keylesspalace.tusky
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -38,10 +40,12 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import androidx.activity.viewModels
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.view.GravityCompat
@@ -85,6 +89,7 @@ import com.keylesspalace.tusky.databinding.ActivityMainBinding
 import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
+import com.keylesspalace.tusky.entity.Notification
 import com.keylesspalace.tusky.fragment.NotificationsFragment
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
@@ -203,6 +208,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             if (accountRequested && accountId != activeAccount.id) {
                 accountManager.setActiveAccount(accountId)
             }
+
+            val openDrafts = intent.getBooleanExtra(OPEN_DRAFTS, false)
+
             if (canHandleMimeType(intent.type)) {
                 // Sharing to Tusky from an external app
                 if (accountRequested) {
@@ -227,9 +235,18 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                         }
                     )
                 }
+            } else if (openDrafts) {
+                val intent = DraftsActivity.newIntent(this)
+                startActivity(intent)
             } else if (accountRequested && savedInstanceState == null) {
-                // user clicked a notification, show notification tab
-                showNotificationTab = true
+                // user clicked a notification, show follow requests for type FOLLOW_REQUEST,
+                // otherwise show notification tab
+                if (intent.getStringExtra(NotificationHelper.TYPE) == Notification.Type.FOLLOW_REQUEST.name) {
+                    val intent = AccountListActivity.newIntent(this, AccountListActivity.Type.FOLLOW_REQUESTS, accountLocked = true)
+                    startActivityWithSlideInAnimation(intent)
+                } else {
+                    showNotificationTab = true
+                }
             }
         }
         window.statusBarColor = Color.TRANSPARENT // don't draw a status bar, the DrawerLayout and the MaterialDrawerLayout have their own
@@ -292,6 +309,33 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
 
         selectedEmojiPack = preferences.getString(EMOJI_PREFERENCE, "")
+
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    when {
+                        binding.mainDrawerLayout.isOpen -> {
+                            binding.mainDrawerLayout.close()
+                        }
+                        binding.viewPager.currentItem != 0 -> {
+                            binding.viewPager.currentItem = 0
+                        }
+                        else -> {
+                            finish()
+                        }
+                    }
+                }
+            }
+        )
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1
+            )
+        }
     }
 
     override fun onPause() {
@@ -335,20 +379,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     override fun onStop() {
         super.onStop()
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
-
-    override fun onBackPressed() {
-        when {
-            binding.mainDrawerLayout.isOpen -> {
-                binding.mainDrawerLayout.close()
-            }
-            binding.viewPager.currentItem != 0 -> {
-                binding.viewPager.currentItem = 0
-            }
-            else -> {
-                super.onBackPressed()
-            }
-        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -426,7 +456,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             closeDrawerOnProfileListClick = true
         }
 
-        header.accountHeaderBackground.setColorFilter(ContextCompat.getColor(this, R.color.headerBackgroundFilter))
+        header.accountHeaderBackground.setColorFilter(getColor(R.color.headerBackgroundFilter))
         header.accountHeaderBackground.setBackgroundColor(ThemeUtils.getColor(this, R.attr.colorBackgroundAccent))
         val animateAvatars = preferences.getBoolean("animateGifAvatars", false)
 
@@ -606,7 +636,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     private fun tintCheckIcon(item: MenuItem) {
         if (item.isChecked) {
             @Suppress("DEPRECATION")
-            item.icon.setColorFilter(ContextCompat.getColor(this, R.color.tusky_green_light), PorterDuff.Mode.SRC_IN)
+            item.icon?.setColorFilter(ContextCompat.getColor(this, R.color.tusky_green_light), PorterDuff.Mode.SRC_IN)
         } else {
             ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorTertiary)
         }
@@ -1000,6 +1030,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         header.clear()
         header.profiles = profiles
         header.setActiveProfile(accountManager.activeAccount!!.id)
+        binding.mainToolbar.subtitle = if (accountManager.shouldDisplaySelfUsername(this)) {
+            accountManager.activeAccount!!.fullName
+        } else null
     }
 
     override fun getActionButton() = binding.composeButton
@@ -1011,6 +1044,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         private const val DRAWER_ITEM_ADD_ACCOUNT: Long = -13
         private const val DRAWER_ITEM_ANNOUNCEMENTS: Long = 14
         const val REDIRECT_URL = "redirectUrl"
+        const val OPEN_DRAFTS = "draft"
     }
 }
 

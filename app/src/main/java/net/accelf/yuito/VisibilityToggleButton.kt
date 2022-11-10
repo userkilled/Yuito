@@ -4,9 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Status.Visibility
+import kotlinx.coroutines.launch
 
 class VisibilityToggleButton @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
         AppCompatImageView(context, attrs) {
@@ -19,7 +21,9 @@ class VisibilityToggleButton @JvmOverloads constructor(context: Context, attrs: 
     }
 
     fun attachViewModel(viewModel: QuickTootViewModel, owner: LifecycleOwner) {
-        viewModel.visibility.observe(owner, ::updateVisibility)
+        owner.lifecycleScope.launch {
+            viewModel.visibility.collect(::updateVisibility)
+        }
         viewModel.setInitialVisibility(preference.getInt(PREF_CURRENT_VISIBILITY, Visibility.UNKNOWN.num))
         setOnClickListener{ viewModel.stepVisibility() }
     }
