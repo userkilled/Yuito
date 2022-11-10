@@ -4,8 +4,6 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Intent
-import android.os.Looper
-import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.viewpager2.widget.ViewPager2
@@ -19,7 +17,6 @@ import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Instance
 import com.keylesspalace.tusky.entity.Notification
 import com.keylesspalace.tusky.entity.TimelineAccount
-import net.accelf.yuito.FooterDrawerItem
 import net.accelf.yuito.QuickTootViewModel
 import net.accelf.yuito.streaming.StreamingManager
 import org.junit.Assert.assertEquals

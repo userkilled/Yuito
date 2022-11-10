@@ -5,9 +5,9 @@ import com.keylesspalace.tusky.network.NotestockApi
 import com.keylesspalace.tusky.viewdata.StatusViewData
 
 class SearchNotestockPagingSourceFactory(
-        private val notestockApi: NotestockApi,
-        private val initialItems: List<StatusViewData.Concrete>? = null,
-        private val parser: (SearchResult) -> List<StatusViewData.Concrete>
+    private val notestockApi: NotestockApi,
+    private val initialItems: List<StatusViewData.Concrete>? = null,
+    private val parser: (SearchResult) -> List<StatusViewData.Concrete>
 ) : () -> SearchNotestockPagingSource {
 
     private var searchRequest: String = ""

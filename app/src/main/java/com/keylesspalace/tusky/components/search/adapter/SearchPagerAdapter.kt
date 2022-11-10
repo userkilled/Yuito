@@ -36,5 +36,4 @@ class SearchPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(acti
     }
 
     override fun getItemCount() = 4
-
 }

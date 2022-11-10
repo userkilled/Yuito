@@ -24,9 +24,9 @@ import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
 
 class QuickTootView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0,
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
 ) : ConstraintLayout(context, attrs, defStyleAttr) {
 
     private val binding = ViewQuickTootBinding.inflate(LayoutInflater.from(context), this, true)

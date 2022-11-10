@@ -240,8 +240,8 @@ abstract class TimelineViewModel(
     protected fun shouldFilterStatus(statusViewData: StatusViewData): Boolean {
         val status = statusViewData.asStatusOrNull()?.status ?: return false
         return status.inReplyToId != null && filterRemoveReplies ||
-                status.reblog != null && filterRemoveReblogs ||
-                filterModel.shouldFilterStatus(status.actionableStatus)
+            status.reblog != null && filterRemoveReblogs ||
+            filterModel.shouldFilterStatus(status.actionableStatus)
     }
 
     private fun onPreferenceChanged(key: String) {

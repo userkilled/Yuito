@@ -75,7 +75,7 @@ class Converters @Inject constructor (
         // List name may include ":"
         return tabData?.joinToString(";") {
             (if (it.enableStreaming) { it.id + STREAMING } else { it.id }) + ":" +
-                    it.arguments.joinToString(":") { s -> URLEncoder.encode(s, "UTF-8") }
+                it.arguments.joinToString(":") { s -> URLEncoder.encode(s, "UTF-8") }
         }
     }
 

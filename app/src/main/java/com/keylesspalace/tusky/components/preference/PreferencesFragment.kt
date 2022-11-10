@@ -322,14 +322,17 @@ class PreferencesFragment : PreferenceFragmentCompat(), Injectable {
                             setTitle(R.string.pref_title_stacktrace_send)
                             setOnPreferenceClickListener {
                                 activity?.let { activity ->
-                                    val intent = ComposeActivity.startIntent(activity, ComposeOptions(
+                                    val intent = ComposeActivity.startIntent(
+                                        activity,
+                                        ComposeOptions(
                                             content = "@ars42525@odakyu.app $stackTrace".substring(0, 400),
                                             contentWarning = "Yuito StackTrace"
-                                    ))
+                                        )
+                                    )
                                     activity.startActivity(intent)
                                     prefs.edit()
-                                            .remove(PrefKeys.STACK_TRACE)
-                                            .apply()
+                                        .remove(PrefKeys.STACK_TRACE)
+                                        .apply()
                                 }
                                 true
                             }

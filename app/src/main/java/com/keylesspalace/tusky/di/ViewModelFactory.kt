@@ -132,5 +132,5 @@ abstract class ViewModelModule {
     @ViewModelKey(QuickTootViewModel::class)
     internal abstract fun quickTootViewModel(viewModel: QuickTootViewModel): ViewModel
 
-    //Add more ViewModels here
+    // Add more ViewModels here
 }

@@ -22,6 +22,7 @@ jobs:
 
       - run: |
           chmod +x ./gradlew
+          ./gradlew :ktlintCheck
           ./gradlew :app:testBlueDebugUnitTest
 
 

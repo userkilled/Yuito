@@ -9,8 +9,7 @@ interface NotestockApi {
 
     @GET("api/v1/search.json")
     fun searchObservable(
-            @Query("q") q: String,
-            @Query("max_dt") maxDt: String? = null
+        @Query("q") q: String,
+        @Query("max_dt") maxDt: String? = null
     ): Single<SearchResult>
-
 }

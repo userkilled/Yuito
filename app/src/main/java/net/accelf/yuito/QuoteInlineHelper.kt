@@ -70,10 +70,12 @@ class QuoteInlineHelper(
             true -> View.VISIBLE
             false -> View.GONE
         }
-        binding.statusQuoteInlineContentWarningButton.setText(when (show) {
-            true -> R.string.post_content_warning_show_less
-            false -> R.string.post_content_warning_show_more
-        })
+        binding.statusQuoteInlineContentWarningButton.setText(
+            when (show) {
+                true -> R.string.post_content_warning_show_less
+                false -> R.string.post_content_warning_show_more
+            }
+        )
     }
 
     private fun hideSpoilerText() {

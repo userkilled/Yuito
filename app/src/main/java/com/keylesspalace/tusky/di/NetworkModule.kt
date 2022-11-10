@@ -140,7 +140,7 @@ class NetworkModule {
     @Singleton
     fun providesNotestockApi(
         okHttpClient: OkHttpClient,
-                             gson: Gson
+        gson: Gson
     ): NotestockApi {
         val retrofit = Retrofit.Builder().baseUrl("https://notestock.osa-p.net")
             .client(okHttpClient)

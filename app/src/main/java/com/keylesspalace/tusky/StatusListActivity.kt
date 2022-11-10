@@ -23,12 +23,12 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.fragment.app.commit
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
-import autodispose2.androidx.lifecycle.autoDispose
-import com.keylesspalace.tusky.appstore.EventHub
+import androidx.lifecycle.lifecycleScope
 import at.connyduck.calladapter.networkresult.fold
+import autodispose2.androidx.lifecycle.autoDispose
 import com.google.android.material.snackbar.Snackbar
+import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
 import com.keylesspalace.tusky.components.timeline.viewmodel.TimelineViewModel.Kind
 import com.keylesspalace.tusky.databinding.ActivityStatuslistBinding
@@ -36,8 +36,8 @@ import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.util.viewBinding
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import kotlinx.coroutines.launch
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.launch
 import net.accelf.yuito.QuickTootViewModel
 import javax.inject.Inject
 
@@ -50,7 +50,7 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val quickTootViewModel: QuickTootViewModel by viewModels{ viewModelFactory }
+    private val quickTootViewModel: QuickTootViewModel by viewModels { viewModelFactory }
 
     private val binding: ActivityStatuslistBinding by viewBinding(ActivityStatuslistBinding::inflate)
     private lateinit var kind: Kind
@@ -95,9 +95,9 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
         binding.viewQuickToot.attachViewModel(quickTootViewModel, this)
 
         eventHub.events
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-                .subscribe(binding.viewQuickToot::handleEvent)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(this, Lifecycle.Event.ON_DESTROY)
+            .subscribe(binding.viewQuickToot::handleEvent)
         binding.floatingBtn.setOnClickListener(binding.viewQuickToot::onFABClicked)
     }
 

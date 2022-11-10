@@ -74,7 +74,6 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
         return SearchStatusesAdapter(statusDisplayOptions, this)
     }
 
-
     override fun onContentHiddenChange(isShowing: Boolean, position: Int) {
         searchAdapter.peek(position)?.let {
             viewModel.contentHiddenNotestockChange(it, isShowing)
@@ -133,9 +132,7 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
                 Attachment.Type.UNKNOWN -> {
                 }
             }
-
         }
-
     }
 
     override fun onViewThread(position: Int) {
@@ -491,11 +488,9 @@ class SearchNotestockFragment : SearchFragment<StatusViewData.Concrete>(), Statu
                             Log.w("SearchStatusesFragment", "error deleting status", error)
                             Toast.makeText(context, R.string.error_generic, Toast.LENGTH_SHORT).show()
                         })
-
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()
         }
     }
-
 }

@@ -240,7 +240,7 @@ class SearchStatusesFragment : SearchFragment<StatusViewData.Concrete>(), Status
             }
 
         val intent = ComposeActivity.startIntent(
-        requireContext(),
+            requireContext(),
             ComposeOptions(
                 quoteId = status.actionableId,
                 quoteStatusAuthor = actionableStatus.account.localUsername,

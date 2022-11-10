@@ -252,11 +252,14 @@ class NetworkTimelineViewModel @Inject constructor(
                 statusData.add(0, StatusViewData.Placeholder(status.id, isLoading = false))
                 isFirstOfStreaming = false
             } else {
-                statusData.add(0, status.toViewData(
-                    isShowingContent = activeAccount.alwaysShowSensitiveMedia,
-                    isExpanded = activeAccount.alwaysOpenSpoiler,
-                    isCollapsed = true,
-                ))
+                statusData.add(
+                    0,
+                    status.toViewData(
+                        isShowingContent = activeAccount.alwaysShowSensitiveMedia,
+                        isExpanded = activeAccount.alwaysOpenSpoiler,
+                        isCollapsed = true,
+                    )
+                )
             }
 
             currentSource?.invalidate()

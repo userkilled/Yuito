@@ -39,8 +39,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
-import androidx.activity.viewModels
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
@@ -621,11 +621,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
 
         binding.mainDrawer.addItems(
-                secondaryDrawerItem {
-                    nameText = "Yuito (by kyori19)"
-                    isEnabled = false
-                    textColor = ColorStateList.valueOf(ThemeUtils.getColor(this@MainActivity, R.attr.colorInfo))
-                }
+            secondaryDrawerItem {
+                nameText = "Yuito (by kyori19)"
+                isEnabled = false
+                textColor = ColorStateList.valueOf(ThemeUtils.getColor(this@MainActivity, R.attr.colorInfo))
+            }
         )
     }
 
@@ -732,8 +732,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     }
                     R.id.tabEditList -> {
                         AccountsInListFragment.newInstance(
-                                tabs[i].arguments.getOrNull(0).orEmpty(),
-                                tabs[i].arguments.getOrNull(1).orEmpty()
+                            tabs[i].arguments.getOrNull(0).orEmpty(),
+                            tabs[i].arguments.getOrNull(1).orEmpty()
                         ).show(supportFragmentManager, null)
                     }
                     R.id.tabToggleStreaming -> {
@@ -750,18 +750,20 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                                     it.tabPreferences = tabs
                                     accountManager.saveAccount(it)
                                 }
-                                        .subscribeOn(Schedulers.io())
-                                        .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-                                        .subscribe()
+                                    .subscribeOn(Schedulers.io())
+                                    .autoDispose(this, Lifecycle.Event.ON_DESTROY)
+                                    .subscribe()
                             }
                         }
                     }
                     R.id.tabToggleNotificationsFilter -> {
                         if (fragment is NotificationsFragment) {
                             val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-                            prefs.edit().putBoolean("showNotificationsFilter",
-                                    !prefs.getBoolean("showNotificationsFilter", true))
-                                    .apply()
+                            prefs.edit().putBoolean(
+                                "showNotificationsFilter",
+                                !prefs.getBoolean("showNotificationsFilter", true)
+                            )
+                                .apply()
                             eventHub.dispatch(PreferenceChangedEvent("showNotificationsFilter"))
                         }
                     }

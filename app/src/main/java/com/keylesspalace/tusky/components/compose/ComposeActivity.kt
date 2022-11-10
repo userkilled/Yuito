@@ -529,16 +529,16 @@ class ComposeActivity :
         binding.checkboxUseDefaultText.isChecked = preferences.getBoolean(PREF_USE_DEFAULT_TAG, false)
         binding.checkboxUseDefaultText.setOnCheckedChangeListener { _, isChecked ->
             preferences.edit()
-                    .putBoolean(PREF_USE_DEFAULT_TAG, isChecked)
-                    .apply()
+                .putBoolean(PREF_USE_DEFAULT_TAG, isChecked)
+                .apply()
             eventHub.dispatch(PreferenceChangedEvent(PREF_USE_DEFAULT_TAG))
         }
 
         binding.editTextDefaultText.setText(preferences.getString(PREF_DEFAULT_TAG, ""))
         binding.editTextDefaultText.doAfterTextChanged {
             preferences.edit()
-                    .putString(PREF_DEFAULT_TAG, it.toString())
-                    .apply()
+                .putString(PREF_DEFAULT_TAG, it.toString())
+                .apply()
             eventHub.dispatch(PreferenceChangedEvent(PREF_DEFAULT_TAG))
         }
     }
