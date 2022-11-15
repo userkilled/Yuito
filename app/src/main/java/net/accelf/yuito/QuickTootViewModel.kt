@@ -1,18 +1,23 @@
 package net.accelf.yuito
 
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.CAN_USE_UNLEAKABLE
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.entity.Status.Visibility
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class QuickTootViewModel @Inject constructor(
-    accountManager: AccountManager
+    accountManager: AccountManager,
+    private val sharedPreferences: SharedPreferences,
 ) : ViewModel() {
 
     private val account = accountManager.activeAccount!!
@@ -21,8 +26,16 @@ class QuickTootViewModel @Inject constructor(
 
     val content = MutableStateFlow("")
 
-    private val visibilityMutable = MutableStateFlow(Visibility.PUBLIC)
-    val visibility: StateFlow<Visibility> = visibilityMutable
+    private val _visibility = MutableStateFlow(
+        Visibility.byNum(
+            sharedPreferences.getInt(
+                PREF_CURRENT_VISIBILITY,
+                account.defaultPostPrivacy.num,
+            )
+        )
+    )
+    val visibility: SharedFlow<Visibility> = _visibility
+        .shareIn(viewModelScope, SharingStarted.Lazily, 1)
     private var stashedVisibility: Visibility? = null
 
     private val inReplyToMutable: MutableStateFlow<Status?> = MutableStateFlow(null)
@@ -30,18 +43,8 @@ class QuickTootViewModel @Inject constructor(
 
     val defaultTag: MutableStateFlow<String?> = MutableStateFlow(null)
 
-    fun setInitialVisibility(num: Int) {
-        visibilityMutable.value = (
-            Visibility.byNum(num)
-                .takeUnless { it == Visibility.UNKNOWN }
-                ?: account.defaultPostPrivacy
-            )
-            .takeUnless { it == Visibility.UNLEAKABLE && unleakableAllowed }
-            ?: Visibility.PRIVATE
-    }
-
     fun stepVisibility() {
-        visibilityMutable.value = when (visibility.value) {
+        _visibility.value = when (_visibility.value) {
             Visibility.PUBLIC -> Visibility.UNLISTED
             Visibility.UNLISTED -> Visibility.PRIVATE
             Visibility.PRIVATE -> when (unleakableAllowed) {
@@ -51,16 +54,18 @@ class QuickTootViewModel @Inject constructor(
             Visibility.UNLEAKABLE -> Visibility.PUBLIC
             else -> Visibility.PUBLIC
         }
-    }
 
-    private fun overrideVisibility(overrideTo: Visibility) {
-        stashedVisibility = visibility.value
-        visibilityMutable.value = overrideTo
+        if (stashedVisibility == null) {
+            sharedPreferences.edit()
+                .putInt(PREF_CURRENT_VISIBILITY, _visibility.value.num)
+                .apply()
+        }
     }
 
     fun reply(status: Status) {
         inReplyToMutable.value = status
-        overrideVisibility(status.visibility)
+        stashedVisibility = _visibility.value
+        _visibility.value = status.visibility
     }
 
     fun composeOptions(tootRightNow: Boolean): ComposeActivity.ComposeOptions {
@@ -68,11 +73,14 @@ class QuickTootViewModel @Inject constructor(
             content = content.value,
             mentionedUsernames = inReplyTo.value
                 ?.let {
-                    linkedSetOf(it.account.username, *(it.mentions.map { mention -> mention.username }.toTypedArray()))
+                    linkedSetOf(
+                        it.account.username,
+                        *(it.mentions.map { mention -> mention.username }.toTypedArray())
+                    )
                         .apply { remove(account.username) }
                 },
             inReplyToId = inReplyTo.value?.id,
-            visibility = visibility.value,
+            visibility = _visibility.value,
             contentWarning = inReplyTo.value?.spoilerText,
             replyingStatusAuthor = inReplyTo.value?.account?.name,
             replyingStatusContent = inReplyTo.value?.content,
@@ -84,8 +92,12 @@ class QuickTootViewModel @Inject constructor(
         content.value = ""
         inReplyToMutable.value = null
         stashedVisibility?.let {
-            visibilityMutable.update { it }
+            _visibility.update { it }
             stashedVisibility = null
         }
+    }
+
+    companion object {
+        private const val PREF_CURRENT_VISIBILITY = "current_visibility"
     }
 }

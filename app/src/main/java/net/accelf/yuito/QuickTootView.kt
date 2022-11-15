@@ -42,7 +42,14 @@ class QuickTootView @JvmOverloads constructor(
 
         syncBypass()
 
-        binding.buttonVisibility.attachViewModel(viewModel, owner)
+        owner.lifecycleScope.launch {
+            viewModel.visibility.collect { visibility ->
+                binding.buttonVisibility.visibility = visibility
+            }
+        }
+        binding.buttonVisibility.setOnClickListener {
+            viewModel.stepVisibility()
+        }
 
         owner.lifecycleScope.launch {
             viewModel.content.collect { content ->

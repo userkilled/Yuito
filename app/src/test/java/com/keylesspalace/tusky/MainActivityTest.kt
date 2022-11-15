@@ -32,7 +32,7 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.util.concurrent.BackgroundExecutor.runInBackground
 import org.robolectric.annotation.Config
-import java.util.Date
+import java.util.*
 
 @Config(sdk = [28])
 @RunWith(AndroidJUnit4::class)
@@ -126,7 +126,7 @@ class MainActivityTest {
         val mockAccountManager: AccountManager = mock {
             on { activeAccount } doReturn accountEntity
         }
-        val viewModel = QuickTootViewModel(mockAccountManager)
+        val viewModel = QuickTootViewModel(mockAccountManager, mock())
         activity.eventHub = EventHub()
         activity.accountManager = mockAccountManager
         activity.mastodonApi = mock {
