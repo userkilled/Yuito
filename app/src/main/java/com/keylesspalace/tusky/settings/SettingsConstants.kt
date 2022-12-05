@@ -55,6 +55,7 @@ object PrefKeys {
     const val STACK_TRACE = "stackTrace"
 
     const val DEFAULT_POST_PRIVACY = "defaultPostPrivacy"
+    const val DEFAULT_POST_LANGUAGE = "defaultPostLanguage"
     const val DEFAULT_MEDIA_SENSITIVITY = "defaultMediaSensitivity"
     const val MEDIA_PREVIEW_ENABLED = "mediaPreviewEnabled"
     const val ALWAYS_SHOW_SENSITIVE_MEDIA = "alwaysShowSensitiveMedia"
@@ -72,6 +73,7 @@ object PrefKeys {
     const val NOTIFICATION_FILTER_SUBSCRIPTIONS = "notificationFilterSubscriptions"
     const val NOTIFICATION_FILTER_SIGN_UPS = "notificationFilterSignUps"
     const val NOTIFICATION_FILTER_UPDATES = "notificationFilterUpdates"
+    const val NOTIFICATION_FILTER_REPORTS = "notificationFilterReports"
 
     const val TAB_FILTER_HOME_REPLIES = "tabFilterHomeReplies_v2" // This was changed once to reset an unintentionally set default.
     const val TAB_FILTER_HOME_BOOSTS = "tabFilterHomeBoosts"

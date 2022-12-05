@@ -26,13 +26,16 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import at.connyduck.calladapter.networkresult.fold
-import autodispose2.androidx.lifecycle.autoDispose
+import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
+import autodispose2.autoDispose
 import com.google.android.material.snackbar.Snackbar
 import com.keylesspalace.tusky.appstore.EventHub
+import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
 import com.keylesspalace.tusky.components.timeline.viewmodel.TimelineViewModel.Kind
 import com.keylesspalace.tusky.databinding.ActivityStatuslistBinding
 import com.keylesspalace.tusky.di.ViewModelFactory
+import com.keylesspalace.tusky.entity.Filter
 import com.keylesspalace.tusky.util.viewBinding
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -52,13 +55,20 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
     private val quickTootViewModel: QuickTootViewModel by viewModels { viewModelFactory }
 
+
     private val binding: ActivityStatuslistBinding by viewBinding(ActivityStatuslistBinding::inflate)
     private lateinit var kind: Kind
     private var hashtag: String? = null
     private var followTagItem: MenuItem? = null
     private var unfollowTagItem: MenuItem? = null
+    private var muteTagItem: MenuItem? = null
+    private var unmuteTagItem: MenuItem? = null
+
+    /** The filter muting hashtag, null if unknown or hashtag is not filtered */
+    private var mutedFilter: Filter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("StatusListActivity", "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
@@ -96,7 +106,7 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
 
         eventHub.events
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(this, Lifecycle.Event.ON_DESTROY)
+            .autoDispose(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY))
             .subscribe(binding.viewQuickToot::handleEvent)
         binding.floatingBtn.setOnClickListener(binding.viewQuickToot::onFABClicked)
     }
@@ -110,10 +120,15 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
                         menuInflater.inflate(R.menu.view_hashtag_toolbar, menu)
                         followTagItem = menu.findItem(R.id.action_follow_hashtag)
                         unfollowTagItem = menu.findItem(R.id.action_unfollow_hashtag)
+                        muteTagItem = menu.findItem(R.id.action_mute_hashtag)
+                        unmuteTagItem = menu.findItem(R.id.action_unmute_hashtag)
                         followTagItem?.isVisible = tagEntity.following == false
                         unfollowTagItem?.isVisible = tagEntity.following == true
                         followTagItem?.setOnMenuItemClickListener { followTag() }
                         unfollowTagItem?.setOnMenuItemClickListener { unfollowTag() }
+                        muteTagItem?.setOnMenuItemClickListener { muteTag() }
+                        unmuteTagItem?.setOnMenuItemClickListener { unmuteTag() }
+                        updateMuteTagMenuItems()
                     },
                     {
                         Log.w(TAG, "Failed to query tag #$tag", it)
@@ -160,6 +175,85 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
                     }
                 )
             }
+        }
+
+        return true
+    }
+
+    /**
+     * Determine if the current hashtag is muted, and update the UI state accordingly.
+     */
+    private fun updateMuteTagMenuItems() {
+        val tag = hashtag ?: return
+
+        muteTagItem?.isVisible = true
+        muteTagItem?.isEnabled = false
+        unmuteTagItem?.isVisible = false
+
+        mastodonApi.getFilters().observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY))
+            .subscribe { filters ->
+                for (filter in filters) {
+                    if ((tag == filter.phrase) and filter.context.contains(Filter.HOME)) {
+                        Log.d(TAG, "Tag $hashtag is filtered")
+                        muteTagItem?.isVisible = false
+                        unmuteTagItem?.isVisible = true
+                        mutedFilter = filter
+                        return@subscribe
+                    }
+                }
+
+                Log.d(TAG, "Tag $hashtag is not filtered")
+                mutedFilter = null
+                muteTagItem?.isEnabled = true
+                muteTagItem?.isVisible = true
+                muteTagItem?.isVisible = true
+            }
+    }
+
+    private fun muteTag(): Boolean {
+        val tag = hashtag ?: return true
+
+        lifecycleScope.launch {
+            mastodonApi.createFilter(
+                tag,
+                listOf(Filter.HOME),
+                irreversible = false,
+                wholeWord = true,
+                expiresInSeconds = null
+            ).fold(
+                { filter ->
+                    mutedFilter = filter
+                    muteTagItem?.isVisible = false
+                    unmuteTagItem?.isVisible = true
+                    eventHub.dispatch(PreferenceChangedEvent(filter.context[0]))
+                },
+                {
+                    Snackbar.make(binding.root, getString(R.string.error_muting_hashtag_format, tag), Snackbar.LENGTH_SHORT).show()
+                    Log.e(TAG, "Failed to mute #$tag", it)
+                }
+            )
+        }
+
+        return true
+    }
+
+    private fun unmuteTag(): Boolean {
+        val filter = mutedFilter ?: return true
+
+        lifecycleScope.launch {
+            mastodonApi.deleteFilter(filter.id).fold(
+                {
+                    muteTagItem?.isVisible = true
+                    unmuteTagItem?.isVisible = false
+                    eventHub.dispatch(PreferenceChangedEvent(filter.context[0]))
+                    mutedFilter = null
+                },
+                {
+                    Snackbar.make(binding.root, getString(R.string.error_unmuting_hashtag_format, filter.phrase), Snackbar.LENGTH_SHORT).show()
+                    Log.e(TAG, "Failed to unmute #${filter.phrase}", it)
+                }
+            )
         }
 
         return true

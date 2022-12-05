@@ -31,10 +31,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,6 +65,7 @@ import com.keylesspalace.tusky.appstore.PinEvent;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.QuickReplyEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
+import com.keylesspalace.tusky.databinding.FragmentTimelineNotificationsBinding;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
@@ -82,13 +81,13 @@ import com.keylesspalace.tusky.settings.PrefKeys;
 import com.keylesspalace.tusky.util.CardViewMode;
 import com.keylesspalace.tusky.util.Either;
 import com.keylesspalace.tusky.util.HttpHeaderLink;
+import com.keylesspalace.tusky.util.LinkHelper;
 import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate;
 import com.keylesspalace.tusky.util.ListUtils;
 import com.keylesspalace.tusky.util.NotificationTypeConverterKt;
 import com.keylesspalace.tusky.util.PairedList;
 import com.keylesspalace.tusky.util.StatusDisplayOptions;
 import com.keylesspalace.tusky.util.ViewDataUtils;
-import com.keylesspalace.tusky.view.BackgroundMessageView;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.AttachmentViewData;
 import com.keylesspalace.tusky.viewdata.NotificationViewData;
@@ -160,16 +159,11 @@ public class NotificationsFragment extends SFragment implements
     @Inject
     EventHub eventHub;
 
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private RecyclerView recyclerView;
-    private ProgressBar progressBar;
-    private BackgroundMessageView statusView;
-    private AppBarLayout appBarOptions;
+    private FragmentTimelineNotificationsBinding binding;
 
     private LinearLayoutManager layoutManager;
     private EndlessOnScrollListener scrollListener;
     private NotificationsAdapter adapter;
-    private Button buttonFilter;
     private boolean hideFab;
     private boolean topLoading;
     private boolean bottomLoading;
@@ -213,35 +207,29 @@ public class NotificationsFragment extends SFragment implements
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_timeline_notifications, container, false);
+        binding = FragmentTimelineNotificationsBinding.inflate(inflater, container, false);
 
         @NonNull Context context = inflater.getContext(); // from inflater to silence warning
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
         boolean showNotificationsFilterSetting = preferences.getBoolean("showNotificationsFilter", true);
-        //Clear notifications on filter visibility change to force refresh
+        // Clear notifications on filter visibility change to force refresh
         if (showNotificationsFilterSetting != showNotificationsFilter)
             notifications.clear();
         showNotificationsFilter = showNotificationsFilterSetting;
 
         // Setup the SwipeRefreshLayout.
-        swipeRefreshLayout = rootView.findViewById(R.id.swipeRefreshLayout);
-        recyclerView = rootView.findViewById(R.id.recyclerView);
-        progressBar = rootView.findViewById(R.id.progressBar);
-        statusView = rootView.findViewById(R.id.statusView);
-        appBarOptions = rootView.findViewById(R.id.appBarOptions);
-
-        swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.setColorSchemeResources(R.color.tusky_blue);
+        binding.swipeRefreshLayout.setOnRefreshListener(this);
+        binding.swipeRefreshLayout.setColorSchemeResources(R.color.tusky_blue);
 
         loadNotificationsFilter();
 
         // Setup the RecyclerView.
-        recyclerView.setHasFixedSize(true);
+        binding.recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(context);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAccessibilityDelegateCompat(
-                new ListStatusAccessibilityDelegate(recyclerView, this, (pos) -> {
+        binding.recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setAccessibilityDelegateCompat(
+                new ListStatusAccessibilityDelegate(binding.recyclerView, this, (pos) -> {
                     NotificationViewData notification = notifications.getPairedItemOrNull(pos);
                     // We support replies only for now
                     if (notification instanceof NotificationViewData.Concrete) {
@@ -251,7 +239,7 @@ public class NotificationsFragment extends SFragment implements
                     }
                 }));
 
-        recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
+        binding.recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
 
         StatusDisplayOptions statusDisplayOptions = new StatusDisplayOptions(
                 preferences.getBoolean("animateGifAvatars", false),
@@ -271,7 +259,7 @@ public class NotificationsFragment extends SFragment implements
                 dataSource, statusDisplayOptions, this, this, this);
         alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
         alwaysOpenSpoiler = accountManager.getActiveAccount().getAlwaysOpenSpoiler();
-        recyclerView.setAdapter(adapter);
+        binding.recyclerView.setAdapter(adapter);
 
         topLoading = false;
         bottomLoading = false;
@@ -279,43 +267,47 @@ public class NotificationsFragment extends SFragment implements
 
         updateAdapter();
 
-        Button buttonClear = rootView.findViewById(R.id.buttonClear);
-        buttonClear.setOnClickListener(v -> confirmClearNotifications());
-        buttonFilter = rootView.findViewById(R.id.buttonFilter);
-        buttonFilter.setOnClickListener(v -> showFilterMenu());
+        binding.buttonClear.setOnClickListener(v -> confirmClearNotifications());
+        binding.buttonFilter.setOnClickListener(v -> showFilterMenu());
 
         if (notifications.isEmpty()) {
-            swipeRefreshLayout.setEnabled(false);
+            binding.swipeRefreshLayout.setEnabled(false);
             sendFetchNotificationsRequest(null, null, FetchEnd.BOTTOM, -1);
         } else {
-            progressBar.setVisibility(View.GONE);
+            binding.progressBar.setVisibility(View.GONE);
         }
 
-        ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
+        ((SimpleItemAnimator) binding.recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
 
         updateFilterVisibility();
 
-        return rootView;
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     private void updateFilterVisibility() {
         CoordinatorLayout.LayoutParams params =
-                (CoordinatorLayout.LayoutParams) swipeRefreshLayout.getLayoutParams();
+                (CoordinatorLayout.LayoutParams) binding.swipeRefreshLayout.getLayoutParams();
         if (showNotificationsFilter && !showingError) {
-            appBarOptions.setExpanded(true, false);
-            appBarOptions.setVisibility(View.VISIBLE);
-            //Set content behaviour to hide filter on scroll
+            binding.appBarOptions.setExpanded(true, false);
+            binding.appBarOptions.setVisibility(View.VISIBLE);
+            // Set content behaviour to hide filter on scroll
             params.setBehavior(new AppBarLayout.ScrollingViewBehavior());
         } else {
-            appBarOptions.setExpanded(false, false);
-            appBarOptions.setVisibility(View.GONE);
-            //Clear behaviour to hide app bar
+            binding.appBarOptions.setExpanded(false, false);
+            binding.appBarOptions.setVisibility(View.GONE);
+            // Clear behaviour to hide app bar
             params.setBehavior(null);
         }
     }
 
     private void confirmClearNotifications() {
-        new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(requireContext())
                 .setMessage(R.string.notification_clear_text)
                 .setPositiveButton(android.R.string.ok, (DialogInterface dia, int which) -> clearNotifications())
                 .setNegativeButton(android.R.string.cancel, null)
@@ -328,10 +320,10 @@ public class NotificationsFragment extends SFragment implements
         Activity activity = getActivity();
         if (activity == null) throw new AssertionError("Activity is null");
 
-        /* This is delayed until onActivityCreated solely because MainActivity.composeButton isn't
-         * guaranteed to be set until then.
-         * Use a modified scroll listener that both loads more notificationsEnabled as it goes, and hides
-         * the compose button on down-scroll. */
+        // This is delayed until onActivityCreated solely because MainActivity.composeButton
+        // isn't guaranteed to be set until then.
+        // Use a modified scroll listener that both loads more notificationsEnabled as it
+        // goes, and hides the compose button on down-scroll.
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
         hideFab = preferences.getBoolean("fabHide", false);
         scrollListener = new EndlessOnScrollListener(layoutManager) {
@@ -345,9 +337,9 @@ public class NotificationsFragment extends SFragment implements
                 if (composeButton != null) {
                     if (hideFab) {
                         if (dy > 0 && composeButton.isShown()) {
-                            composeButton.hide(); // hides the button if we're scrolling down
+                            composeButton.hide(); // Hides the button if we're scrolling down
                         } else if (dy < 0 && !composeButton.isShown()) {
-                            composeButton.show(); // shows it if we are scrolling up
+                            composeButton.show(); // Shows it if we are scrolling up
                         }
                     } else if (!composeButton.isShown()) {
                         composeButton.show();
@@ -361,7 +353,7 @@ public class NotificationsFragment extends SFragment implements
             }
         };
 
-        recyclerView.addOnScrollListener(scrollListener);
+        binding.recyclerView.addOnScrollListener(scrollListener);
 
         eventHub.getEvents()
                 .observeOn(AndroidSchedulers.mainThread())
@@ -385,7 +377,7 @@ public class NotificationsFragment extends SFragment implements
 
     @Override
     public void onRefresh() {
-        this.statusView.setVisibility(View.GONE);
+        binding.statusView.setVisibility(View.GONE);
         this.showingError = false;
         Either<Placeholder, Notification> first = CollectionsKt.firstOrNull(this.notifications);
         String topId;
@@ -526,7 +518,7 @@ public class NotificationsFragment extends SFragment implements
 
     @Override
     public void onLoadMore(int position) {
-        //check bounds before accessing list,
+        // Check bounds before accessing list,
         if (notifications.size() >= position && position > 0) {
             Notification previous = notifications.get(position - 1).asRightOrNull();
             Notification next = notifications.get(position + 1).asRightOrNull();
@@ -548,7 +540,6 @@ public class NotificationsFragment extends SFragment implements
     @Override
     public void onContentCollapsedChange(boolean isCollapsed, int position) {
         updateViewDataAt(position, (vd) -> vd.copyWithCollapsed(isCollapsed));
-        ;
     }
 
     private void updateStatus(String statusId, Function<Status, Status> mapper) {
@@ -623,28 +614,28 @@ public class NotificationsFragment extends SFragment implements
     }
 
     private void clearNotifications() {
-        //Cancel all ongoing requests
-        swipeRefreshLayout.setRefreshing(false);
+        // Cancel all ongoing requests
+        binding.swipeRefreshLayout.setRefreshing(false);
         resetNotificationsLoad();
 
-        //Show friend elephant
-        this.statusView.setVisibility(View.VISIBLE);
-        this.statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
+        // Show friend elephant
+        binding.statusView.setVisibility(View.VISIBLE);
+        binding.statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
         updateFilterVisibility();
 
-        //Update adapter
+        // Update adapter
         updateAdapter();
 
-        //Execute clear notifications request
+        // Execute clear notifications request
         mastodonApi.clearNotifications()
                 .observeOn(AndroidSchedulers.mainThread())
                 .to(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe(
                         response -> {
-                            // nothing to do
+                            // Nothing to do
                         },
                         throwable -> {
-                            //Reload notifications on failure
+                            // Reload notifications on failure
                             fullyRefreshWithProgressBar(true);
                         });
     }
@@ -654,10 +645,10 @@ public class NotificationsFragment extends SFragment implements
         bottomLoading = false;
         topLoading = false;
 
-        //Disable load more
+        // Disable load more
         bottomId = null;
 
-        //Clear exists notifications
+        // Clear exists notifications
         notifications.clear();
     }
 
@@ -696,7 +687,7 @@ public class NotificationsFragment extends SFragment implements
         window.setFocusable(true);
         window.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        window.showAsDropDown(buttonFilter);
+        window.showAsDropDown(binding.buttonFilter);
 
     }
 
@@ -720,6 +711,8 @@ public class NotificationsFragment extends SFragment implements
                 return getString(R.string.notification_sign_up_name);
             case UPDATE:
                 return getString(R.string.notification_update_name);
+            case REPORT:
+                return getString(R.string.notification_report_name);
             default:
                 return "Unknown";
         }
@@ -762,12 +755,12 @@ public class NotificationsFragment extends SFragment implements
     }
 
     @Override
-    public void onViewTag(String tag) {
+    public void onViewTag(@NonNull String tag) {
         super.viewTag(tag);
     }
 
     @Override
-    public void onViewAccount(String id) {
+    public void onViewAccount(@NonNull String id) {
         super.viewAccount(id);
     }
 
@@ -809,10 +802,15 @@ public class NotificationsFragment extends SFragment implements
         Log.w(TAG, "Didn't find a notification for ID: " + notificationId);
     }
 
+    @Override
+    public void onViewReport(String reportId) {
+        LinkHelper.openLink(requireContext(), String.format("https://%s/admin/reports/%s", accountManager.getActiveAccount().getDomain(), reportId));
+    }
+
     private void onPreferenceChanged(String key) {
         switch (key) {
             case "fabHide": {
-                hideFab = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("fabHide", false);
+                hideFab = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean("fabHide", false);
                 break;
             }
             case "mediaPreviewEnabled": {
@@ -825,7 +823,7 @@ public class NotificationsFragment extends SFragment implements
             }
             case "showNotificationsFilter": {
                 if (isAdded()) {
-                    showNotificationsFilter = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("showNotificationsFilter", true);
+                    showNotificationsFilter = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean("showNotificationsFilter", true);
                     updateFilterVisibility();
                     fullyRefreshWithProgressBar(true);
                 }
@@ -841,7 +839,7 @@ public class NotificationsFragment extends SFragment implements
     }
 
     private void removeAllByAccountId(String accountId) {
-        // using iterator to safely remove items while iterating
+        // Using iterator to safely remove items while iterating
         Iterator<Either<Placeholder, Notification>> iterator = notifications.iterator();
         while (iterator.hasNext()) {
             Either<Placeholder, Notification> notification = iterator.next();
@@ -855,7 +853,7 @@ public class NotificationsFragment extends SFragment implements
 
     private void onLoadMore() {
         if (bottomId == null) {
-            // already loaded everything
+            // Already loaded everything
             return;
         }
 
@@ -885,7 +883,7 @@ public class NotificationsFragment extends SFragment implements
 
     private void jumpToTop() {
         if (isAdded()) {
-            appBarOptions.setExpanded(true, false);
+            binding.appBarOptions.setExpanded(true, false);
             layoutManager.scrollToPosition(0);
             scrollListener.reset();
         }
@@ -893,8 +891,8 @@ public class NotificationsFragment extends SFragment implements
 
     private void sendFetchNotificationsRequest(String fromId, String uptoId,
                                                final FetchEnd fetchEnd, final int pos) {
-        /* If there is a fetch already ongoing, record however many fetches are requested and
-         * fulfill them after it's complete. */
+        // If there is a fetch already ongoing, record however many fetches are requested and
+        // fulfill them after it's complete.
         if (fetchEnd == FetchEnd.TOP && topLoading) {
             return;
         }
@@ -970,18 +968,18 @@ public class NotificationsFragment extends SFragment implements
         }
 
         if (notifications.size() == 0 && adapter.getItemCount() == 0) {
-            this.statusView.setVisibility(View.VISIBLE);
-            this.statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
+            binding.statusView.setVisibility(View.VISIBLE);
+            binding.statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
         }
 
         updateFilterVisibility();
-        swipeRefreshLayout.setEnabled(true);
-        swipeRefreshLayout.setRefreshing(false);
-        progressBar.setVisibility(View.GONE);
+        binding.swipeRefreshLayout.setEnabled(true);
+        binding.swipeRefreshLayout.setRefreshing(false);
+        binding.progressBar.setVisibility(View.GONE);
     }
 
     private void onFetchNotificationsFailure(Throwable throwable, FetchEnd fetchEnd, int position) {
-        swipeRefreshLayout.setRefreshing(false);
+        binding.swipeRefreshLayout.setRefreshing(false);
         if (fetchEnd == FetchEnd.MIDDLE && !notifications.get(position).isRight()) {
             Placeholder placeholder = notifications.get(position).asLeft();
             NotificationViewData placeholderVD =
@@ -989,18 +987,18 @@ public class NotificationsFragment extends SFragment implements
             notifications.setPairedItem(position, placeholderVD);
             updateAdapter();
         } else if (this.notifications.isEmpty()) {
-            this.statusView.setVisibility(View.VISIBLE);
-            swipeRefreshLayout.setEnabled(false);
+            binding.statusView.setVisibility(View.VISIBLE);
+            binding.swipeRefreshLayout.setEnabled(false);
             this.showingError = true;
             if (throwable instanceof IOException) {
-                this.statusView.setup(R.drawable.elephant_offline, R.string.error_network, __ -> {
-                    this.progressBar.setVisibility(View.VISIBLE);
+                binding.statusView.setup(R.drawable.elephant_offline, R.string.error_network, __ -> {
+                    binding.progressBar.setVisibility(View.VISIBLE);
                     this.onRefresh();
                     return Unit.INSTANCE;
                 });
             } else {
-                this.statusView.setup(R.drawable.elephant_error, R.string.error_generic, __ -> {
-                    this.progressBar.setVisibility(View.VISIBLE);
+                binding.statusView.setup(R.drawable.elephant_error, R.string.error_generic, __ -> {
+                    binding.progressBar.setVisibility(View.VISIBLE);
                     this.onRefresh();
                     return Unit.INSTANCE;
                 });
@@ -1016,7 +1014,7 @@ public class NotificationsFragment extends SFragment implements
             bottomLoading = false;
         }
 
-        progressBar.setVisibility(View.GONE);
+        binding.progressBar.setVisibility(View.GONE);
     }
 
     private void saveNewestNotificationId(List<Notification> notifications) {
@@ -1053,8 +1051,8 @@ public class NotificationsFragment extends SFragment implements
             notifications.addAll(liftedNew);
         } else {
             int index = notifications.indexOf(liftedNew.get(newNotifications.size() - 1));
-            for (int i = 0; i < index; i++) {
-                notifications.remove(0);
+            if (index > 0) {
+                notifications.subList(0, index).clear();
             }
 
             int newIndex = liftedNew.indexOf(notifications.get(0));
@@ -1078,7 +1076,7 @@ public class NotificationsFragment extends SFragment implements
         int end = notifications.size();
         List<Either<Placeholder, Notification>> liftedNew = liftNotificationList(newNotifications);
         Either<Placeholder, Notification> last = notifications.get(end - 1);
-        if (last != null && liftedNew.indexOf(last) == -1) {
+        if (last != null && !liftedNew.contains(last)) {
             notifications.addAll(liftedNew);
             updateAdapter();
         }
@@ -1116,8 +1114,8 @@ public class NotificationsFragment extends SFragment implements
     private void fullyRefreshWithProgressBar(boolean isShow) {
         resetNotificationsLoad();
         if (isShow) {
-            progressBar.setVisibility(View.VISIBLE);
-            statusView.setVisibility(View.GONE);
+            binding.progressBar.setVisibility(View.VISIBLE);
+            binding.statusView.setVisibility(View.GONE);
         }
         updateAdapter();
         sendFetchNotificationsRequest(null, null, FetchEnd.TOP, -1);
@@ -1156,7 +1154,7 @@ public class NotificationsFragment extends SFragment implements
                 // scroll up when new items at the top are loaded while being at the start
                 // https://github.com/tuskyapp/Tusky/pull/1905#issuecomment-677819724
                 if (position == 0 && context != null && adapter.getItemCount() != count) {
-                    recyclerView.scrollBy(0, Utils.dpToPx(context, -30));
+                    binding.recyclerView.scrollBy(0, Utils.dpToPx(context, -30));
                 }
             }
         }
@@ -1211,7 +1209,7 @@ public class NotificationsFragment extends SFragment implements
         @Override
         public Object getChangePayload(@NonNull NotificationViewData oldItem, @NonNull NotificationViewData newItem) {
             if (oldItem.deepEquals(newItem)) {
-                //If items are equal - update timestamp only
+                //  If items are equal - update timestamp only
                 return Collections.singletonList(StatusBaseViewHolder.Key.KEY_CREATED);
             } else
                 // If items are different - update a whole view holder
@@ -1237,7 +1235,7 @@ public class NotificationsFragment extends SFragment implements
      * Auto dispose observable on pause
      */
     private void startUpdateTimestamp() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         if (!useAbsoluteTime) {
             Observable.interval(0, 1, TimeUnit.MINUTES)

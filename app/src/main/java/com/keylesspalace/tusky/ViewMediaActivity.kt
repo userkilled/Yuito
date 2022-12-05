@@ -27,6 +27,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.transition.Transition
@@ -51,6 +52,7 @@ import com.keylesspalace.tusky.components.viewthread.ViewThreadActivity
 import com.keylesspalace.tusky.databinding.ActivityViewMediaBinding
 import com.keylesspalace.tusky.entity.Attachment
 import com.keylesspalace.tusky.fragment.ViewImageFragment
+import com.keylesspalace.tusky.fragment.ViewVideoFragment
 import com.keylesspalace.tusky.pager.ImagePagerAdapter
 import com.keylesspalace.tusky.pager.SingleImagePagerAdapter
 import com.keylesspalace.tusky.util.getTemporaryMediaFilename
@@ -67,7 +69,7 @@ import java.util.Locale
 
 typealias ToolbarVisibilityListener = (isVisible: Boolean) -> Unit
 
-class ViewMediaActivity : BaseActivity(), ViewImageFragment.PhotoActionsListener {
+class ViewMediaActivity : BaseActivity(), ViewImageFragment.PhotoActionsListener, ViewVideoFragment.VideoActionsListener {
 
     private val binding by viewBinding(ActivityViewMediaBinding::inflate)
 
@@ -212,12 +214,20 @@ class ViewMediaActivity : BaseActivity(), ViewImageFragment.PhotoActionsListener
     }
 
     private fun requestDownloadMedia() {
-        requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)) { _, grantResults ->
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                downloadMedia()
-            } else {
-                showErrorDialog(binding.toolbar, R.string.error_media_download_permission, R.string.action_retry) { requestDownloadMedia() }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)) { _, grantResults ->
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    downloadMedia()
+                } else {
+                    showErrorDialog(
+                        binding.toolbar,
+                        R.string.error_media_download_permission,
+                        R.string.action_retry
+                    ) { requestDownloadMedia() }
+                }
             }
+        } else {
+            downloadMedia()
         }
     }
 

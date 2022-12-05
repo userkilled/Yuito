@@ -2,7 +2,7 @@
 accelf-easter = "1.0.2"
 agp = "7.2.2"
 androidx-activity = "1.6.0"
-androidx-appcompat = "1.5.1"
+androidx-appcompat = "1.6.0-rc01"
 androidx-browser = "1.4.0"
 androidx-cardview = "1.0.0"
 androidx-constraintlayout = "2.1.4"

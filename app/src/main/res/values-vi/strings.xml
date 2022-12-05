@@ -189,7 +189,7 @@
     <string name="title_posts_pinned">Ghim</string>
     <string name="title_posts_with_replies">Trả lời</string>
     <string name="title_posts">Tút</string>
-    <string name="title_view_thread">Tút</string>
+    <string name="title_view_thread">Nội dung tút</string>
     <string name="title_tab_preferences">Xếp tab</string>
     <string name="title_direct_messages">Nhắn riêng</string>
     <string name="title_public_federated">Liên hợp</string>
@@ -542,4 +542,8 @@
     <string name="delete_scheduled_post_warning">Bạn có chắc muốn xóa tút đã lên lịch\?</string>
     <string name="instance_rule_info">Đăng nhập nghĩa là bạn đồng ý với quy tắc của %s.</string>
     <string name="instance_rule_title">%s quy tắc</string>
+    <string name="compose_save_draft_loses_media">Lưu bản nháp\? (Bạn sẽ cần tải lên lại file đính kèm)</string>
+    <string name="failed_to_unpin">Không thể bỏ ghim</string>
+    <string name="failed_to_pin">Không thể ghim</string>
+    <string name="action_add_reaction">biểu cảm</string>
 </resources>

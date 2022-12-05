@@ -92,10 +92,13 @@ import com.keylesspalace.tusky.settings.PrefKeys
 import com.keylesspalace.tusky.util.PickMediaFiles
 import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.afterTextChanged
+import com.keylesspalace.tusky.util.getInitialLanguage
+import com.keylesspalace.tusky.util.getLocaleList
 import com.keylesspalace.tusky.util.getMediaSize
 import com.keylesspalace.tusky.util.hide
 import com.keylesspalace.tusky.util.highlightSpans
 import com.keylesspalace.tusky.util.loadAvatar
+import com.keylesspalace.tusky.util.modernLanguageCode
 import com.keylesspalace.tusky.util.onTextChanged
 import com.keylesspalace.tusky.util.show
 import com.keylesspalace.tusky.util.viewBinding
@@ -269,7 +272,7 @@ class ComposeActivity :
             binding.composeScheduleView.setDateTime(composeOptions?.scheduledAt)
         }
 
-        setupLanguageSpinner(getInitialLanguage(composeOptions?.language))
+        setupLanguageSpinner(getInitialLanguage(composeOptions?.language, accountManager.activeAccount))
         setupComposeField(preferences, viewModel.startingText)
         setupDefaultTagViews(preferences)
         setupContentWarningField(composeOptions?.contentWarning)
@@ -604,37 +607,19 @@ class ComposeActivity :
         )
     }
 
-    private fun setupLanguageSpinner(initialLanguage: String?) {
-        val locales = Locale.getAvailableLocales()
-            .filter { it.country.isNullOrEmpty() && it.script.isNullOrEmpty() && it.variant.isNullOrEmpty() } // Only "base" languages, "en" but not "en_DK"
-        var currentLocaleIndex = locales.indexOfFirst { it.language == initialLanguage }
-        if (currentLocaleIndex < 0) {
-            Log.e(TAG, "Error looking up language tag '$initialLanguage', falling back to english")
-            currentLocaleIndex = locales.indexOfFirst { it.language == "en" }
-        }
-
-        val context = this
+    private fun setupLanguageSpinner(initialLanguage: String) {
         binding.composePostLanguageButton.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                viewModel.postLanguage = (parent.adapter.getItem(position) as Locale).language
+                viewModel.postLanguage = (parent.adapter.getItem(position) as Locale).modernLanguageCode
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
-                parent.setSelection(locales.indexOfFirst { it.language == getInitialLanguage() })
+                parent.setSelection(0)
             }
         }
         binding.composePostLanguageButton.apply {
-            adapter = LocaleAdapter(context, android.R.layout.simple_spinner_dropdown_item, locales)
-            setSelection(currentLocaleIndex)
-        }
-    }
-
-    private fun getInitialLanguage(language: String? = null): String {
-        return if (language.isNullOrEmpty()) {
-            // Setting the application ui preference sets the default locale
-            Locale.getDefault().language
-        } else {
-            language
+            adapter = LocaleAdapter(context, android.R.layout.simple_spinner_dropdown_item, getLocaleList(initialLanguage))
+            setSelection(0)
         }
     }
 
@@ -874,7 +859,7 @@ class ComposeActivity :
                 // Wait until bottom sheet is not collapsed and show next screen after
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     addMediaBehavior.removeBottomSheetCallback(this)
-                    if (ContextCompat.checkSelfPermission(this@ComposeActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && ContextCompat.checkSelfPermission(this@ComposeActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(
                             this@ComposeActivity,
                             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),

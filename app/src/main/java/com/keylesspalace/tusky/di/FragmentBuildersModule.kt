@@ -16,6 +16,7 @@
 package com.keylesspalace.tusky.di
 
 import com.keylesspalace.tusky.AccountsInListFragment
+import com.keylesspalace.tusky.components.account.list.ListsForAccountFragment
 import com.keylesspalace.tusky.components.account.media.AccountMediaFragment
 import com.keylesspalace.tusky.components.conversation.ConversationsFragment
 import com.keylesspalace.tusky.components.instancemute.fragment.InstanceListFragment
@@ -92,6 +93,9 @@ abstract class FragmentBuildersModule {
 
     @ContributesAndroidInjector
     abstract fun preferencesFragment(): PreferencesFragment
+
+    @ContributesAndroidInjector
+    abstract fun listsForAccountFragment(): ListsForAccountFragment
 
     @ContributesAndroidInjector
     abstract fun searchNotestockFragment(): SearchNotestockFragment
