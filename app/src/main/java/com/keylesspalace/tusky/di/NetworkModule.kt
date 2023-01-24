@@ -18,6 +18,7 @@ package com.keylesspalace.tusky.di
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
+import android.util.Log
 import at.connyduck.calladapter.networkresult.NetworkResultCallAdapterFactory
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -28,6 +29,10 @@ import com.keylesspalace.tusky.network.InstanceSwitchAuthInterceptor
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.network.MediaUploadApi
 import com.keylesspalace.tusky.network.NotestockApi
+import com.keylesspalace.tusky.settings.PrefKeys.HTTP_PROXY_ENABLED
+import com.keylesspalace.tusky.settings.PrefKeys.HTTP_PROXY_PORT
+import com.keylesspalace.tusky.settings.PrefKeys.HTTP_PROXY_SERVER
+import com.keylesspalace.tusky.settings.ProxyConfiguration
 import com.keylesspalace.tusky.util.getNonNullString
 import dagger.Module
 import dagger.Provides
@@ -40,6 +45,7 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
+import java.net.IDN
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.util.Date
@@ -66,9 +72,9 @@ class NetworkModule {
         context: Context,
         preferences: SharedPreferences
     ): OkHttpClient {
-        val httpProxyEnabled = preferences.getBoolean("httpProxyEnabled", false)
-        val httpServer = preferences.getNonNullString("httpProxyServer", "")
-        val httpPort = preferences.getNonNullString("httpProxyPort", "-1").toIntOrNull() ?: -1
+        val httpProxyEnabled = preferences.getBoolean(HTTP_PROXY_ENABLED, false)
+        val httpServer = preferences.getNonNullString(HTTP_PROXY_SERVER, "")
+        val httpPort = preferences.getNonNullString(HTTP_PROXY_PORT, "-1").toIntOrNull() ?: -1
         val cacheSize = 25 * 1024 * 1024L // 25 MiB
         val builder = OkHttpClient.Builder()
             .addInterceptor { chain ->
@@ -89,10 +95,13 @@ class NetworkModule {
             .writeTimeout(30, TimeUnit.SECONDS)
             .cache(Cache(context.cacheDir, cacheSize))
 
-        if (httpProxyEnabled && httpServer.isNotEmpty() && httpPort > 0 && httpPort < 65535) {
-            val address = InetSocketAddress.createUnresolved(httpServer, httpPort)
-            builder.proxy(Proxy(Proxy.Type.HTTP, address))
+        if (httpProxyEnabled) {
+            ProxyConfiguration.create(httpServer, httpPort)?.also { conf ->
+                val address = InetSocketAddress.createUnresolved(IDN.toASCII(conf.hostname), conf.port)
+                builder.proxy(Proxy(Proxy.Type.HTTP, address))
+            } ?: Log.w(TAG, "Invalid proxy configuration: ($httpServer, $httpPort)")
         }
+
         return builder
             .apply {
                 addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
@@ -148,5 +157,9 @@ class NetworkModule {
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .build()
         return retrofit.create(NotestockApi::class.java)
+    }
+
+    companion object {
+        private const val TAG = "NetworkModule"
     }
 }

@@ -86,10 +86,7 @@ class SendStatusBroadcastReceiver : BroadcastReceiver() {
                         warningText = spoiler,
                         visibility = visibility.serverString(),
                         sensitive = false,
-                        mediaIds = emptyList(),
-                        mediaUris = emptyList(),
-                        mediaDescriptions = emptyList(),
-                        mediaFocus = emptyList(),
+                        media = emptyList(),
                         scheduledAt = null,
                         inReplyToId = citedStatusId,
                         poll = null,
@@ -100,8 +97,8 @@ class SendStatusBroadcastReceiver : BroadcastReceiver() {
                         draftId = -1,
                         idempotencyKey = randomAlphanumericString(16),
                         retries = 0,
-                        mediaProcessed = mutableListOf(),
-                        null,
+                        language = null,
+                        statusId = null,
                     )
                 )
 

@@ -190,25 +190,30 @@ class StatusListActivity : BottomSheetActivity(), HasAndroidInjector {
         muteTagItem?.isEnabled = false
         unmuteTagItem?.isVisible = false
 
-        mastodonApi.getFilters().observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY))
-            .subscribe { filters ->
-                for (filter in filters) {
-                    if ((tag == filter.phrase) and filter.context.contains(Filter.HOME)) {
-                        Log.d(TAG, "Tag $hashtag is filtered")
-                        muteTagItem?.isVisible = false
-                        unmuteTagItem?.isVisible = true
-                        mutedFilter = filter
-                        return@subscribe
+        lifecycleScope.launch {
+            mastodonApi.getFilters().fold(
+                { filters ->
+                    for (filter in filters) {
+                        if ((tag == filter.phrase) and filter.context.contains(Filter.HOME)) {
+                            Log.d(TAG, "Tag $hashtag is filtered")
+                            muteTagItem?.isVisible = false
+                            unmuteTagItem?.isVisible = true
+                            mutedFilter = filter
+                            return@fold
+                        }
                     }
-                }
 
-                Log.d(TAG, "Tag $hashtag is not filtered")
-                mutedFilter = null
-                muteTagItem?.isEnabled = true
-                muteTagItem?.isVisible = true
-                muteTagItem?.isVisible = true
-            }
+                    Log.d(TAG, "Tag $hashtag is not filtered")
+                    mutedFilter = null
+                    muteTagItem?.isEnabled = true
+                    muteTagItem?.isVisible = true
+                    muteTagItem?.isVisible = true
+                },
+                { throwable ->
+                    Log.e(TAG, "Error getting filters: $throwable")
+                }
+            )
+        }
     }
 
     private fun muteTag(): Boolean {

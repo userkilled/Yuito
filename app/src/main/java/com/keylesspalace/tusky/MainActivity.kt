@@ -44,6 +44,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
+import androidx.appcompat.widget.ThemeUtils
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -61,6 +62,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.FixedSizeDrawable
 import com.bumptech.glide.request.transition.Transition
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayoutMediator
@@ -97,11 +99,14 @@ import com.keylesspalace.tusky.interfaces.ReselectableFragment
 import com.keylesspalace.tusky.interfaces.ResettableFragment
 import com.keylesspalace.tusky.pager.MainPagerAdapter
 import com.keylesspalace.tusky.settings.PrefKeys
+import com.keylesspalace.tusky.usecase.DeveloperToolsUseCase
 import com.keylesspalace.tusky.usecase.LogoutUsecase
-import com.keylesspalace.tusky.util.ThemeUtils
 import com.keylesspalace.tusky.util.deleteStaleCachedMedia
 import com.keylesspalace.tusky.util.emojify
+import com.keylesspalace.tusky.util.getDimension
 import com.keylesspalace.tusky.util.hide
+import com.keylesspalace.tusky.util.reduceSwipeSensitivity
+import com.keylesspalace.tusky.util.setDrawableTint
 import com.keylesspalace.tusky.util.show
 import com.keylesspalace.tusky.util.updateShortcut
 import com.keylesspalace.tusky.util.viewBinding
@@ -158,6 +163,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     @Inject
     lateinit var logoutUsecase: LogoutUsecase
+
+    @Inject
+    lateinit var developerToolsUseCase: DeveloperToolsUseCase
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -266,13 +274,15 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
             icon = IconicsDrawable(this@MainActivity, GoogleMaterial.Icon.gmd_search).apply {
                 sizeDp = 20
-                colorInt = ThemeUtils.getColor(this@MainActivity, android.R.attr.textColorPrimary)
+                colorInt = MaterialColors.getColor(binding.mainToolbar, android.R.attr.textColorPrimary)
             }
             setOnMenuItemClickListener {
                 startActivity(SearchActivity.getIntent(this@MainActivity))
                 true
             }
         }
+
+        binding.viewPager.reduceSwipeSensitivity()
 
         setupDrawer(savedInstanceState, addSearchButton = hideTopToolbar)
 
@@ -459,7 +469,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
 
         header.accountHeaderBackground.setColorFilter(getColor(R.color.headerBackgroundFilter))
-        header.accountHeaderBackground.setBackgroundColor(ThemeUtils.getColor(this, R.attr.colorBackgroundAccent))
+        header.accountHeaderBackground.setBackgroundColor(MaterialColors.getColor(header, R.attr.colorBackgroundAccent))
         val animateAvatars = preferences.getBoolean("animateGifAvatars", false)
 
         DrawerImageLoader.init(object : AbstractDrawerImageLoader() {
@@ -555,8 +565,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                         startActivityWithSlideInAnimation(AnnouncementsActivity.newIntent(context))
                     }
                     badgeStyle = BadgeStyle().apply {
-                        textColor = ColorHolder.fromColor(ThemeUtils.getColor(this@MainActivity, R.attr.colorOnPrimary))
-                        color = ColorHolder.fromColor(ThemeUtils.getColor(this@MainActivity, R.attr.colorPrimary))
+                        textColor = ColorHolder.fromColor(MaterialColors.getColor(binding.mainDrawer, R.attr.colorOnPrimary))
+                        color = ColorHolder.fromColor(MaterialColors.getColor(binding.mainDrawer, R.attr.colorPrimary))
                     }
                 },
                 DividerDrawerItem(),
@@ -613,11 +623,18 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
 
         if (BuildConfig.DEBUG) {
+            // Add a "Developer tools" entry. Code that makes it easier to
+            // set the app state at runtime belongs here, it will never
+            // be exposed to users.
             binding.mainDrawer.addItems(
+                DividerDrawerItem(),
                 secondaryDrawerItem {
-                    nameText = "debug"
-                    isEnabled = false
-                    textColor = ColorStateList.valueOf(Color.GREEN)
+                    nameText = "Developer tools"
+                    isEnabled = true
+                    iconicsIcon = GoogleMaterial.Icon.gmd_developer_mode
+                    onClick = {
+                        buildDeveloperToolsDialog().show()
+                    }
                 }
             )
         }
@@ -626,9 +643,32 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             secondaryDrawerItem {
                 nameText = "Yuito (by kyori19)"
                 isEnabled = false
-                textColor = ColorStateList.valueOf(ThemeUtils.getColor(this@MainActivity, R.attr.colorInfo))
+                textColor = ColorStateList.valueOf(MaterialColors.getColor(binding.mainDrawer, R.attr.colorInfo))
             }
         )
+    }
+
+    private fun buildDeveloperToolsDialog(): AlertDialog {
+        return AlertDialog.Builder(this)
+            .setTitle("Developer Tools")
+            .setItems(
+                arrayOf("Create \"Load more\" gap")
+            ) { _, which ->
+                Log.d(TAG, "Developer tools: $which")
+                when (which) {
+                    0 -> {
+                        Log.d(TAG, "Creating \"Load more\" gap")
+                        lifecycleScope.launch {
+                            accountManager.activeAccount?.let {
+                                developerToolsUseCase.createLoadMoreGap(
+                                    it.id
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            .create()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -640,14 +680,13 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             @Suppress("DEPRECATION")
             item.icon?.setColorFilter(ContextCompat.getColor(this, R.color.tusky_green_light), PorterDuff.Mode.SRC_IN)
         } else {
-            ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorTertiary)
+            setDrawableTint(this, item.icon!!, android.R.attr.textColorTertiary)
         }
     }
 
-    private fun setupTabs(selectNotificationTab: Boolean): ArrayList<PopupMenu> {
-
+    private fun setupTabs(selectNotificationTab: Boolean) {
         val activeTabLayout = if (preferences.getString("mainNavPosition", "top") == "bottom") {
-            val actionBarSize = ThemeUtils.getDimension(this, R.attr.actionBarSize)
+            val actionBarSize = getDimension(this, R.attr.actionBarSize)
             val fabMargin = resources.getDimensionPixelSize(R.dimen.fabMargin)
             (binding.composeButton.layoutParams as CoordinatorLayout.LayoutParams).bottomMargin = actionBarSize + fabMargin
             binding.topNav.hide()
@@ -713,7 +752,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                                 }
                             }
                         }
-                        ThemeUtils.setDrawableTint(this, item.icon, android.R.attr.textColorPrimary)
+                        setDrawableTint(this, item.icon!!, android.R.attr.textColorPrimary)
                     }
                 }
                 tintCheckIcon(menuBuilder.findItem(R.id.tabToggleStreaming))
@@ -820,7 +859,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         updateProfiles()
 
         keepScreenOn()
-        return popups
     }
 
     private fun handleProfileClick(profile: IProfile, current: Boolean): Boolean {

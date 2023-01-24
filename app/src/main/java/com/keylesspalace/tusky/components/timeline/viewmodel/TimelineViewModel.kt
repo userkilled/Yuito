@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import at.connyduck.calladapter.networkresult.getOrElse
 import com.keylesspalace.tusky.appstore.BlockEvent
 import com.keylesspalace.tusky.appstore.BookmarkEvent
 import com.keylesspalace.tusky.appstore.DomainMuteEvent
@@ -34,6 +35,7 @@ import com.keylesspalace.tusky.appstore.ReblogEvent
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent
 import com.keylesspalace.tusky.appstore.StreamUpdateEvent
 import com.keylesspalace.tusky.appstore.UnfollowEvent
+import com.keylesspalace.tusky.components.preference.PreferencesFragment.ReadingOrder
 import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Filter
@@ -58,7 +60,7 @@ abstract class TimelineViewModel(
     private val api: MastodonApi,
     private val eventHub: EventHub,
     protected val accountManager: AccountManager,
-    private val sharedPreferences: SharedPreferences,
+    protected val sharedPreferences: SharedPreferences,
     private val filterModel: FilterModel,
     private val streamingManager: StreamingManager,
 ) : ViewModel() {
@@ -76,6 +78,7 @@ abstract class TimelineViewModel(
     protected var alwaysOpenSpoilers = false
     private var filterRemoveReplies = false
     private var filterRemoveReblogs = false
+    protected var readingOrder: ReadingOrder = ReadingOrder.OLDEST_FIRST
 
     val shouldReplyInQuick by lazy {
         when (kind) {
@@ -146,6 +149,8 @@ abstract class TimelineViewModel(
             filterRemoveReblogs =
                 !sharedPreferences.getBoolean(PrefKeys.TAB_FILTER_HOME_BOOSTS, true)
         }
+        readingOrder = ReadingOrder.from(sharedPreferences.getString(PrefKeys.READING_ORDER, null))
+
         this.alwaysShowSensitiveMedia = accountManager.activeAccount!!.alwaysShowSensitiveMedia
         this.alwaysOpenSpoilers = accountManager.activeAccount!!.alwaysOpenSpoiler
 
@@ -183,7 +188,7 @@ abstract class TimelineViewModel(
             timelineCases.bookmark(status.actionableId, bookmark).await()
         } catch (t: Exception) {
             ifExpected(t) {
-                Log.d(TAG, "Failed to favourite status " + status.actionableId, t)
+                Log.d(TAG, "Failed to bookmark status " + status.actionableId, t)
             }
         }
     }
@@ -272,6 +277,9 @@ abstract class TimelineViewModel(
                 alwaysShowSensitiveMedia =
                     accountManager.activeAccount!!.alwaysShowSensitiveMedia
             }
+            PrefKeys.READING_ORDER -> {
+                readingOrder = ReadingOrder.from(sharedPreferences.getString(PrefKeys.READING_ORDER, null))
+            }
         }
     }
 
@@ -346,10 +354,8 @@ abstract class TimelineViewModel(
 
     private fun reloadFilters() {
         viewModelScope.launch {
-            val filters = try {
-                api.getFilters().await()
-            } catch (t: Exception) {
-                Log.e(TAG, "Failed to fetch filters", t)
+            val filters = api.getFilters().getOrElse {
+                Log.e(TAG, "Failed to fetch filters", it)
                 return@launch
             }
             filterModel.initWithFilters(

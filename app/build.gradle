@@ -22,8 +22,9 @@ android {
     compileSdkVersion 33
     defaultConfig {
         applicationId 'net.accelf.yuito'
-        minSdkVersion 21
-        targetSdkVersion 31
+        namespace 'com.keylesspalace.tusky'
+        minSdkVersion 23
+        targetSdkVersion 33
         versionCode 52
         versionName '4.4.2'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -78,6 +79,9 @@ android {
             returnDefaultValues = true
             includeAndroidResources = true
         }
+        unitTests.all {
+            systemProperty 'robolectric.logging.enabled', 'true'
+        }
     }
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
@@ -94,8 +98,9 @@ android {
             enableSplit = false
         }
     }
-    kotlinOptions {
-        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+    dependenciesInfo {
+        includeInApk false
+        includeInBundle false
     }
 }
 

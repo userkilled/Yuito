@@ -32,6 +32,7 @@ import com.keylesspalace.tusky.components.search.fragments.SearchNotestockFragme
 import com.keylesspalace.tusky.components.search.fragments.SearchStatusesFragment
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
 import com.keylesspalace.tusky.components.viewthread.ViewThreadFragment
+import com.keylesspalace.tusky.components.viewthread.edits.ViewEditsFragment
 import com.keylesspalace.tusky.fragment.AccountListFragment
 import com.keylesspalace.tusky.fragment.NotificationsFragment
 import dagger.Module
@@ -51,6 +52,9 @@ abstract class FragmentBuildersModule {
 
     @ContributesAndroidInjector
     abstract fun viewThreadFragment(): ViewThreadFragment
+
+    @ContributesAndroidInjector
+    abstract fun viewEditsFragment(): ViewEditsFragment
 
     @ContributesAndroidInjector
     abstract fun timelineFragment(): TimelineFragment

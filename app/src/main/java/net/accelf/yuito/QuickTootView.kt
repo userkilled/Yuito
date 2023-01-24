@@ -10,6 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
+import com.google.android.material.color.MaterialColors
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.appstore.Event
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
@@ -19,7 +20,6 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.PREF_USE_DEFAULT_TAG
 import com.keylesspalace.tusky.databinding.ViewQuickTootBinding
 import com.keylesspalace.tusky.settings.PrefKeys.USE_QUICK_TOOT
-import com.keylesspalace.tusky.util.ThemeUtils
 import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
 
@@ -79,8 +79,8 @@ class QuickTootView @JvmOverloads constructor(
                     defaultTag?.let { "${context.getString(R.string.hint_default_text)} : $it" }
                         ?: "${context.getString(R.string.hint_default_text)} inactive"
                 binding.textDefaultTag.setTextColor(
-                    ThemeUtils.getColor(
-                        context,
+                    MaterialColors.getColor(
+                        binding.textDefaultTag,
                         defaultTag?.let { R.attr.colorInfo }
                             ?: android.R.attr.textColorTertiary
                     )
