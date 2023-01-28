@@ -130,6 +130,7 @@ class MainActivityTest {
         val viewModel = QuickTootViewModel(mockAccountManager, mock())
         activity.eventHub = EventHub()
         activity.accountManager = mockAccountManager
+        activity.draftsAlert = mock {}
         activity.mastodonApi = mock {
             onBlocking { accountVerifyCredentials() } doReturn NetworkResult.success(account)
             onBlocking { listAnnouncements(false) } doReturn NetworkResult.success(emptyList())

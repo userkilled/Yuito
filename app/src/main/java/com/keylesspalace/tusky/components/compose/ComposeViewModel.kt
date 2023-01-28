@@ -282,6 +282,7 @@ class ComposeViewModel @Inject constructor(
             mediaFocus = mediaFocus,
             poll = poll.value,
             failedToSend = false,
+            failedToSendAlert = false,
             scheduledAt = scheduledAt.value,
             language = postLanguage,
             statusId = originalStatusId,
