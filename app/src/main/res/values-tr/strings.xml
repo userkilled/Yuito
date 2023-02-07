@@ -268,7 +268,7 @@
     <string name="expand_collapse_all_posts">Tüm durumları Genişlet/Küçült</string>
     <string name="action_open_post">Gönderiyi aç</string>
     <string name="restart_required">Uygulamayı yeniden başlatmanız lazım</string>
-    <string name="restart_emoji">Bu değişiklikleri uygulamak için Tusky\'yi yeniden başlatmanız gerekecek</string>
+    <string name="restart_emoji">Bu değişiklikleri uygulamak için Yuito\'yi yeniden başlatmanız gerekecek</string>
     <string name="later">Sonra</string>
     <string name="restart">Yeniden başlat</string>
     <string name="caption_systememoji">Cihazınızın varsayılan ifade paketi</string>
@@ -563,7 +563,7 @@
     <string name="language_display_name_format">%s (%s)</string>
     <string name="report_category_violation">Kural ihlali</string>
     <string name="description_post_language">Gönderi dili</string>
-    <string name="dialog_push_notification_migration">UnifiedPush aracılığıyla push bildirimlerini kullanmak için Tusky\'nin Mastodon sunucunuzdaki bildirimlere abone olma iznine ihtiyacı vardır. Bu, Tusky\'ye verilen OAuth kapsamlarını değiştirmek için yeniden oturum açmayı gerektirir.Burada veya Hesap Tercihlerinde yeniden giriş seçeneğini kullanmak, tüm yerel taslaklarınızı ve önbelleğinizi koruyacaktır.</string>
+    <string name="dialog_push_notification_migration">UnifiedPush aracılığıyla push bildirimlerini kullanmak için Yuito\'nin Mastodon sunucunuzdaki bildirimlere abone olma iznine ihtiyacı vardır. Bu, Yuito\'ye verilen OAuth kapsamlarını değiştirmek için yeniden oturum açmayı gerektirir.Burada veya Hesap Tercihlerinde yeniden giriş seçeneğini kullanmak, tüm yerel taslaklarınızı ve önbelleğinizi koruyacaktır.</string>
     <string name="confirmation_hashtag_unfollowed">#%s takip edilmeyenler</string>
     <string name="action_subscribe_account">Abone Ol</string>
     <string name="follow_requests_info">Hesabınız kilitli olmasa da, %1$s kadro bu hesaplardan gelen takip isteklerini elle gözden geçirmek isteyebileceğinizi düşündü.</string>
@@ -580,7 +580,7 @@
     <string name="duration_indefinite">Tanımsız</string>
     <string name="description_post_edited">Düzenlendi</string>
     <string name="action_unsubscribe_account">Abonelikten Çık</string>
-    <string name="dialog_push_notification_migration_other_accounts">Tusky\'ye bildirim aboneliği izni vermek için mevcut hesabınıza yeniden giriş yaptınız. Ancak, yine de bu şekilde geçirilmemiş başka hesaplarınız var. UnifiedPush bildirimleri desteğini etkinleştirmek için bunlara geçin ve tek tek yeniden giriş yapın.</string>
+    <string name="dialog_push_notification_migration_other_accounts">Yuito\'ye bildirim aboneliği izni vermek için mevcut hesabınıza yeniden giriş yaptınız. Ancak, yine de bu şekilde geçirilmemiş başka hesaplarınız var. UnifiedPush bildirimleri desteğini etkinleştirmek için bunlara geçin ve tek tek yeniden giriş yapın.</string>
     <string name="error_following_hashtags_unsupported">Bu sunucu aşağıdaki etiketleri desteklemez.</string>
     <string name="notification_subscription_format">%s az önce paylaşım yaptı</string>
     <string name="notification_update_format">%s gönderilerini düzenledi</string>

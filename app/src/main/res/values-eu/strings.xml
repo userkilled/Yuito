@@ -320,7 +320,7 @@
     <string name="pref_title_animate_gif_avatars">GIF abatarrak animatu</string>
     <string name="notification_poll_name">Galdeketak</string>
     <string name="notification_poll_description">Bukatutako galdeketen jakinarazpenak</string>
-    <string name="about_tusky_version">Tusky %s</string>
+    <string name="about_tusky_version">Yuito %s</string>
     <string name="action_hashtags">Traolak</string>
     <string name="title_hashtags_dialog">Traolak</string>
     <string name="about_powered_by_tusky">Tusky-k sustatuta</string>

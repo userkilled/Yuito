@@ -58,7 +58,7 @@
     <string name="action_quote">引用</string>
     <string name="action_more">その他</string>
     <string name="action_compose">投稿する</string>
-    <string name="action_login">TUsky でログイン</string>
+    <string name="action_login">Yuito でログイン</string>
     <string name="action_logout">ログアウト</string>
     <string name="action_logout_confirm">アカウント %1$s からログアウトしてもよろしいですか？</string>
     <string name="action_follow">フォローする</string>
@@ -519,7 +519,7 @@
     <string name="error_following_hashtags_unsupported">このインスタンスはハッシュタグのフォローに対応していません。</string>
     <string name="title_followed_hashtags">フォローしたハッシュタグ</string>
     <string name="confirmation_domain_unmuted">%s のミュートが解除されました</string>
-    <string name="dialog_push_notification_migration_other_accounts">プッシュ通知の購読許可を Tusky に与えるための現在のアカウントへの再ログインが完了しました。しかし、まだ他のアカウントはマイグレーションができていません。UnifiedPush 通知ｗ有効にするには、他のアカウントにも切り替えて、それぞれ再ログインをしてください。</string>
+    <string name="dialog_push_notification_migration_other_accounts">プッシュ通知の購読許可を Yuito に与えるための現在のアカウントへの再ログインが完了しました。しかし、まだ他のアカウントはマイグレーションができていません。UnifiedPush 通知ｗ有効にするには、他のアカウントにも切り替えて、それぞれ再ログインをしてください。</string>
     <string name="action_unfollow_hashtag_format">#%s をフォロー解除しますか？</string>
     <string name="notification_sign_up_description">新規ユーザーに関する通知</string>
     <string name="notification_update_name">投稿の編集</string>
@@ -572,7 +572,7 @@
     <string name="report_category_spam">スパム</string>
     <string name="report_category_other">その他</string>
     <string name="tusky_compose_post_quicksetting_label">投稿する</string>
-    <string name="dialog_push_notification_migration">UnifiedPush 経由でプッシュ通知を使用するには、Tusky に Mastodon サーバー上での購読許可が必要です。そのため、Tusky に与えられた OAuth スコープを変更するための再ログインが必要になります。ここかアカウント設定で再ログインのオプションを選んでも、ローカルの下書きとキャッシュは保存されます。</string>
+    <string name="dialog_push_notification_migration">UnifiedPush 経由でプッシュ通知を使用するには、Yuito に Mastodon サーバー上での購読許可が必要です。そのため、Yuito に与えられた OAuth スコープを変更するための再ログインが必要になります。ここかアカウント設定で再ログインのオプションを選んでも、ローカルの下書きとキャッシュは保存されます。</string>
     <string name="error_following_hashtag_format">#%s のフォローエラー</string>
     <string name="title_migration_relogin">プッシュ通知受け取るには再ログインしてください</string>
     <string name="error_unfollowing_hashtag_format">#%s のフォロー解除エラー</string>

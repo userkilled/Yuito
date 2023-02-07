@@ -60,7 +60,7 @@
     <string name="action_unfavourite">取消喜欢</string>
     <string name="action_more">更多</string>
     <string name="action_compose">发表嘟文</string>
-    <string name="action_login">用 Tusky 登录</string>
+    <string name="action_login">用 Yuito 登录</string>
     <string name="action_logout">注销</string>
     <string name="action_logout_confirm">确定要退出账号 %1$s 吗？</string>
     <string name="action_follow">关注</string>
@@ -143,7 +143,7 @@
     <string name="login_connection">正在连接…</string>
     <string name="dialog_whats_an_instance">请输入你账号所在的 Mastodon 站点的域名，比如 mastodon.social，icosahedron.website，social.tchncs.de，<a href="https://instances.social">等等</a> 。
 \n
-\n还没有 Mastodon 账号？你也可以输入想注册的 Mastodon 站点的域名，然后在该服务器创建新的账号并授权 Tusky 登入。
+\n还没有 Mastodon 账号？你也可以输入想注册的 Mastodon 站点的域名，然后在该服务器创建新的账号并授权 Yuito 登入。
 \n
 \n在 Mastodon 里，你的账号信息储存在某一特定实例当中，但 Mastodon 可使跨站互动和站内互动一样简单。
 \n
@@ -534,10 +534,10 @@
     <string name="title_migration_relogin">重新登陆以启用通知推送</string>
     <string name="action_dismiss">不理会</string>
     <string name="action_details">详情</string>
-    <string name="dialog_push_notification_migration_other_accounts">你已重新登录当前账户，向 Tusky 授予推送订阅权限。但是，你仍然有其他没有以这种方式迁移的账户。切换到它们，逐个重新登录，以启用 UnifiedPush 通知支持。</string>
+    <string name="dialog_push_notification_migration_other_accounts">你已重新登录当前账户，向 Yuito 授予推送订阅权限。但是，你仍然有其他没有以这种方式迁移的账户。切换到它们，逐个重新登录，以启用 UnifiedPush 通知支持。</string>
     <string name="account_date_joined">加入于%1$s</string>
     <string name="tips_push_notification_migration">重新登录所有账户来启用推送通知支持。</string>
-    <string name="dialog_push_notification_migration">为了通过 UnifiedPush 使用推送通知，Tusky 需要订阅你 Mastodon 服务器通知的权限。这需要重新登录来更改授予 Tusky 的 OAuth 作用域。使用此处或账户首选项中“重新登录”选项将保留你所有的本地草稿和缓存。</string>
+    <string name="dialog_push_notification_migration">为了通过 UnifiedPush 使用推送通知，Yuito 需要订阅你 Mastodon 服务器通知的权限。这需要重新登录来更改授予 Yuito 的 OAuth 作用域。使用此处或账户首选项中“重新登录”选项将保留你所有的本地草稿和缓存。</string>
     <string name="status_count_one_plus">1+</string>
     <string name="action_edit_image">编辑图片</string>
     <string name="error_image_edit_failed">无法编辑图片。</string>

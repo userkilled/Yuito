@@ -515,7 +515,7 @@
 \n - Statistiky sledujících a příspěvků na profilech
 \n
 \nPush oznámení nebudou ovlivněna, ale můžete si zkontrolovat jejich nastavení manuálně.</string>
-    <string name="dialog_push_notification_migration_other_accounts">Znovu jste se přihlásili ke svému aktuálnímu účtu, abyste aplikaci Tusky udělili oprávnění k odběru push. Stále však máte další účty, které tímto způsobem migrovány nebyly. Přepněte se na ně a znovu se přihlaste na jednom po druhém, abyste povolili podporu oznámení UnifiedPush.</string>
+    <string name="dialog_push_notification_migration_other_accounts">Znovu jste se přihlásili ke svému aktuálnímu účtu, abyste aplikaci Yuito udělili oprávnění k odběru push. Stále však máte další účty, které tímto způsobem migrovány nebyly. Přepněte se na ně a znovu se přihlaste na jednom po druhém, abyste povolili podporu oznámení UnifiedPush.</string>
     <string name="compose_save_draft_loses_media">Uložit koncept\? (Přílohy budou znovu nahrány, když obnovíte koncept.)</string>
     <string name="set_focus_description">Klepnutím nebo přetažením kruhu vyberte ohnisko, které bude vždy viditelné v miniaturách.</string>
     <string name="pref_title_confirm_favourites">Před oblíbením zobrazit dialog pro potvrzení</string>
@@ -541,7 +541,7 @@
     <string name="action_set_focus">Nastavit bod zaostření</string>
     <string name="error_failed_set_focus">Nepodařilo se nastavit zaostřovací bod</string>
     <string name="tips_push_notification_migration">Znovu se přihlaste ke všem účtům, abyste povolili podporu push oznámení.</string>
-    <string name="dialog_push_notification_migration">Aby bylo možné používat push oznámení prostřednictvím UnifiedPush, Tusky potřebuje oprávnění k odběru oznámení na vašem serveru Mastodon. To vyžaduje opětovné přihlášení ke změně rozsahů OAuth udělených aplikaci Tusky. Použitím možnosti opětovného přihlášení zde nebo v předvolbách účtu zachováte všechny vaše místní koncepty a mezipaměť.</string>
+    <string name="dialog_push_notification_migration">Aby bylo možné používat push oznámení prostřednictvím UnifiedPush, Yuito potřebuje oprávnění k odběru oznámení na vašem serveru Mastodon. To vyžaduje opětovné přihlášení ke změně rozsahů OAuth udělených aplikaci Tusky. Použitím možnosti opětovného přihlášení zde nebo v předvolbách účtu zachováte všechny vaše místní koncepty a mezipaměť.</string>
     <string name="action_add_reaction">přidat reakci</string>
     <string name="pref_title_notification_filter_updates">příspěvek, se kterým jsem interagoval/a, je upraven</string>
     <string name="pref_title_notification_filter_sign_ups">někdo se zaregistroval</string>

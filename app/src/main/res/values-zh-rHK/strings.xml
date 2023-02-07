@@ -496,7 +496,7 @@
     <string name="post_media_attachments">附件</string>
     <string name="post_media_audio">錄音</string>
     <string name="about_powered_by_tusky">由 Tusky 提供</string>
-    <string name="about_tusky_version">Tusky %s</string>
+    <string name="about_tusky_version">Yuito %s</string>
     <string name="notification_subscription_description">當你關注的人發布新嘟文時通知</string>
     <string name="notification_subscription_name">新嘟文</string>
     <string name="notification_follow_request_description">關注請求的通知</string>
