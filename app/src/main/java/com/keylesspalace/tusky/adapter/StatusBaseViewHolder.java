@@ -365,6 +365,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             timestampText = metaInfo.getContext().getString(R.string.post_timestamp_with_edited_indicator, timestampText);
         }
 
+        sb.append(' ');
         sb.append(timestampText);
         metaInfo.setText(sb);
     }
