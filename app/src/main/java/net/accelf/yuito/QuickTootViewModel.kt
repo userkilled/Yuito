@@ -8,6 +8,7 @@ import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.CAN_
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.entity.Status.Visibility
+import com.keylesspalace.tusky.util.parseAsMastodonHtml
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -83,7 +84,7 @@ class QuickTootViewModel @Inject constructor(
             visibility = _visibility.value,
             contentWarning = inReplyTo.value?.spoilerText,
             replyingStatusAuthor = inReplyTo.value?.account?.name,
-            replyingStatusContent = inReplyTo.value?.content,
+            replyingStatusContent = inReplyTo.value?.content?.parseAsMastodonHtml()?.toString(),
             tootRightNow = tootRightNow
         )
     }
