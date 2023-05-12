@@ -4,12 +4,17 @@
     <string name="error_network">Произошла ошибка сети! Пожалуйста, проверьте интернет-соединение и попробуйте снова!</string>
     <string name="error_empty">Не может быть пустым.</string>
     <string name="error_invalid_domain">Некорректный домен</string>
-    <string name="error_failed_app_registration">Ошибка аутентификации на этом узле.</string>
+    <string name="error_failed_app_registration">Ошибка аутентификации на этом узле. Если это не удаётся, попробуйте «Войти через веб-браузер» из меню.</string>
     <string name="error_no_web_browser_found">Не удается найти веб-браузер.</string>
-    <string name="error_authorization_unknown">Произошла ошибка неопознанной авторизации.</string>
-    <string name="error_authorization_denied">Авторизация была отклонена.</string>
+    <string name="error_authorization_unknown">Произошла ошибка неопознанной авторизации. Если это не удаётся, попробуйте «Войти через веб-браузер» из меню.</string>
+    <string name="error_authorization_denied">Авторизация была отклонена. Если это не удаётся, попробуйте «Войти через веб-браузер» из меню.</string>
     <string name="error_retrieving_oauth_token">Не удалось получить токен авторизации.</string>
     <string name="error_compose_character_limit">Статус слишком длинный!</string>
+    
+    <string name="error_multimedia_size_limit">Размер видео и аудио файлов не может превышать %s МБ.</string>
+
+    <string name="error_image_edit_failed">Изображение не может быть отредактировано.</string>
+    
     <string name="error_media_upload_type">Данный тип файла не может быть загружен.</string>
     <string name="error_media_upload_opening">Файл не может быть открыт.</string>
     <string name="error_media_upload_permission">Необходимо разрешение на чтение медиаконтента.</string>
@@ -20,10 +25,10 @@
     <string name="title_home">Главная</string>
     <string name="title_notifications">Уведомления</string>
     <string name="title_public_local">Местная лента</string>
-    <string name="title_public_federated">Объединенная лента</string>
+    <string name="title_public_federated">Федеративная лента</string>
     <string name="title_direct_messages">Личные сообщения</string>
     <string name="title_tab_preferences">Вкладки</string>
-    <string name="title_view_thread">Кутеж</string>
+    <string name="title_view_thread">Обсуждение</string>
     <string name="title_posts">Посты</string>
     <string name="title_posts_with_replies">Посты и ответы</string>
     <string name="title_posts_pinned">Закреплённые</string>
@@ -48,10 +53,17 @@
     <string name="message_empty">Ничего нет.</string>
     <string name="footer_empty">Ничего нет. Потяните вниз, чтобы обновить!</string>
     <string name="notification_reblog_format">%s продвинул(а) вашу запись</string>
-    <string name="notification_favourite_format">%s понравился ваша запись</string>
+    <string name="notification_favourite_format">%s понравился(-лась) ваша запись</string>
     <string name="notification_follow_format">%s подписался(-лась) на вас</string>
+    <string name="notification_update_format">%s отредактировал(а) свой пост</string>
+    
+    <string name="notification_report_format">Новая жалоба на %s</string>
+    <string name="notification_header_report_format">%s сообщил(а) %s</string>
+    <string name="notification_summary_report_format">%s · %d посты прилагаются</string>
+    
     <string name="report_username_format">Пожаловаться на @%s</string>
     <string name="report_comment_hint">Дополнительные комментарии?</string>
+    
     <string name="action_quick_reply">Быстрый ответ</string>
     <string name="action_reply">Ответить</string>
     <string name="action_reblog">Продвинуть</string>
@@ -61,24 +73,36 @@
     <string name="action_more">Больше</string>
     <string name="action_compose">Сочинить</string>
     <string name="action_login">Войти</string>
+    <string name="action_browser_login">Войти через веб-браузер</string>
     <string name="action_logout">Выйти</string>
     <string name="action_logout_confirm">Вы действительно хотите выйти из учётной записи %1$s?</string>
+    <string name="action_post_failed">Ошибка загрузки поста</string>
+    <string name="action_post_failed_detail">Ваш пост не загрузился и был сохранен в черновиках.\n\nЛибо с сервером нельзя связаться, либо он отклонил пост.</string>
+    <string name="action_post_failed_detail_plural">Ваш пост не загрузился и был сохранен в черновиках.\n\nЛибо с сервером нельзя связаться, либо он отклонил пост.</string>
+    <string name="action_post_failed_show_drafts">Показать черновики</string>
+    <string name="action_post_failed_do_nothing">Отменить</string>
+    
     <string name="action_follow">Подписаться</string>
     <string name="action_unfollow">Отписаться</string>
     <string name="action_block">Заблокировать</string>
     <string name="action_unblock">Разблокировать</string>
+    <string name="action_share_account_link">Поделиться ссылкой на аккаунт</string>
+    <string name="action_share_account_username">Поделиться именем аккаунта</string>
     <string name="action_hide_reblogs">Скрыть продвижения</string>
     <string name="action_show_reblogs">Показать продвижения</string>
     <string name="action_report">Пожаловаться</string>
     <string name="action_delete">Удалить</string>
     <string name="action_delete_and_redraft">Удалить и исправить</string>
+    
+    <string name="action_discard">Забыть</string>
+    <string name="action_continue_edit">Редактровать</string>
     <string name="action_send">ТРУБИТЬ</string>
     <string name="action_send_public">ТРУБИТЬ!</string>
     <string name="action_retry">Повторить</string>
     <string name="action_close">Закрыть</string>
     <string name="action_view_profile">Профиль</string>
-    <string name="action_view_preferences">Предпочтения</string>
-    <string name="action_view_account_preferences">Предпочтения учетной записи</string>
+    <string name="action_view_preferences">Настройки</string>
+    <string name="action_view_account_preferences">Настройки учетной записи</string>
     <string name="action_view_favourites">Избранное</string>
     <string name="action_view_mutes">Заглушенные пользователи</string>
     <string name="action_view_blocks">Заблокированные пользователи</string>
@@ -181,7 +205,7 @@
     <string name="app_theme_system">Как в системе</string>
     <string name="pref_title_browser_settings">Браузер</string>
     <string name="pref_title_custom_tabs">Используйте пользовательские вкладки Chrome</string>
-    <string name="pref_title_hide_follow_button">Скрывать кнопку композиционирования гудка при прокрутке ленты</string>
+    <string name="pref_title_hide_follow_button">Скрывать кнопку написания гудка при прокрутке ленты</string>
     <string name="pref_title_language">Язык</string>
     <string name="pref_title_post_filter">Фильтрование ленты</string>
     <string name="pref_title_post_tabs">Вкладки</string>
@@ -193,6 +217,26 @@
     <string name="pref_title_http_proxy_enable">Использовать HTTP прокси</string>
     <string name="pref_title_http_proxy_server">Адрес сервера</string>
     <string name="pref_title_http_proxy_port">Порт</string>
+    <string name="pref_title_http_proxy_port_message">Port should be between %d and %d</string>
+    <string name="pref_summary_http_proxy_disabled">Отключён</string>
+    <string name="pref_summary_http_proxy_missing">&lt;не выбран></string>
+    <string name="pref_summary_http_proxy_invalid">&lt;недействительный></string>
+    <string name="pref_title_experimental">Экспериментальные настройки</string>
+    <string name="pref_title_experimental_viewpager_offscreen">Увеличить лимит под размер контента</string>
+    <string name="pref_title_stacktrace">Логи</string>
+    <string name="pref_title_stacktrace_send">Отправить отчёт об ошибке разработчику</string>
+    <string name="pref_title_use_quick_toot">Используйте быстрое поле создания</string>
+    <string name="pref_title_show_self_username">Показывать имя аккаунта в панели</string>
+        <string name="pref_show_self_username_always">Всегда</string>
+        <string name="pref_show_self_username_disambiguate">Когда несколько учетных записей</string>
+        <string name="pref_show_self_username_never">Никогда</string>
+    
+    <string name="pref_title_limited_bandwidth_settings">Режим ограниченной пропускной способности</string>
+        <string name="pref_title_limited_bandwidth_active">Использовать режим ограниченной пропускной способности</string>
+        <string name="pref_title_limited_bandwidth_mobile">Активен в мобильной сети.</string>
+        <string name="pref_title_limited_bandwidth_timeline">Уменьшите временную шкалу автоматической перезагрузки после гудка</string>
+    
+    
     <string name="pref_default_post_privacy">Приватность публикаций по умолчанию</string>
     <string name="pref_default_media_sensitivity">Считать все медиа чувствительными</string>
     <string name="pref_publishing">Публикация (синхронизировано с сервером)</string>
@@ -216,6 +260,14 @@
     <string name="notification_favourite_description">Уведомлять, когда ваши сообщения добавляют в «избранное»</string>
     <string name="notification_poll_name">Опросы</string>
     <string name="notification_poll_description">Уведомлять о завершившихся опросах</string>
+    
+    <string name="notification_sign_up_name">Регистрации</string>
+    <string name="notification_sign_up_description">Уведомления о новых пользователях</string>
+    <string name="notification_update_name">Редактирование постов</string>
+    <string name="notification_update_description">Уведомления, когда сообщения, с которыми вы взаимодействовали, редактируются</string>
+    <string name="notification_report_name">Отчеты</string>
+    <string name="notification_report_description">Уведомления о модерационных отчетах</string>
+    
     <string name="notification_mention_format">%s упомянул(а) вас</string>
     <string name="notification_summary_large">%1$s, %2$s, %3$s и %4$d других</string>
     <string name="notification_summary_medium">%1$s, %2$s, и %3$s</string>
@@ -231,6 +283,10 @@
     <string name="about_tusky_version">Yuito %s</string>
     <string name="about_tusky_license">Yuito — это свободное приложение с открытым исходным кодом. Выпускается по лицензии GNU General Public License Version 3. Вы можете прочитать текст лицензии здесь: https://www.gnu.org/licenses/gpl-3.0.ru.html</string>
     <!-- note to translators: the url can be changed to link to the localized version of the license -->
+    <string name="about_yuito">
+        Yuito - ответвление от Tusky.\n
+        https://github.com/tuskyapp/Tusky
+    </string>
     <string name="about_project_site">
            Веб-сайт проекта:\n
            https://accelf.net/yuito</string>
@@ -304,6 +360,9 @@
     <string name="hint_search_people_list">Поиск по вашим подпискам</string>
     <string name="action_add_to_list">Добавить аккаунт в список</string>
     <string name="action_remove_from_list">Удалить аккаунт из списка</string>
+    <string name="action_add_or_remove_from_list">Добавить или удалить из списка</string>
+    <string name="failed_to_add_to_list">Ошибка добавления аккаунта в список</string>
+    <string name="failed_to_remove_from_list">Ошибка удаления аккаунта из списка</string>
     <string name="compose_active_account_description">Отправка от имени %1$s</string>
     <string name="error_failed_set_caption">Не удалось добавить подпись</string>
     <plurals name="hint_describe_for_visually_impaired">
@@ -314,6 +373,10 @@
     <string name="lock_account_label">Закрыть аккаунт</string>
     <string name="lock_account_label_description">Вам придётся вручную подтверждать подписчиков</string>
     <string name="compose_save_draft">Сохранить черновик?</string>
+    
+    <string name="compose_save_draft_loses_media">Сохранить черновик? (Вложения будут загружены снова, когда вы восстановите черновик.)</string>
+    <string name="compose_unsaved_changes">У вас имеются несохраненные изменения.</string>
+    
     <string name="send_post_notification_title">Отправка гудка…</string>
     <string name="send_post_notification_error_title">Ошибка при отправке гудка</string>
     <string name="send_post_notification_channel_name">Отправка гудков</string>
@@ -337,12 +400,13 @@
     <string name="download_failed">Загрузка не удалась</string>
     <string name="profile_badge_bot_text">Бот</string>
     <string name="account_moved_description">%1$s переехал(а) на:</string>
-    <string name="reblog_private">Продвинуть для исходной аудитории</string>
+    <string name="reblog_private">Продвинуть для своей аудитории</string>
     <string name="unreblog_private">Убрать продвижение</string>
     <string name="license_description">Yuito содержит код и ассеты из следующих приложений с открытым исходным кодом:</string>
-    <string name="license_apache_2">Используется лицензия Apache License (копия ниже)</string>
+    <string name="license_apache_2">Используется лицензия Apache (копия ниже)</string>
     <string name="license_cc_by_4">CC-BY 4.0</string>
     <string name="license_cc_by_sa_4">CC-BY-SA 4.0</string>
+    <string name="license_mit">Используется лицензия MIT (копия ниже)</string>
     <string name="profile_metadata_label">Метаданные профиля</string>
     <string name="profile_metadata_add">добавить данные</string>
     <string name="profile_metadata_label_label">Заголовок</string>
@@ -448,6 +512,13 @@
     <string name="duration_1_day">1 день</string>
     <string name="duration_3_days">3 дня</string>
     <string name="duration_7_days">7 дней</string>
+    <string name="duration_14_days">14 дней</string>
+    <string name="duration_30_days">30 дней</string>
+    <string name="duration_60_days">60 дней</string>
+    <string name="duration_90_days">90 дней</string>
+    <string name="duration_180_days">180 дней</string>
+    <string name="duration_365_days">365 дней</string>
+    <string name="duration_no_change">(Без изменения)</string>
     <string name="add_poll_choice">Добавить выбор</string>
     <string name="poll_allow_multiple_choices">Множественный выбор</string>
     <string name="poll_new_choice_hint">Вариант %d</string>
@@ -486,7 +557,7 @@
     <string name="action_mute_conversation">Заглушить обсуждение</string>
     <string name="notification_follow_request_format">запрос на подписку от %s</string>
     <string name="hashtags">Хэштеги</string>
-    <string name="add_hashtag_title">Добавить хэштэг</string>
+    <string name="add_hashtag_title">Добавить хэштег</string>
     <string name="pref_title_gradient_for_media">Отображать цветные градиенты для скрытых изображений</string>
     <string name="pref_main_nav_position_option_bottom">Снизу</string>
     <string name="pref_main_nav_position_option_top">Сверху</string>
@@ -538,4 +609,30 @@
     <string name="action_delete_conversation">Удалить разговор</string>
     <string name="pref_title_confirm_favourites">Запрашивать подтверждение перед добавлением в избранное</string>
     <string name="action_unbookmark">Убрать из закладок</string>
+    
+    <!-- Reading order preference -->
+    <string name="pref_title_reading_order">Порядок чтения</string>
+    <string name="pref_reading_order_oldest_first">Сначала старые</string>
+    <string name="pref_reading_order_newest_first">Сначала новые</string>
+
+    <!--@Tusky edited 19th December 2022 13:37 -->
+    <string name="status_edit_info">%1$s изменён %2$s</string>
+    <!--@Tusky created 19th December 2022 13:12 -->
+    <string name="status_created_info">%1$s создан %2$s</string>
+
+    <string name="a11y_label_loading_thread">Загрузка обсуждения</string>
+    
+    <string name="hint_toot_area">Область быстрого набора</string>
+    <string name="hint_default_text">Хэштег по умолчанию</string>
+    <string name="hint_access_token">Токен доступа</string>
+    <string name="action_authorize">Авторизоваться</string>
+    
+    <string name="action_tab_jump_to_top">Подняться наверх</string>
+    <string name="action_tab_reset">Сбросить вкладку</string>
+    <string name="action_tab_toggle_streaming">Использовать автообновление вкладки</string>
+    <string name="action_tab_toggle_notifications_filter">Переключить фильтр уведомлений</string>
+    
+    
+    
+    
 </resources>
