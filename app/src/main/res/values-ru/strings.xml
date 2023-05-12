@@ -217,7 +217,7 @@
     <string name="pref_title_http_proxy_enable">Использовать HTTP прокси</string>
     <string name="pref_title_http_proxy_server">Адрес сервера</string>
     <string name="pref_title_http_proxy_port">Порт</string>
-    <string name="pref_title_http_proxy_port_message">Port should be between %d and %d</string>
+    <string name="pref_title_http_proxy_port_message">Порт должен быть между %d и %d</string>
     <string name="pref_summary_http_proxy_disabled">Отключён</string>
     <string name="pref_summary_http_proxy_missing">&lt;не выбран></string>
     <string name="pref_summary_http_proxy_invalid">&lt;недействительный></string>
