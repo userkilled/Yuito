@@ -53,7 +53,7 @@
     <string name="message_empty">Ничего нет.</string>
     <string name="footer_empty">Ничего нет. Потяните вниз, чтобы обновить!</string>
     <string name="notification_reblog_format">%s продвинул(а) вашу запись</string>
-    <string name="notification_favourite_format">%s понравился(-лась) ваша запись</string>
+    <string name="notification_favourite_format">%s понравилась ваша запись</string>
     <string name="notification_follow_format">%s подписался(-лась) на вас</string>
     <string name="notification_update_format">%s отредактировал(а) свой пост</string>
     
@@ -95,7 +95,7 @@
     <string name="action_delete_and_redraft">Удалить и исправить</string>
     
     <string name="action_discard">Забыть</string>
-    <string name="action_continue_edit">Редактровать</string>
+    <string name="action_continue_edit">Продолжить</string>
     <string name="action_send">ТРУБИТЬ</string>
     <string name="action_send_public">ТРУБИТЬ!</string>
     <string name="action_retry">Повторить</string>
