@@ -225,7 +225,7 @@
     <string name="pref_title_experimental_viewpager_offscreen">Увеличить лимит под размер контента</string>
     <string name="pref_title_stacktrace">Логи</string>
     <string name="pref_title_stacktrace_send">Отправить отчёт об ошибке разработчику</string>
-    <string name="pref_title_use_quick_toot">Используйте быстрое поле создания</string>
+    <string name="pref_title_use_quick_toot">Использовать быстрое поле написания</string>
     <string name="pref_title_show_self_username">Показывать имя аккаунта в панели</string>
         <string name="pref_show_self_username_always">Всегда</string>
         <string name="pref_show_self_username_disambiguate">Когда несколько учетных записей</string>
@@ -265,7 +265,7 @@
     <string name="notification_sign_up_description">Уведомления о новых пользователях</string>
     <string name="notification_update_name">Редактирование постов</string>
     <string name="notification_update_description">Уведомления, когда сообщения, с которыми вы взаимодействовали, редактируются</string>
-    <string name="notification_report_name">Отчеты</string>
+    <string name="notification_report_name">Жалобы</string>
     <string name="notification_report_description">Уведомления о модерационных отчетах</string>
     
     <string name="notification_mention_format">%s упомянул(а) вас</string>
