@@ -305,7 +305,6 @@
     <string name="action_add_to_list">Добавить аккаунт в список</string>
     <string name="action_remove_from_list">Удалить аккаунт из списка</string>
     <string name="compose_active_account_description">Отправка от имени %1$s</string>
-    <string name="error_failed_set_caption">Не удалось добавить подпись</string>
     <plurals name="hint_describe_for_visually_impaired">
         <item quantity="other">Описание для слабовидящих\n(не более %d символов)</item>
     </plurals>
@@ -538,4 +537,55 @@
     <string name="action_delete_conversation">Удалить разговор</string>
     <string name="pref_title_confirm_favourites">Запрашивать подтверждение перед добавлением в избранное</string>
     <string name="action_unbookmark">Убрать из закладок</string>
+    
+    
+    
+<!-- Only Yuito -->
+    
+    <string name="instance_data_loading">Сбор данных…</string>
+    <string name="instance_data_failed">Ошибка.</string>
+ <string name="status_quote_media">Этот гудок имеет %d медиа.</string>
+
+<string name="action_quote">Цитата</string>
+    <string name="action_authorize">Авторизоваться!</string>
+    <string name="action_tab_jump_to_top">Прыгнуть наверх</string>
+    <string name="action_tab_reset">Сбросить вкладку</string>
+    <string name="action_tab_edit_list">Изменить этот список</string>
+    <string name="action_tab_toggle_streaming">Использовать автообновление вкладки</string>
+    <string name="action_tab_toggle_notifications_filter">Переключить фильтр уведомлений</string>
+
+<string name="hint_toot_area">Область быстрого набора</string>
+    <string name="hint_default_text">Хэштег по умолчанию</string>
+    <string name="hint_access_token">Токен доступа</string>
+
+
+<string name="visibility_unleakable">Непубличный: Для пользователя, за которым вы следите.</string>
+<string name="visibility_unknown">Неизвестная видимость</string>
+
+
+    <string name="pref_title_limited_bandwidth_settings">Режим ограниченной пропускной способности</string>
+        <string name="pref_title_limited_bandwidth_active">Использовать режим ограниченной пропускной способности</string>
+        <string name="pref_title_limited_bandwidth_mobile">Активен в мобильной сети.</string>
+        <string name="pref_title_limited_bandwidth_timeline">Уменьшите временную шкалу автоматической перезагрузки после гудка</string>
+    <string name="pref_title_experimental">Экспериментальные настройки</string>
+    <string name="pref_title_experimental_viewpager_offscreen">Увеличить лимит под размер контента</string>
+    <string name="pref_title_stacktrace">Логи</string>
+    <string name="pref_title_stacktrace_send">Отправить отчёт об ошибке разработчику</string>
+
+    <string name="pref_title_use_quick_toot">Использовать область быстрого набора</string>
+
+
+    <string name="about_yuito">
+        Yuito - ответвление от Tusky.\n
+        https://github.com/tuskyapp/Tusky
+    </string>
+
+    <string name="quote_to">Цитата : %s</string>
+
+    <string name="error_failed_set_caption">Не удалось добавить подпись</string>
+    <string name="error_failed_set_focus">Не удалось выбрать фокус</string>
+
+    <string name="license_mit">Используется лицензия MIT License (копия ниже)</string>
+
+    
 </resources>
