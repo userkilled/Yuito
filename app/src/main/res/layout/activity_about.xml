@@ -60,7 +60,7 @@
                     android:textStyle="bold" />
 
 
-                <TextView
+                <com.keylesspalace.tusky.view.ClickableSpanTextView
                     android:id="@+id/aboutLicenseInfoTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                     android:textSize="16sp"
                     tools:text="@string/about_yuito" />
 
-                <TextView
+                <com.keylesspalace.tusky.view.ClickableSpanTextView
                     android:id="@+id/aboutWebsiteInfoTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -100,7 +100,7 @@
                     android:textSize="16sp"
                     tools:text="@string/about_project_site" />
 
-                <TextView
+                <com.keylesspalace.tusky.view.ClickableSpanTextView
                     android:id="@+id/aboutBugsFeaturesInfoTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

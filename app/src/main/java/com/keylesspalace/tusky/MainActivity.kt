@@ -30,11 +30,13 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
@@ -42,20 +44,19 @@ import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
-import androidx.appcompat.widget.ThemeUtils
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.view.GravityCompat
-import androidx.lifecycle.Lifecycle
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.MarginPageTransformer
 import at.connyduck.calladapter.networkresult.fold
-import autodispose2.androidx.lifecycle.autoDispose
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -68,18 +69,19 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayoutMediator
 import com.keylesspalace.tusky.appstore.AnnouncementReadEvent
 import com.keylesspalace.tusky.appstore.CacheUpdater
-import com.keylesspalace.tusky.appstore.Event
 import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.MainTabsChangedEvent
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent
 import com.keylesspalace.tusky.components.account.AccountActivity
+import com.keylesspalace.tusky.components.accountlist.AccountListActivity
 import com.keylesspalace.tusky.components.announcements.AnnouncementsActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity
 import com.keylesspalace.tusky.components.compose.ComposeActivity.Companion.canHandleMimeType
 import com.keylesspalace.tusky.components.drafts.DraftsActivity
 import com.keylesspalace.tusky.components.login.LoginActivity
 import com.keylesspalace.tusky.components.notifications.NotificationHelper
+import com.keylesspalace.tusky.components.notifications.NotificationsFragment
 import com.keylesspalace.tusky.components.notifications.disableAllNotifications
 import com.keylesspalace.tusky.components.notifications.enablePushNotificationsWithFallback
 import com.keylesspalace.tusky.components.notifications.showMigrationNoticeIfNecessary
@@ -87,15 +89,16 @@ import com.keylesspalace.tusky.components.preference.PreferencesActivity
 import com.keylesspalace.tusky.components.scheduled.ScheduledStatusActivity
 import com.keylesspalace.tusky.components.search.SearchActivity
 import com.keylesspalace.tusky.components.timeline.TimelineFragment
+import com.keylesspalace.tusky.components.trending.TrendingActivity
 import com.keylesspalace.tusky.databinding.ActivityMainBinding
 import com.keylesspalace.tusky.db.AccountEntity
 import com.keylesspalace.tusky.db.DraftsAlert
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Notification
-import com.keylesspalace.tusky.fragment.NotificationsFragment
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity
+import com.keylesspalace.tusky.interfaces.FabFragment
 import com.keylesspalace.tusky.interfaces.ReselectableFragment
 import com.keylesspalace.tusky.interfaces.ResettableFragment
 import com.keylesspalace.tusky.pager.MainPagerAdapter
@@ -109,6 +112,7 @@ import com.keylesspalace.tusky.util.hide
 import com.keylesspalace.tusky.util.reduceSwipeSensitivity
 import com.keylesspalace.tusky.util.setDrawableTint
 import com.keylesspalace.tusky.util.show
+import com.keylesspalace.tusky.util.unsafeLazy
 import com.keylesspalace.tusky.util.updateShortcut
 import com.keylesspalace.tusky.util.viewBinding
 import com.keylesspalace.tusky.util.visible
@@ -143,16 +147,15 @@ import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import de.c1710.filemojicompat_ui.helpers.EMOJI_PREFERENCE
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.accelf.yuito.FooterDrawerItem
 import net.accelf.yuito.QuickTootViewModel
 import net.accelf.yuito.streaming.StreamingManager
 import javax.inject.Inject
 
-class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInjector {
+class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInjector, MenuProvider {
     @Inject
     lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
@@ -188,7 +191,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     private var unreadAnnouncementsCount = 0
 
-    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
+    private val preferences by unsafeLazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
     private lateinit var glide: RequestManager
 
@@ -196,6 +199,12 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     // We need to know if the emoji pack has been changed
     private var selectedEmojiPack: String? = null
+
+    /** Mediate between binding.viewPager and the chosen tab layout */
+    private var tabLayoutMediator: TabLayoutMediator? = null
+
+    /** Adapter for the different timeline tabs */
+    private lateinit var tabAdapter: MainPagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -231,7 +240,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 } else {
                     // No account was provided, show the chooser
                     showAccountChooserDialog(
-                        getString(R.string.action_share_as), true,
+                        getString(R.string.action_share_as),
+                        true,
                         object : AccountSelectionListener {
                             override fun onAccountSelected(account: AccountEntity) {
                                 val requestedId = account.id
@@ -263,6 +273,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         }
         window.statusBarColor = Color.TRANSPARENT // don't draw a status bar, the DrawerLayout and the MaterialDrawerLayout have their own
         setContentView(binding.root)
+        setSupportActionBar(binding.mainToolbar)
 
         glide = Glide.with(this)
 
@@ -274,21 +285,15 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         loadDrawerAvatar(activeAccount.profilePictureUrl, true)
 
-        binding.mainToolbar.menu.add(R.string.action_search).apply {
-            setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-            icon = IconicsDrawable(this@MainActivity, GoogleMaterial.Icon.gmd_search).apply {
-                sizeDp = 20
-                colorInt = MaterialColors.getColor(binding.mainToolbar, android.R.attr.textColorPrimary)
-            }
-            setOnMenuItemClickListener {
-                startActivity(SearchActivity.getIntent(this@MainActivity))
-                true
-            }
-        }
+        addMenuProvider(this)
 
         binding.viewPager.reduceSwipeSensitivity()
 
-        setupDrawer(savedInstanceState, addSearchButton = hideTopToolbar)
+        setupDrawer(
+            savedInstanceState,
+            addSearchButton = hideTopToolbar,
+            addTrendingButton = !accountManager.activeAccount!!.tabPreferences.hasTab(TRENDING)
+        )
 
         /* Fetch user info while we're doing other things. This has to be done after setting up the
          * drawer, though, because its callback touches the header in the drawer. */
@@ -296,19 +301,40 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         fetchAnnouncements()
 
+        streamingManager.setup(lifecycleScope.coroutineContext.job) { active ->
+            if (active) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+
+        // Initialise the tab adapter and set to viewpager. Fragments appear to be leaked if the
+        // adapter changes over the life of the viewPager (the adapter, not its contents), so set
+        // the initial list of tabs to empty, and set the full list later in setupTabs(). See
+        // https://github.com/tuskyapp/Tusky/issues/3251 for details.
+        tabAdapter = MainPagerAdapter(emptyList(), this)
+        binding.viewPager.adapter = tabAdapter
+
         setupTabs(showNotificationTab)
 
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PrefKeys.VIEW_PAGER_OFF_SCREEN_LIMIT, false)) {
             binding.viewPager.offscreenPageLimit = 9
         }
 
-        eventHub.events
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-            .subscribe { event: Event? ->
+        lifecycleScope.launch {
+            eventHub.events.collect { event ->
                 when (event) {
                     is ProfileEditedEvent -> onFetchUserInfoSuccess(event.newProfileData)
-                    is MainTabsChangedEvent -> setupTabs(false)
+                    is MainTabsChangedEvent -> {
+                        refreshMainDrawerItems(
+                            addSearchButton = hideTopToolbar,
+                            addTrendingButton = !event.newTabs.hasTab(TRENDING)
+                        )
+
+                        setupTabs(false)
+                    }
+
                     is AnnouncementReadEvent -> {
                         unreadAnnouncementsCount--
                         updateAnnouncementsBadge()
@@ -316,6 +342,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 }
                 binding.viewQuickToot.handleEvent(event)
             }
+        }
 
         Schedulers.io().scheduleDirect {
             // Flush old media that was cached for sharing
@@ -355,14 +382,28 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         draftsAlert.observeInContext(this, true)
     }
 
-    override fun onPause() {
-        super.onPause()
-        streamingManager.pause()
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.activity_main, menu)
+        menu.findItem(R.id.action_search)?.apply {
+            icon = IconicsDrawable(this@MainActivity, GoogleMaterial.Icon.gmd_search).apply {
+                sizeDp = 20
+                colorInt = MaterialColors.getColor(binding.mainToolbar, android.R.attr.textColorPrimary)
+            }
+        }
+    }
+
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_search -> {
+                startActivity(SearchActivity.getIntent(this@MainActivity))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        NotificationHelper.clearNotificationsForActiveAccount(this, accountManager)
         val currentEmojiPack = preferences.getString(EMOJI_PREFERENCE, "")
         if (currentEmojiPack != selectedEmojiPack) {
             Log.d(
@@ -373,7 +414,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             selectedEmojiPack = currentEmojiPack
             recreate()
         }
-        streamingManager.resume()
     }
 
     override fun onStart() {
@@ -382,20 +422,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         if (binding.mainDrawerLayout.isOpen) {
             binding.mainDrawerLayout.closeDrawer(GravityCompat.START, false)
         }
-        keepScreenOn()
-    }
-
-    private fun keepScreenOn() {
-        if (streamingManager.active) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        } else {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -417,7 +443,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             // FIXME: blackberry keyONE raises SHIFT key event even CTRL IS PRESSED
             when (keyCode) {
                 KeyEvent.KEYCODE_N -> {
-
                     // open compose activity by pressing SHIFT + N (or CTRL + N)
                     val composeIntent = Intent(applicationContext, ComposeActivity::class.java)
                     startActivity(composeIntent)
@@ -449,8 +474,11 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         finish()
     }
 
-    private fun setupDrawer(savedInstanceState: Bundle?, addSearchButton: Boolean) {
-
+    private fun setupDrawer(
+        savedInstanceState: Bundle?,
+        addSearchButton: Boolean,
+        addTrendingButton: Boolean
+    ) {
         val drawerOpenClickListener = View.OnClickListener { binding.mainDrawerLayout.open() }
 
         binding.mainToolbar.setNavigationOnClickListener(drawerOpenClickListener)
@@ -474,6 +502,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             dividerBelowHeader = false
             closeDrawerOnProfileListClick = true
         }
+
+        header.currentProfileName.maxLines = 1
+        header.currentProfileName.ellipsize = TextUtils.TruncateAt.END
 
         header.accountHeaderBackground.setColorFilter(getColor(R.color.headerBackgroundFilter))
         header.accountHeaderBackground.setBackgroundColor(MaterialColors.getColor(header, R.attr.colorBackgroundAccent))
@@ -507,6 +538,14 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         })
 
         binding.mainDrawer.apply {
+            refreshMainDrawerItems(addSearchButton, addTrendingButton)
+            setSavedInstance(savedInstanceState)
+        }
+    }
+
+    private fun refreshMainDrawerItems(addSearchButton: Boolean, addTrendingButton: Boolean) {
+        binding.mainDrawer.apply {
+            itemAdapter.clear()
             tintStatusBar = true
             addItems(
                 primaryDrawerItem {
@@ -572,8 +611,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                         startActivityWithSlideInAnimation(AnnouncementsActivity.newIntent(context))
                     }
                     badgeStyle = BadgeStyle().apply {
-                        textColor = ColorHolder.fromColor(MaterialColors.getColor(binding.mainDrawer, R.attr.colorOnPrimary))
-                        color = ColorHolder.fromColor(MaterialColors.getColor(binding.mainDrawer, R.attr.colorPrimary))
+                        textColor = ColorHolder.fromColor(MaterialColors.getColor(binding.mainDrawer, com.google.android.material.R.attr.colorOnPrimary))
+                        color = ColorHolder.fromColor(MaterialColors.getColor(binding.mainDrawer, com.google.android.material.R.attr.colorPrimary))
                     }
                 },
                 DividerDrawerItem(),
@@ -626,7 +665,18 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                 )
             }
 
-            setSavedInstance(savedInstanceState)
+            if (addTrendingButton) {
+                binding.mainDrawer.addItemsAtPosition(
+                    5,
+                    primaryDrawerItem {
+                        nameRes = R.string.title_public_trending_hashtags
+                        iconicsIcon = GoogleMaterial.Icon.gmd_trending_up
+                        onClick = {
+                            startActivityWithSlideInAnimation(TrendingActivity.getIntent(context))
+                        }
+                    }
+                )
+            }
         }
 
         if (BuildConfig.DEBUG) {
@@ -692,8 +742,8 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     private fun setupTabs(selectNotificationTab: Boolean) {
-        val activeTabLayout = if (preferences.getString("mainNavPosition", "top") == "bottom") {
-            val actionBarSize = getDimension(this, R.attr.actionBarSize)
+        val activeTabLayout = if (preferences.getString(PrefKeys.MAIN_NAV_POSITION, "top") == "bottom") {
+            val actionBarSize = getDimension(this, androidx.appcompat.R.attr.actionBarSize)
             val fabMargin = resources.getDimensionPixelSize(R.dimen.fabMargin)
             (binding.composeButton.layoutParams as CoordinatorLayout.LayoutParams).bottomMargin = actionBarSize + fabMargin
             binding.topNav.hide()
@@ -705,22 +755,31 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             binding.tabLayout
         }
 
-        val tabs = accountManager.activeAccount!!.tabPreferences.toMutableList()
+        // Save the previous tab so it can be restored later
+        val previousTab = tabAdapter.tabs.getOrNull(binding.viewPager.currentItem)
 
-        val adapter = MainPagerAdapter(tabs, this)
-        binding.viewPager.adapter = adapter
-        TabLayoutMediator(activeTabLayout, binding.viewPager) { _: TabLayout.Tab?, _: Int -> }.attach()
-        activeTabLayout.removeAllTabs()
-        val popups = ArrayList<PopupMenu>()
-        for (i in tabs.indices) {
-            val tab = activeTabLayout.newTab()
-                .setIcon(tabs[i].icon)
-            if (tabs[i].id == LIST) {
-                tab.contentDescription = tabs[i].arguments[1]
-            } else {
-                tab.setContentDescription(tabs[i].text)
+        val tabs = accountManager.activeAccount!!.tabPreferences.toMutableList()
+        val popups = MutableList<PopupMenu?>(tabs.size) { null }
+
+        // Detach any existing mediator before changing tab contents and attaching a new mediator
+        tabLayoutMediator?.detach()
+
+        tabAdapter.tabs = tabs
+        tabAdapter.notifyItemRangeChanged(0, tabs.size)
+
+        tabLayoutMediator = TabLayoutMediator(activeTabLayout, binding.viewPager, true) {
+                tab: TabLayout.Tab, position: Int ->
+            val data = tabs[position]
+
+            tab.icon = AppCompatResources.getDrawable(this@MainActivity, data.icon)
+            tab.contentDescription = when (data.id) {
+                LIST -> data.arguments[1]
+                else -> getString(data.text)
             }
-            activeTabLayout.addTab(tab)
+
+            if (popups[position] != null) {
+                return@TabLayoutMediator
+            }
 
             val popup = PopupMenu(this, tab.view)
             popup.menuInflater.inflate(R.menu.view_tab_action, popup.menu)
@@ -729,19 +788,19 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             if (popup.menu is MenuBuilder) {
                 val menuBuilder = popup.menu as MenuBuilder
 
-                if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED, HASHTAG, LIST)) {
+                if (data.id in arrayOf(HOME, LOCAL, FEDERATED, HASHTAG, LIST)) {
                     menuBuilder.findItem(R.id.tabReset).isVisible = true
                 }
-                if (tabs[i].id == LIST) {
+                if (data.id == LIST) {
                     menuBuilder.findItem(R.id.tabEditList).isVisible = true
                 }
-                if (tabs[i].id in arrayOf(HOME, LOCAL, FEDERATED, LIST)) {
+                if (data.id in arrayOf(HOME, LOCAL, FEDERATED, LIST)) {
                     menuBuilder.findItem(R.id.tabToggleStreaming).apply {
                         isVisible = true
-                        isChecked = tabs[i].enableStreaming
+                        isChecked = data.enableStreaming
                     }
                 }
-                if (tabs[i].id == NOTIFICATIONS) {
+                if (data.id == NOTIFICATIONS) {
                     menuBuilder.findItem(R.id.tabToggleNotificationsFilter).isVisible = true
                 }
 
@@ -750,15 +809,7 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     val iconMarginPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, resources.displayMetrics).toInt()
 
                     if (item.icon != null) {
-                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                            item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
-                        } else {
-                            item.icon = object : InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0) {
-                                override fun getIntrinsicWidth(): Int {
-                                    return intrinsicHeight + iconMarginPx + iconMarginPx
-                                }
-                            }
-                        }
+                        item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
                         setDrawableTint(this, item.icon!!, android.R.attr.textColorPrimary)
                     }
                 }
@@ -766,12 +817,14 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
             }
 
             popup.setOnMenuItemClickListener { item ->
-                val fragment = adapter.getFragment(tab.position)
+                val fragment = tabAdapter.getFragment(tab.position)
                 when (item.itemId) {
                     R.id.tabJumpToTop -> {
                         if (fragment is ReselectableFragment) {
                             (fragment as ReselectableFragment).onReselect()
                         }
+
+                        refreshComposeButtonState(tabAdapter, tab.position)
                     }
                     R.id.tabReset -> {
                         if (fragment is ResettableFragment) {
@@ -780,27 +833,21 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     }
                     R.id.tabEditList -> {
                         AccountsInListFragment.newInstance(
-                            tabs[i].arguments.getOrNull(0).orEmpty(),
-                            tabs[i].arguments.getOrNull(1).orEmpty()
+                            data.arguments.getOrNull(0).orEmpty(),
+                            data.arguments.getOrNull(1).orEmpty()
                         ).show(supportFragmentManager, null)
                     }
                     R.id.tabToggleStreaming -> {
                         if (fragment is TimelineFragment) {
-                            val current = fragment.toggleStreaming()
-                            item.isChecked = current
+                            val to = !item.isChecked
+                            fragment.setStreamingEnabled(to)
+                            item.isChecked = to
                             tintCheckIcon(item)
 
-                            keepScreenOn()
-
-                            tabs[i] = tabs[i].copy(enableStreaming = current)
+                            tabs[position] = data.copy(enableStreaming = to)
                             accountManager.activeAccount?.let {
-                                Single.fromCallable {
-                                    it.tabPreferences = tabs
-                                    accountManager.saveAccount(it)
-                                }
-                                    .subscribeOn(Schedulers.io())
-                                    .autoDispose(this, Lifecycle.Event.ON_DESTROY)
-                                    .subscribe()
+                                it.tabPreferences = tabs
+                                accountManager.saveAccount(it)
                             }
                         }
                     }
@@ -812,22 +859,28 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                                 !prefs.getBoolean("showNotificationsFilter", true)
                             )
                                 .apply()
-                            eventHub.dispatch(PreferenceChangedEvent("showNotificationsFilter"))
+                            lifecycleScope.launch {
+                                eventHub.dispatch(PreferenceChangedEvent("showNotificationsFilter"))
+                            }
                         }
                     }
                 }
                 false
             }
 
-            popups.add(popup)
+            popups[position] = popup
+        }.also { it.attach() }
 
-            if (tabs[i].id == NOTIFICATIONS) {
-                notificationTabPosition = i
-                if (selectNotificationTab) {
-                    tab.select()
-                }
-            }
-        }
+        // Selected tab is either
+        // - Notification tab (if appropriate)
+        // - The previously selected tab (if it hasn't been removed)
+        // - Left-most tab
+        val position = if (selectNotificationTab) {
+            tabs.indexOfFirst { it.id == NOTIFICATIONS }
+        } else {
+            previousTab?.let { tabs.indexOfFirst { it == previousTab } }
+        }.takeIf { it != -1 } ?: 0
+        binding.viewPager.setCurrentItem(position, false)
 
         val pageMargin = resources.getDimensionPixelSize(R.dimen.tab_page_margin)
         binding.viewPager.setPageTransformer(MarginPageTransformer(pageMargin))
@@ -841,31 +894,41 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
         onTabSelectedListener = object : OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                if (tab.position == notificationTabPosition) {
-                    NotificationHelper.clearNotificationsForActiveAccount(this@MainActivity, accountManager)
-                }
+                binding.mainToolbar.title = tab.contentDescription
 
-                binding.mainToolbar.title = tabs[tab.position].title(this@MainActivity)
+                refreshComposeButtonState(tabAdapter, tab.position)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                popups[tab.position].show()
+                popups[tab.position]?.show()
             }
         }.also {
             activeTabLayout.addOnTabSelectedListener(it)
         }
 
         val activeTabPosition = if (selectNotificationTab) notificationTabPosition else 0
-        binding.mainToolbar.title = tabs[activeTabPosition].title(this@MainActivity)
+        supportActionBar?.title = tabs[activeTabPosition].title(this@MainActivity)
         binding.mainToolbar.setOnClickListener {
-            (adapter.getFragment(activeTabLayout.selectedTabPosition) as? ReselectableFragment)?.onReselect()
+            (tabAdapter.getFragment(activeTabLayout.selectedTabPosition) as? ReselectableFragment)?.onReselect()
         }
 
         updateProfiles()
+    }
 
-        keepScreenOn()
+    private fun refreshComposeButtonState(adapter: MainPagerAdapter, tabPosition: Int) {
+        adapter.getFragment(tabPosition)?.also { fragment ->
+            if (fragment is FabFragment) {
+                if (fragment.isFabVisible()) {
+                    binding.composeButton.show()
+                } else {
+                    binding.composeButton.hide()
+                }
+            } else {
+                binding.composeButton.show()
+            }
+        }
     }
 
     private fun handleProfileClick(profile: IProfile, current: Boolean): Boolean {
@@ -969,7 +1032,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
     }
 
     private fun loadDrawerAvatar(avatarUrl: String, showPlaceholder: Boolean) {
-
         val hideTopToolbar = preferences.getBoolean(PrefKeys.HIDE_TOP_TOOLBAR, false)
         val animateAvatars = preferences.getBoolean("animateGifAvatars", false)
 
@@ -997,7 +1059,6 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
                     .into(avatarView)
             }
         } else {
-
             binding.bottomNavAvatar.hide()
             binding.topNavAvatar.hide()
 
@@ -1104,16 +1165,17 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
 
     private fun updateProfiles() {
         val animateEmojis = preferences.getBoolean(PrefKeys.ANIMATE_CUSTOM_EMOJIS, false)
-        val profiles: MutableList<IProfile> = accountManager.getAllAccountsOrderedByActive().map { acc ->
-            ProfileDrawerItem().apply {
-                isSelected = acc.isActive
-                nameText = acc.displayName.emojify(acc.emojis, header, animateEmojis)
-                iconUrl = acc.profilePictureUrl
-                isNameShown = true
-                identifier = acc.id
-                descriptionText = acc.fullName
-            }
-        }.toMutableList()
+        val profiles: MutableList<IProfile> =
+            accountManager.getAllAccountsOrderedByActive().map { acc ->
+                ProfileDrawerItem().apply {
+                    isSelected = acc.isActive
+                    nameText = acc.displayName.emojify(acc.emojis, header, animateEmojis)
+                    iconUrl = acc.profilePictureUrl
+                    isNameShown = true
+                    identifier = acc.id
+                    descriptionText = acc.fullName
+                }
+            }.toMutableList()
 
         // reuse the already existing "add account" item
         for (profile in header.profiles.orEmpty()) {
@@ -1127,7 +1189,9 @@ class MainActivity : BottomSheetActivity(), ActionButtonActivity, HasAndroidInje
         header.setActiveProfile(accountManager.activeAccount!!.id)
         binding.mainToolbar.subtitle = if (accountManager.shouldDisplaySelfUsername(this)) {
             accountManager.activeAccount!!.fullName
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun getActionButton() = binding.composeButton

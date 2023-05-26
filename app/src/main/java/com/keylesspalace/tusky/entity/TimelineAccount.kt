@@ -28,6 +28,7 @@ data class TimelineAccount(
     @SerializedName("display_name") val displayName: String?, // should never be null per Api definition, but some servers break the contract
     val url: String,
     val avatar: String,
+    val note: String,
     val bot: Boolean = false,
     val emojis: List<Emoji>? = emptyList(), // nullable for backward compatibility
     @SerializedName("name") val notestockUsername: String? = null,
@@ -36,5 +37,7 @@ data class TimelineAccount(
     val name: String
         get() = notestockUsername ?: if (displayName.isNullOrEmpty()) {
             localUsername
-        } else displayName
+        } else {
+            displayName
+        }
 }

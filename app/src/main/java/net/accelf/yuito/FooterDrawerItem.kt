@@ -24,7 +24,7 @@ class FooterDrawerItem : AbstractDrawerItem<FooterDrawerItem, BindingHolder<Item
 
     override fun generateView(ctx: Context, parent: ViewGroup): View {
         binding = ItemDrawerFooterBinding.inflate(LayoutInflater.from(ctx))
-        binding.instanceData.setTag(R.id.material_drawer_item, this)
+        binding.instanceData.setTag(com.mikepenz.materialdrawer.R.id.material_drawer_item, this)
         return binding.root
     }
 

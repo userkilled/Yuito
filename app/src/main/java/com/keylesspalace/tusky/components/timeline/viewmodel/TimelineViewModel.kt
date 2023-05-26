@@ -20,7 +20,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import at.connyduck.calladapter.networkresult.fold
 import at.connyduck.calladapter.networkresult.getOrElse
+import at.connyduck.calladapter.networkresult.getOrThrow
 import com.keylesspalace.tusky.appstore.BlockEvent
 import com.keylesspalace.tusky.appstore.BookmarkEvent
 import com.keylesspalace.tusky.appstore.DomainMuteEvent
@@ -39,6 +41,7 @@ import com.keylesspalace.tusky.components.preference.PreferencesFragment.Reading
 import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
 import com.keylesspalace.tusky.entity.Filter
+import com.keylesspalace.tusky.entity.FilterV1
 import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
@@ -49,20 +52,17 @@ import com.keylesspalace.tusky.viewdata.StatusViewData
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.asFlow
-import kotlinx.coroutines.rx3.await
 import net.accelf.yuito.streaming.StreamType
-import net.accelf.yuito.streaming.StreamingManager
 import net.accelf.yuito.streaming.Subscription
+import retrofit2.HttpException
 
 abstract class TimelineViewModel(
     private val timelineCases: TimelineCases,
     private val api: MastodonApi,
     private val eventHub: EventHub,
     protected val accountManager: AccountManager,
-    protected val sharedPreferences: SharedPreferences,
+    private val sharedPreferences: SharedPreferences,
     private val filterModel: FilterModel,
-    private val streamingManager: StreamingManager,
 ) : ViewModel() {
 
     abstract val statuses: Flow<PagingData<StatusViewData>>
@@ -75,7 +75,7 @@ abstract class TimelineViewModel(
         private set
 
     protected var alwaysShowSensitiveMedia = false
-    protected var alwaysOpenSpoilers = false
+    private var alwaysOpenSpoilers = false
     private var filterRemoveReplies = false
     private var filterRemoveReblogs = false
     protected var readingOrder: ReadingOrder = ReadingOrder.OLDEST_FIRST
@@ -98,7 +98,7 @@ abstract class TimelineViewModel(
     }
 
     var isFirstOfStreaming = false
-    private val subscription by lazy {
+    val subscription by lazy {
         when (kind) {
             Kind.HOME -> Subscription(StreamType.USER)
             Kind.PUBLIC_LOCAL -> Subscription(StreamType.LOCAL)
@@ -116,31 +116,16 @@ abstract class TimelineViewModel(
         }
     }
     var isStreamingEnabled = false
-        set(value) {
-            if (field != value) {
-                field = value
-                when (value) {
-                    true -> {
-                        streamingManager.subscribe(subscription)
-                        isFirstOfStreaming = true
-                    }
-                    false -> {
-                        streamingManager.unsubscribe(subscription)
-                    }
-                }
-            }
-        }
 
     fun init(
         kind: Kind,
         id: String?,
         tags: List<String>,
-        isStreamingEnabled: Boolean,
     ) {
         this.kind = kind
         this.id = id
         this.tags = tags
-        this.isStreamingEnabled = isStreamingEnabled
+        filterModel.kind = kind.toFilterKind()
 
         if (kind == Kind.HOME) {
             // Note the variable is "true if filter" but the underlying preference/settings text is "true if show"
@@ -156,7 +141,6 @@ abstract class TimelineViewModel(
 
         viewModelScope.launch {
             eventHub.events
-                .asFlow()
                 .collect { event -> handleEvent(event) }
         }
 
@@ -165,7 +149,7 @@ abstract class TimelineViewModel(
 
     fun reblog(reblog: Boolean, status: StatusViewData.Concrete): Job = viewModelScope.launch {
         try {
-            timelineCases.reblog(status.actionableId, reblog).await()
+            timelineCases.reblog(status.actionableId, reblog).getOrThrow()
         } catch (t: Exception) {
             ifExpected(t) {
                 Log.d(TAG, "Failed to reblog status " + status.actionableId, t)
@@ -175,7 +159,7 @@ abstract class TimelineViewModel(
 
     fun favorite(favorite: Boolean, status: StatusViewData.Concrete): Job = viewModelScope.launch {
         try {
-            timelineCases.favourite(status.actionableId, favorite).await()
+            timelineCases.favourite(status.actionableId, favorite).getOrThrow()
         } catch (t: Exception) {
             ifExpected(t) {
                 Log.d(TAG, "Failed to favourite status " + status.actionableId, t)
@@ -185,7 +169,7 @@ abstract class TimelineViewModel(
 
     fun bookmark(bookmark: Boolean, status: StatusViewData.Concrete): Job = viewModelScope.launch {
         try {
-            timelineCases.bookmark(status.actionableId, bookmark).await()
+            timelineCases.bookmark(status.actionableId, bookmark).getOrThrow()
         } catch (t: Exception) {
             ifExpected(t) {
                 Log.d(TAG, "Failed to bookmark status " + status.actionableId, t)
@@ -203,7 +187,7 @@ abstract class TimelineViewModel(
         updatePoll(votedPoll, status)
 
         try {
-            timelineCases.voteInPoll(status.actionableId, poll.id, choices).await()
+            timelineCases.voteInPoll(status.actionableId, poll.id, choices).getOrThrow()
         } catch (t: Exception) {
             ifExpected(t) {
                 Log.d(TAG, "Failed to vote in poll: " + status.actionableId, t)
@@ -239,14 +223,25 @@ abstract class TimelineViewModel(
 
     abstract fun fullReload()
 
+    abstract fun clearWarning(status: StatusViewData.Concrete)
+
+    /** Saves the user's reading position so it can be restored later */
+    abstract fun saveReadingPosition(statusId: String)
+
     /** Triggered when currently displayed data must be reloaded. */
     protected abstract suspend fun invalidate()
 
-    protected fun shouldFilterStatus(statusViewData: StatusViewData): Boolean {
-        val status = statusViewData.asStatusOrNull()?.status ?: return false
-        return status.inReplyToId != null && filterRemoveReplies ||
-            status.reblog != null && filterRemoveReblogs ||
-            filterModel.shouldFilterStatus(status.actionableStatus)
+    protected fun shouldFilterStatus(statusViewData: StatusViewData): Filter.Action {
+        val status = statusViewData.asStatusOrNull()?.status ?: return Filter.Action.NONE
+        return if (
+            (status.inReplyToId != null && filterRemoveReplies) ||
+            (status.reblog != null && filterRemoveReblogs)
+        ) {
+            return Filter.Action.HIDE
+        } else {
+            statusViewData.filterAction = filterModel.shouldFilterStatus(status.actionableStatus)
+            statusViewData.filterAction
+        }
     }
 
     private fun onPreferenceChanged(key: String) {
@@ -267,7 +262,7 @@ abstract class TimelineViewModel(
                     fullReload()
                 }
             }
-            Filter.HOME, Filter.NOTIFICATIONS, Filter.THREAD, Filter.PUBLIC, Filter.ACCOUNT -> {
+            FilterV1.HOME, FilterV1.NOTIFICATIONS, FilterV1.THREAD, FilterV1.PUBLIC, FilterV1.ACCOUNT -> {
                 if (filterContextMatchesKind(kind, listOf(key))) {
                     reloadFilters()
                 }
@@ -280,28 +275,6 @@ abstract class TimelineViewModel(
             PrefKeys.READING_ORDER -> {
                 readingOrder = ReadingOrder.from(sharedPreferences.getString(PrefKeys.READING_ORDER, null))
             }
-        }
-    }
-
-    private fun filterContextMatchesKind(
-        kind: Kind,
-        filterContext: List<String>,
-    ): Boolean {
-        // home, notifications, public, thread
-        return when (kind) {
-            Kind.HOME, Kind.LIST -> filterContext.contains(
-                Filter.HOME
-            )
-            Kind.PUBLIC_FEDERATED, Kind.PUBLIC_LOCAL, Kind.TAG -> filterContext.contains(
-                Filter.PUBLIC
-            )
-            Kind.FAVOURITES -> filterContext.contains(Filter.PUBLIC) || filterContext.contains(
-                Filter.NOTIFICATIONS
-            )
-            Kind.USER, Kind.USER_WITH_REPLIES, Kind.USER_PINNED -> filterContext.contains(
-                Filter.ACCOUNT
-            )
-            else -> false
         }
     }
 
@@ -354,27 +327,57 @@ abstract class TimelineViewModel(
 
     private fun reloadFilters() {
         viewModelScope.launch {
-            val filters = api.getFilters().getOrElse {
-                Log.e(TAG, "Failed to fetch filters", it)
-                return@launch
-            }
-            filterModel.initWithFilters(
-                filters.filter {
-                    filterContextMatchesKind(kind, it.context)
+            api.getFilters().fold(
+                {
+                    // After the filters are loaded we need to reload displayed content to apply them.
+                    // It can happen during the usage or at startup, when we get statuses before filters.
+                    invalidate()
+                },
+                { throwable ->
+                    if (throwable is HttpException && throwable.code() == 404) {
+                        // Fallback to client-side filter code
+                        val filters = api.getFiltersV1().getOrElse {
+                            Log.e(TAG, "Failed to fetch filters", it)
+                            return@launch
+                        }
+                        filterModel.initWithFilters(
+                            filters.filter {
+                                filterContextMatchesKind(kind, it.context)
+                            }
+                        )
+                        // After the filters are loaded we need to reload displayed content to apply them.
+                        // It can happen during the usage or at startup, when we get statuses before filters.
+                        invalidate()
+                    } else {
+                        Log.e(TAG, "Error getting filters", throwable)
+                    }
                 }
             )
-            // After the filters are loaded we need to reload displayed content to apply them.
-            // It can happen during the usage or at startup, when we get statuses before filters.
-            invalidate()
         }
     }
 
     companion object {
         private const val TAG = "TimelineVM"
         internal const val LOAD_AT_ONCE = 30
+
+        fun filterContextMatchesKind(
+            kind: Kind,
+            filterContext: List<String>
+        ): Boolean {
+            return filterContext.contains(kind.toFilterKind().kind)
+        }
     }
 
     enum class Kind {
-        HOME, PUBLIC_LOCAL, PUBLIC_FEDERATED, TAG, USER, USER_PINNED, USER_WITH_REPLIES, FAVOURITES, LIST, BOOKMARKS
+        HOME, PUBLIC_LOCAL, PUBLIC_FEDERATED, TAG, USER, USER_PINNED, USER_WITH_REPLIES, FAVOURITES, LIST, BOOKMARKS;
+
+        fun toFilterKind(): Filter.Kind {
+            return when (valueOf(name)) {
+                HOME, LIST -> Filter.Kind.HOME
+                PUBLIC_FEDERATED, PUBLIC_LOCAL, TAG, FAVOURITES -> Filter.Kind.PUBLIC
+                USER, USER_WITH_REPLIES, USER_PINNED -> Filter.Kind.ACCOUNT
+                else -> Filter.Kind.PUBLIC
+            }
+        }
     }
 }

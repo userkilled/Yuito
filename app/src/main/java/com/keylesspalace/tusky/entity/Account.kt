@@ -43,7 +43,9 @@ data class Account(
     val name: String
         get() = if (displayName.isNullOrEmpty()) {
             localUsername
-        } else displayName
+        } else {
+            displayName
+        }
 
     /**
      * We have to use [localUsername] when [displayName] is empty.
@@ -60,7 +62,7 @@ data class AccountSource(
     val sensitive: Boolean?,
     val note: String?,
     val fields: List<StringField>?,
-    val language: String?,
+    val language: String?
 )
 
 data class Field(

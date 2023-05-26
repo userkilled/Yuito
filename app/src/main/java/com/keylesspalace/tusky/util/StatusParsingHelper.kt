@@ -17,6 +17,7 @@
 
 package com.keylesspalace.tusky.util
 
+import android.text.Html.TagHandler
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import androidx.core.text.parseAsHtml
@@ -25,7 +26,8 @@ import org.jsoup.Jsoup.parse
 /**
  * parse a String containing html from the Mastodon api to Spanned
  */
-fun String.parseAsMastodonHtml(): Spanned {
+@JvmOverloads
+fun String.parseAsMastodonHtml(tagHandler: TagHandler? = null): Spanned {
     return this.replace("<br> ", "<br>&nbsp;")
         .replace("<br /> ", "<br />&nbsp;")
         .replace("<br/> ", "<br/>&nbsp;")
@@ -35,7 +37,7 @@ fun String.parseAsMastodonHtml(): Spanned {
             select(".quote-inline").forEach { it.remove() }
         }
         .html()
-        .parseAsHtml()
+        .parseAsHtml(tagHandler = tagHandler)
         /* Html.fromHtml returns trailing whitespace if the html ends in a </p> tag, which
          * most status contents do, so it should be trimmed. */
         .trimTrailingWhitespace()

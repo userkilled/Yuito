@@ -45,7 +45,6 @@ class LicenseActivity : BaseActivity() {
     }
 
     private fun loadFileIntoTextView(@RawRes fileId: Int, textView: TextView) {
-
         val sb = StringBuilder()
 
         val br = BufferedReader(InputStreamReader(resources.openRawResource(fileId)))

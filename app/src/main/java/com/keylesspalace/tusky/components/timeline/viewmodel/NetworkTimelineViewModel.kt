@@ -30,6 +30,7 @@ import com.keylesspalace.tusky.appstore.PinEvent
 import com.keylesspalace.tusky.appstore.ReblogEvent
 import com.keylesspalace.tusky.components.timeline.util.ifExpected
 import com.keylesspalace.tusky.db.AccountManager
+import com.keylesspalace.tusky.entity.Filter
 import com.keylesspalace.tusky.entity.Poll
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.FilterModel
@@ -45,7 +46,6 @@ import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import net.accelf.yuito.streaming.StreamingManager
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
@@ -61,8 +61,7 @@ class NetworkTimelineViewModel @Inject constructor(
     accountManager: AccountManager,
     sharedPreferences: SharedPreferences,
     filterModel: FilterModel,
-    streamingManager: StreamingManager,
-) : TimelineViewModel(timelineCases, api, eventHub, accountManager, sharedPreferences, filterModel, streamingManager) {
+) : TimelineViewModel(timelineCases, api, eventHub, accountManager, sharedPreferences, filterModel) {
 
     var currentSource: NetworkTimelinePagingSource? = null
 
@@ -84,7 +83,7 @@ class NetworkTimelineViewModel @Inject constructor(
     ).flow
         .map { pagingData ->
             pagingData.filter(Dispatchers.Default.asExecutor()) { statusViewData ->
-                !shouldFilterStatus(statusViewData)
+                shouldFilterStatus(statusViewData) != Filter.Action.HIDE
             }
         }
         .flowOn(Dispatchers.Default)
@@ -184,7 +183,7 @@ class NetworkTimelineViewModel @Inject constructor(
                                     .copy(
                                         isShowingContent = oldStatus!!.isShowingContent,
                                         isExpanded = oldStatus.isExpanded,
-                                        isCollapsed = oldStatus.isCollapsed,
+                                        isCollapsed = oldStatus.isCollapsed
                                     )
                             }
 
@@ -270,6 +269,16 @@ class NetworkTimelineViewModel @Inject constructor(
         nextKey = statusData.firstOrNull { it is StatusViewData.Concrete }?.asStatusOrNull()?.id
         statusData.clear()
         currentSource?.invalidate()
+    }
+
+    override fun clearWarning(status: StatusViewData.Concrete) {
+        updateActionableStatusById(status.actionableId) {
+            it.copy(filtered = null)
+        }
+    }
+
+    override fun saveReadingPosition(statusId: String) {
+        /** Does nothing for non-cached timelines */
     }
 
     override suspend fun invalidate() {
