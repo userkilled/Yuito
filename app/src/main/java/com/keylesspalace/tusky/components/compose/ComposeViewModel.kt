@@ -294,7 +294,8 @@ class ComposeViewModel @Inject constructor(
      */
     suspend fun sendStatus(
         content: String,
-        spoilerText: String
+        spoilerText: String,
+        accountId: Long
     ) {
         if (!scheduledTootId.isNullOrEmpty()) {
             api.deleteScheduledStatus(scheduledTootId!!)
@@ -322,7 +323,7 @@ class ComposeViewModel @Inject constructor(
             replyingStatusContent = null,
             replyingStatusAuthorUsername = null,
             quoteId = quoteId,
-            accountId = accountManager.activeAccount!!.id,
+            accountId = accountId,
             draftId = draftId,
             idempotencyKey = randomAlphanumericString(16),
             retries = 0,
